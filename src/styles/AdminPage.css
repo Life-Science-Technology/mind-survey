@@ -1,0 +1,209 @@
+.admin-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 30px;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.admin-container h1 {
+  margin-bottom: 30px;
+  color: #343a40;
+  text-align: center;
+}
+
+.admin-controls {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.refresh-btn {
+  background-color: #4c6ef5;
+  color: #fff;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.refresh-btn:hover {
+  background-color: #3b5bdb;
+}
+
+.download-btn {
+  background-color: #40c057;
+  color: #fff;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.download-btn:hover {
+  background-color: #2f9e44;
+}
+
+.logout-btn {
+  background-color: #fa5252;
+  color: #fff;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.logout-btn:hover {
+  background-color: #e03131;
+}
+
+.table-container {
+  overflow-x: auto;
+  margin-bottom: 20px;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.admin-table th, 
+.admin-table td {
+  padding: 12px 15px;
+  border: 1px solid #dee2e6;
+  text-align: center;
+}
+
+.admin-table th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  color: #495057;
+  cursor: pointer;
+  position: relative;
+  user-select: none;
+}
+
+.admin-table th:hover {
+  background-color: #e9ecef;
+}
+
+.admin-table tbody tr:nth-child(even) {
+  background-color: #f8f9fa;
+}
+
+.admin-table tbody tr:hover {
+  background-color: #e9ecef;
+}
+
+.highlight {
+  color: #fa5252;
+  font-weight: bold;
+}
+
+.no-data {
+  text-align: center;
+  padding: 30px;
+  color: #868e96;
+}
+
+.admin-footer {
+  margin-top: 20px;
+  text-align: right;
+  color: #495057;
+  font-size: 14px;
+}
+
+.loading {
+  text-align: center;
+  padding: 30px;
+  color: #495057;
+  font-size: 16px;
+}
+
+.error-message {
+  background-color: #fff5f5;
+  color: #fa5252;
+  padding: 15px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+/* PIN 코드 인증 폼 스타일 */
+.auth-container {
+  max-width: 400px;
+  margin: 40px auto;
+  padding: 30px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+}
+
+.auth-container h2 {
+  margin-bottom: 20px;
+  text-align: center;
+  color: #343a40;
+}
+
+.pin-form .form-group {
+  margin-bottom: 20px;
+}
+
+.pin-form label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #495057;
+}
+
+.pin-form input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 16px;
+  letter-spacing: 2px;
+  text-align: center;
+}
+
+.pin-form input:focus {
+  border-color: #4c6ef5;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(76, 110, 245, 0.2);
+}
+
+.pin-submit-btn {
+  width: 100%;
+  padding: 12px;
+  background-color: #4c6ef5;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.pin-submit-btn:hover {
+  background-color: #3b5bdb;
+}
+
+@media (max-width: 768px) {
+  .admin-container {
+    padding: 15px;
+  }
+  
+  .admin-table th, 
+  .admin-table td {
+    padding: 8px;
+    font-size: 12px;
+  }
+}
