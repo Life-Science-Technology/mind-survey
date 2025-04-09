@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import supabase from '../supabaseClient';
 
-const Results = ({ userData, restartSurvey }) => {
-  const { name, email, phone, depressionScore, anxietyScore } = userData;
+const Results = ({ userData, restartSurvey, updateUserData }) => {
+  const { depressionScore, anxietyScore } = userData;
   
   // 상태 관리
   const [isRegistering, setIsRegistering] = useState(false);
@@ -14,8 +14,22 @@ const Results = ({ userData, restartSurvey }) => {
     marketing: false
   });
   
+  // 개인정보 입력 관련 상태
+  const [emailError, setEmailError] = useState('');
+  const [phoneFormatted, setPhoneFormatted] = useState('');
+  const [phoneError, setPhoneError] = useState('');
+  const [isFormValid, setIsFormValid] = useState(false);
+  const [showContactForm, setShowContactForm] = useState(false);
+  
   // Determine if scores exceed thresholds
   const needsContact = depressionScore >= 12;
+  
+  // 점수가 임계값을 초과하면 연락처 양식 표시
+  useEffect(() => {
+    if (needsContact) {
+      setShowContactForm(true);
+    }
+  }, [needsContact]);
   
   // Determine depression severity
   const getDepressionSeverity = (score) => {
@@ -48,12 +62,122 @@ const Results = ({ userData, restartSurvey }) => {
     // 사용자가 수정한 UI에 따라 personalInfo만 체크하면 됨
     return consentChecked.personalInfo;
   };
+  
+  // 이메일 형식 검증
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+  
+  // 전화번호 형식 검증
+  const validatePhoneNumber = (phone) => {
+    const digits = phone.replace(/\D/g, '');
+    // 010으로 시작하고 총 11자리인지 확인 (한국 휴대폰 번호 형식)
+    return digits.startsWith('010') && digits.length === 11;
+  };
+  
+  // 전화번호 형식화 함수
+  const formatPhoneNumber = useCallback((phone) => {
+    // 숫자가 아닌 문자 제거
+    const digits = phone.replace(/\D/g, '');
+    
+    // 길이에 따라 형식 적용
+    if (digits.length <= 3) {
+      return digits;
+    } else if (digits.length <= 7) {
+      return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+    } else {
+      return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7, 11)}`;
+    }
+  }, []);
+  
+  // 전화번호 초기화
+  useEffect(() => {
+    if (userData.phone) {
+      setPhoneFormatted(formatPhoneNumber(userData.phone));
+    }
+  }, [userData.phone, formatPhoneNumber]);
+  
+  // 폼 유효성 검사
+  useEffect(() => {
+    if (!showContactForm) return;
+    
+    // 모든 필수 필드가 채워져 있고 오류가 없는지 확인
+    const isValid = (
+      userData.email && 
+      userData.name && 
+      userData.phone && 
+      !emailError && 
+      !phoneError &&
+      validatePhoneNumber(userData.phone)
+    );
+    
+    setIsFormValid(isValid);
+  }, [userData.email, userData.name, userData.phone, emailError, phoneError, showContactForm]);
+  
+  // 이메일 입력 처리
+  const handleEmailChange = (e) => {
+    const { value } = e.target;
+    updateUserData({ email: value });
+    
+    // 이메일 형식 검증
+    if (value && !validateEmail(value)) {
+      setEmailError('유효한 이메일 주소를 입력해주세요.');
+    } else {
+      setEmailError('');
+    }
+  };
+  
+  // 전화번호 입력 처리
+  const handlePhoneChange = (e) => {
+    const { value } = e.target;
+    
+    // 숫자만 추출
+    const digits = value.replace(/\D/g, '');
+    
+    // 유효성 검사
+    if (digits.length >= 3 && !digits.startsWith('010')) {
+      setPhoneError('전화번호는 010으로 시작해야 합니다.');
+    } else if (digits.length > 0 && digits.length < 11) {
+      setPhoneError('전화번호는 11자리여야 합니다.');
+    } else {
+      setPhoneError('');
+    }
+    
+    const formatted = formatPhoneNumber(value);
+    setPhoneFormatted(formatted);
+    
+    // 숫자만 userData에 저장
+    updateUserData({ phone: digits });
+  };
+  
+  // 일반 입력 처리 (이름)
+  const handleChange = (e) => {
+    const { id, value } = e.target;
+    updateUserData({ [id]: value });
+  };
 
   // 임상시험 대기자 등록 함수
   const registerForClinicalTrial = async () => {
     // 필수 동의 항목 확인
     if (!isConsentValid()) {
       setRegistrationError('필수 동의 항목에 동의해주세요.');
+      return;
+    }
+    
+    // 개인정보 유효성 검사
+    if (!userData.name || !userData.email || !userData.phone) {
+      setRegistrationError('모든 필수 정보를 입력해주세요.');
+      return;
+    }
+    
+    if (!validateEmail(userData.email)) {
+      setRegistrationError('유효한 이메일 주소를 입력해주세요.');
+      return;
+    }
+    
+    if (!validatePhoneNumber(userData.phone)) {
+      setRegistrationError('전화번호는 010으로 시작하는 11자리 번호여야 합니다.');
       return;
     }
     
@@ -69,9 +193,9 @@ const Results = ({ userData, restartSurvey }) => {
       
       // 사용자 데이터 로그
       console.log('저장할 데이터:', {
-        name, 
-        email, 
-        phone, 
+        name: userData.name, 
+        email: userData.email, 
+        phone: userData.phone, 
         depressive: depressionScore,
         anxiety: anxietyScore
       });
@@ -81,9 +205,9 @@ const Results = ({ userData, restartSurvey }) => {
         .from('survey-person')
         .insert([
           { 
-            name, 
-            email, 
-            phone, 
+            name: userData.name, 
+            email: userData.email, 
+            phone: userData.phone, 
             depressive: depressionScore,
             anxiety: anxietyScore,
             // created_at은 Supabase에서 now() 함수로 자동 처리됩니다
@@ -157,6 +281,53 @@ const Results = ({ userData, restartSurvey }) => {
           <h3>귀하는 임상시험 대상자입니다.</h3>
           <p>임상시험에 관심이 있으신 분들은 임상시험 대기자 등록을 진행해주세요.</p>
           <p>임상시험 대상자 조건: 우울증상 점수 12점 이상</p>
+          
+          {showContactForm && !registrationSuccess && (
+            <div className="contact-form">
+              <h3>실험 참여 안내를 위한 개인정보 입력</h3>
+              <div className="form-group">
+                <label htmlFor="name">이름</label>
+                <input 
+                  type="text" 
+                  id="name" 
+                  value={userData.name || ''}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+              
+              <div className="form-group">
+                <label htmlFor="email">이메일</label>
+                <input 
+                  type="email" 
+                  id="email" 
+                  value={userData.email || ''}
+                  onChange={handleEmailChange}
+                  required
+                  className={emailError ? 'input-error' : ''}
+                />
+                {emailError && <p className="error-message">{emailError}</p>}
+              </div>
+              
+              <div className="form-group">
+                <label htmlFor="phone">전화번호</label>
+                <input 
+                  type="tel" 
+                  id="phone" 
+                  value={phoneFormatted}
+                  onChange={handlePhoneChange}
+                  placeholder="010-0000-0000"
+                  required
+                  className={phoneError ? 'input-error' : ''}
+                />
+                {phoneError ? (
+                  <p className="error-message">{phoneError}</p>
+                ) : (
+                  <p className="helper-text">형식: 010-0000-0000</p>
+                )}
+              </div>
+            </div>
+          )}
           
           {!registrationSuccess ? (
             <div className="registration-section">

@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
 import IntroPage from './components/IntroPage';
-import InfoForm from './components/InfoForm';
 import DepressionSurvey from './components/DepressionSurvey';
 import AnxietySurvey from './components/AnxietySurvey';
 import Results from './components/Results';
@@ -15,9 +14,6 @@ const SurveyApp = () => {
   
   // State to store user data
   const [userData, setUserData] = useState({
-    email: '',
-    name: '',
-    phone: '',
     depressionScore: 0,
     anxietyScore: 0
   });
@@ -36,9 +32,6 @@ const SurveyApp = () => {
   const restartSurvey = () => {
     setPage(0);
     setUserData({
-      email: '',
-      name: '',
-      phone: '',
       depressionScore: 0,
       anxietyScore: 0
     });
@@ -60,27 +53,22 @@ const SurveyApp = () => {
                  nextPage={nextPage} 
                />;
       case 1:
-        return <InfoForm 
-                 userData={userData} 
-                 updateUserData={updateUserData} 
-                 nextPage={nextPage} 
-               />;
-      case 2:
         return <DepressionSurvey 
                  updateUserData={updateUserData} 
                  nextPage={nextPage} 
                  prevPage={prevPage} 
                />;
-      case 3:
+      case 2:
         return <AnxietySurvey 
                  updateUserData={updateUserData} 
                  nextPage={nextPage} 
                  prevPage={prevPage} 
                />;
-      case 4:
+      case 3:
         return <Results 
                  userData={userData} 
                  restartSurvey={restartSurvey} 
+                 updateUserData={updateUserData}
                />;
       default:
         return <IntroPage 
@@ -97,12 +85,12 @@ const SurveyApp = () => {
             <div className="progress-bar">
               <div 
                 className="progress" 
-                style={{ width: `${(page / 4) * 100}%` }}
+                style={{ width: `${(page / 3) * 100}%` }}
               ></div>
             </div>
           </div>
           <div className="page-indicator">
-            <span>페이지 {page}/4</span>
+            <span>페이지 {page}/3</span>
           </div>
         </>
       )}

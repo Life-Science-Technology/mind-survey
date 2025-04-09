@@ -63,6 +63,16 @@ body {
   width: 100%;
 }
 
+/* Contact form styles in Results */
+.contact-form {
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.contact-form .form-group input {
+  max-width: 400px;
+}
+
 h1 {
   color: #343a40;
   margin-bottom: 20px;
