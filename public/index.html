@@ -5,6 +5,20 @@
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#000000" />
+    <!-- GitHub Pages SPA 리다이렉트 스크립트 -->
+    <script type="text/javascript">
+      // 단일 페이지 앱(SPA)의 GitHub Pages 리다이렉트
+      (function(l) {
+        if (l.search[1] === '/' ) {
+          var decoded = l.search.slice(1).split('&').map(function(s) { 
+            return s.replace(/~and~/g, '&')
+          }).join('?');
+          window.history.replaceState(null, null,
+              l.pathname.slice(0, -1) + decoded + l.hash
+          );
+        }
+      }(window.location))
+    </script>
     <meta
       name="description"
       content="임상시험 대상자 선별을 위한 우울증상, 불안증상 설문조사"
