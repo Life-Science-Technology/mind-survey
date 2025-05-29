@@ -24,12 +24,18 @@ const Results = ({ userData, restartSurvey, updateUserData }) => {
   // Determine if scores exceed thresholds
   const needsContact = depressionScore >= 12;
   
-  // 점수가 임계값을 초과하면 연락처 양식 표시
+  // 건강한 실험군 조건 추가
+  const isHealthyGroup = depressionScore < 10 && anxietyScore < 5;
+  
+  // 임상시험 대상자 여부 (기존 대상자 + 건강한 실험군)
+  const isClinicalTrialCandidate = needsContact || isHealthyGroup;
+  
+  // 점수가 임계값을 초과하거나 건강한 실험군에 해당하면 연락처 양식 표시
   useEffect(() => {
-    if (needsContact) {
+    if (isClinicalTrialCandidate) {
       setShowContactForm(true);
     }
-  }, [needsContact]);
+  }, [isClinicalTrialCandidate]);
   
   // Determine depression severity
   const getDepressionSeverity = (score) => {
@@ -276,11 +282,21 @@ const Results = ({ userData, restartSurvey, updateUserData }) => {
         </div>
       </div>
       
-      {needsContact ? (
+      {isClinicalTrialCandidate ? (
         <div className="expert-advice">
-          <h3>귀하는 임상시험 대상자입니다.</h3>
-          <p>임상시험에 관심이 있으신 분들은 임상시험 대기자 등록을 진행해주세요.</p>
-          <p>임상시험 대상자 조건: 우울증상 점수 12점 이상</p>
+          {needsContact ? (
+            <>
+              <h3>귀하는 임상시험 대상자입니다.</h3>
+              <p>임상시험에 관심이 있으신 분들은 임상시험 대기자 등록을 진행해주세요.</p>
+              <p>임상시험 대상자 조건: 우울증상 점수 12점 이상</p>
+            </>
+          ) : (
+            <>
+              <h3>귀하의 결과는 건강한 수준입니다.</h3>
+              <p>건강한 실험군으로서 임상실험에 관심이 있으신 분들은 대기자 등록을 진행해 주세요.</p>
+              <p>건강한 실험군 점수: 우울 점수 10점 미만, 불안 점수 5점 미만</p>
+            </>
+          )}
           
           {showContactForm && !registrationSuccess && (
             <div className="contact-form">
@@ -376,8 +392,9 @@ const Results = ({ userData, restartSurvey, updateUserData }) => {
         </div>
       ) : (
         <div className="normal-container">
-          <h3>정상 범위 내 증상입니다</h3>
-          <p>현재 우울증상 및 불안증상이 정상 범위 내에 있습니다.</p>
+          <h3>현재는 임상시험 대상이 아닙니다</h3>
+          <p>현재 우울증상 및 불안증상이 임상시험 대상 범위에 해당하지 않습니다.</p>
+          <p>임상시험 대상: 우울 점수 12점 이상 또는 (우울 점수 10점 미만 + 불안 점수 5점 미만)</p>
         </div>
       )}
       
