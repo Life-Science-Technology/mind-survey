@@ -24,18 +24,10 @@ const Results = ({ userData, restartSurvey, updateUserData }) => {
   // Determine if scores exceed thresholds
   const needsContact = depressionScore >= 12;
   
-  // 건강한 실험군 조건 추가
-  const isHealthyGroup = depressionScore < 10 && anxietyScore < 5;
-  
-  // 임상시험 대상자 여부 (기존 대상자 + 건강한 실험군)
-  const isClinicalTrialCandidate = needsContact || isHealthyGroup;
-  
-  // 점수가 임계값을 초과하거나 건강한 실험군에 해당하면 연락처 양식 표시
+  // 모든 사용자가 연락처 양식을 볼 수 있도록 설정
   useEffect(() => {
-    if (isClinicalTrialCandidate) {
-      setShowContactForm(true);
-    }
-  }, [isClinicalTrialCandidate]);
+    setShowContactForm(true);
+  }, []);
   
   // Determine depression severity
   const getDepressionSeverity = (score) => {
@@ -282,121 +274,113 @@ const Results = ({ userData, restartSurvey, updateUserData }) => {
         </div>
       </div>
       
-      {isClinicalTrialCandidate ? (
-        <div className="expert-advice">
-          {needsContact ? (
-            <>
-              <h3>귀하는 임상시험 대상자입니다.</h3>
-              <p>임상시험에 관심이 있으신 분들은 임상시험 대기자 등록을 진행해주세요.</p>
-              <p>임상시험 대상자 조건: 우울증상 점수 12점 이상</p>
-            </>
-          ) : (
-            <>
-              <h3>귀하의 결과는 건강한 수준입니다.</h3>
-              <p>건강한 실험군으로서 임상실험에 관심이 있으신 분들은 대기자 등록을 진행해 주세요.</p>
-              <p>건강한 실험군 점수: 우울 점수 10점 미만, 불안 점수 5점 미만</p>
-            </>
-          )}
-          
-          {showContactForm && !registrationSuccess && (
-            <div className="contact-form">
-              <h3>실험 참여 안내를 위한 개인정보 입력</h3>
-              <div className="form-group">
-                <label htmlFor="name">이름</label>
-                <input 
-                  type="text" 
-                  id="name" 
-                  value={userData.name || ''}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              
-              <div className="form-group">
-                <label htmlFor="email">이메일</label>
-                <input 
-                  type="email" 
-                  id="email" 
-                  value={userData.email || ''}
-                  onChange={handleEmailChange}
-                  required
-                  className={emailError ? 'input-error' : ''}
-                />
-                {emailError && <p className="error-message">{emailError}</p>}
-              </div>
-              
-              <div className="form-group">
-                <label htmlFor="phone">전화번호</label>
-                <input 
-                  type="tel" 
-                  id="phone" 
-                  value={phoneFormatted}
-                  onChange={handlePhoneChange}
-                  placeholder="010-0000-0000"
-                  required
-                  className={phoneError ? 'input-error' : ''}
-                />
-                {phoneError ? (
-                  <p className="error-message">{phoneError}</p>
-                ) : (
-                  <p className="helper-text">형식: 010-0000-0000</p>
-                )}
-              </div>
+      <div className="expert-advice">
+        {needsContact ? (
+          <>
+            <h3>귀하는 임상시험 대상자입니다.</h3>
+            <p>임상시험에 관심이 있으신 분들은 임상시험 대기자 등록을 진행해주세요.</p>
+            <p>임상시험 대상자 조건: 우울증상 점수 12점 이상</p>
+          </>
+        ) : (
+          <>
+            <h3>귀하의 결과는 건강한 수준입니다.</h3>
+            <p>건강한 실험군으로서 임상실험에 관심이 있으신 분들은 대기자 등록을 진행해 주세요.</p>
+            <p>건강한 실험군 점수: 우울 점수 12점 미만</p>
+          </>
+        )}
+        
+        {showContactForm && !registrationSuccess && (
+          <div className="contact-form">
+            <h3>실험 참여 안내를 위한 개인정보 입력</h3>
+            <div className="form-group">
+              <label htmlFor="name">이름</label>
+              <input 
+                type="text" 
+                id="name" 
+                value={userData.name || ''}
+                onChange={handleChange}
+                required
+              />
             </div>
-          )}
-          
-          {!registrationSuccess ? (
-            <div className="registration-section">
-              <h3>임상시험 대기자 등록</h3>
-              
-              {registrationError && (
-                <p className="error-message">{registrationError}</p>
+            
+            <div className="form-group">
+              <label htmlFor="email">이메일</label>
+              <input 
+                type="email" 
+                id="email" 
+                value={userData.email || ''}
+                onChange={handleEmailChange}
+                required
+                className={emailError ? 'input-error' : ''}
+              />
+              {emailError && <p className="error-message">{emailError}</p>}
+            </div>
+            
+            <div className="form-group">
+              <label htmlFor="phone">전화번호</label>
+              <input 
+                type="tel" 
+                id="phone" 
+                value={phoneFormatted}
+                onChange={handlePhoneChange}
+                placeholder="010-0000-0000"
+                required
+                className={phoneError ? 'input-error' : ''}
+              />
+              {phoneError ? (
+                <p className="error-message">{phoneError}</p>
+              ) : (
+                <p className="helper-text">형식: 010-0000-0000</p>
               )}
-              
-              <div className="consent-section">
-                <div className="consent-item">
-                  <input 
-                    type="checkbox" 
-                    id="personalInfo" 
-                    name="personalInfo" 
-                    checked={consentChecked.personalInfo}
-                    onChange={handleConsentChange}
-                  />
-                  <label htmlFor="personalInfo">
-                    <strong>[필수]</strong> 개인정보 수집 및 이용에 동의합니다.
-                  </label>
-                  <div className="consent-details">
-                    <p>수집항목: 이름, 이메일, 전화번호, 설문조사 결과</p>
-                    <p>수집목적: 임상시험 참여 대상자 선정 및 연락</p>
-                    <p>보유기간: 동의 철회 시까지</p>
-                  </div>
+            </div>
+          </div>
+        )}
+        
+        {!registrationSuccess ? (
+          <div className="registration-section">
+            <h3>임상시험 대기자 등록</h3>
+            
+            {registrationError && (
+              <p className="error-message">{registrationError}</p>
+            )}
+            
+            <div className="consent-section">
+              <div className="consent-item">
+                <input 
+                  type="checkbox" 
+                  id="personalInfo" 
+                  name="personalInfo" 
+                  checked={consentChecked.personalInfo}
+                  onChange={handleConsentChange}
+                />
+                <label htmlFor="personalInfo">
+                  <strong>[필수]</strong> 개인정보 수집 및 이용에 동의합니다.
+                </label>
+                <div className="consent-details">
+                  <p>수집항목: 이름, 이메일, 전화번호, 설문조사 결과</p>
+                  <p>수집목적: 임상시험 참여 대상자 선정 및 연락</p>
+                  <p>보유기간: 동의 철회 시까지</p>
                 </div>
               </div>
-              
-              <button 
-                type="button" 
-                className={`btn register-btn ${isConsentValid() ? 'active' : 'disabled'}`}
-                onClick={registerForClinicalTrial}
-                disabled={isRegistering || !isConsentValid()}
-              >
-                {isRegistering ? '등록 중...' : '임상시험 대기자 등록'}
-              </button>
             </div>
-          ) : (
-            <div className="registration-success">
-              <h3>등록이 완료되었습니다!</h3>
-              <p>임상시험 대기자로 등록되었습니다.</p>
-              <p>임상시험 담당자가 곧 연락드릴 예정입니다. 감사합니다.</p>
-            </div>
-          )}
-        </div>
-      ) : (
-        <div className="normal-container">
-          <h3>현재는 임상시험 대상이 아닙니다</h3>
-          <p>현재 우울증상 및 불안증상이 임상시험 대상 범위에 해당하지 않습니다.</p>
-          <p>임상시험 대상: 우울 점수 12점 이상 또는 (우울 점수 10점 미만 + 불안 점수 5점 미만)</p>
-        </div>
-      )}
+            
+            <button 
+              type="button" 
+              className={`btn register-btn ${isConsentValid() ? 'active' : 'disabled'}`}
+              onClick={registerForClinicalTrial}
+              disabled={isRegistering || !isConsentValid()}
+            >
+              {isRegistering ? '등록 중...' : '임상시험 대기자 등록'}
+            </button>
+          </div>
+        ) : (
+          <div className="registration-success">
+            <h3>등록이 완료되었습니다!</h3>
+            <p>임상시험 대기자로 등록되었습니다.</p>
+            <p>임상시험 담당자가 곧 연락드릴 예정입니다. 감사합니다.</p>
+          </div>
+        )}
+      </div>
       
       <button 
         type="button" 
