@@ -11,6 +11,7 @@ const AdminPage = () => {
   const [sortDirection, setSortDirection] = useState('desc');
   const [pinCode, setPinCode] = useState('');
   const [pinError, setPinError] = useState('');
+  const [groupFilter, setGroupFilter] = useState('all'); // 집단 필터 상태 추가
   
   // 인증 토큰 유효성 검사
   const validateAuthToken = (token) => {
@@ -81,11 +82,44 @@ const AdminPage = () => {
     }
   }, [isAuthenticated, loadParticipants]);
   
-  // 정렬된 참가자 목록을 계산하는 함수
-  const getSortedParticipants = () => {
+  // 집단 분류 함수
+  const getGroupType = (participant) => {
+    const { depressive, stress } = participant;
+    
+    // stress가 null인 경우 (기존 데이터)
+    if (stress === null) {
+      if (depressive >= 10) {
+        return { type: 'depression', label: '우울 집단' };
+      } else {
+        return { type: 'unknown', label: '미분류' };
+      }
+    }
+    
+    // 새로운 분류 기준
+    if (depressive >= 10) {
+      return { type: 'depression', label: '우울 집단' };
+    } else if (stress >= 17) {
+      return { type: 'stress', label: '스트레스 고위험 집단' };
+    } else {
+      return { type: 'normal', label: '정상 집단' };
+    }
+  };
+
+  // 필터링 및 정렬된 참가자 목록을 계산하는 함수
+  const getFilteredAndSortedParticipants = () => {
     if (!participants || participants.length === 0) return [];
     
-    return [...participants].sort((a, b) => {
+    // 필터링
+    let filteredParticipants = participants;
+    if (groupFilter !== 'all') {
+      filteredParticipants = participants.filter(participant => {
+        const group = getGroupType(participant);
+        return group.type === groupFilter;
+      });
+    }
+    
+    // 정렬
+    return [...filteredParticipants].sort((a, b) => {
       let aValue = a[sortField];
       let bValue = b[sortField];
       
@@ -160,25 +194,26 @@ const AdminPage = () => {
       '우울점수', 
       '불안점수',
       '스트레스점수',
-      '등록일'
+      '등록일',
+      '집단'
     ];
     
-    // 데이터 행 생성
-    const rows = participants.map(person => [
-      person.name,
-      person.email,
-      // 전화번호 앞에 작은따옴표 추가하여 텍스트로 인식되도록 처리
-      `="${person.phone}"`,
-      person.depressive,
-      person.anxiety,
-      person.stress !== null ? person.stress : '-',
-      formatDate(person.created_at)
-    ]);
-    
-    // CSV 데이터 생성
+    // CSV 내용 생성
     let csvContent = headers.join(',') + '\n';
     
-    rows.forEach(row => {
+    participants.forEach(person => {
+      const row = [
+        person.name,
+        person.email,
+        // 전화번호 앞에 작은따옴표 추가하여 텍스트로 인식되도록 처리
+        `="${person.phone}"`,
+        person.depressive,
+        person.anxiety,
+        person.stress !== null ? person.stress : '-',
+        formatDate(person.created_at),
+        getGroupType(person).label
+      ];
+      
       // 콤마가 포함된 필드는 따옴표로 감싸기
       const formattedRow = row.map(field => {
         // 문자열인 경우에만 처리
@@ -285,6 +320,16 @@ const AdminPage = () => {
       ) : (
         <>
           <div className="admin-controls">
+            <select 
+              value={groupFilter} 
+              onChange={(e) => setGroupFilter(e.target.value)}
+              className="group-filter-dropdown"
+            >
+              <option value="all">전체</option>
+              <option value="depression">우울 집단</option>
+              <option value="stress">스트레스 고위험 집단</option>
+              <option value="normal">정상 집단</option>
+            </select>
             <button className="refresh-btn" onClick={() => loadParticipants(true)}>
               데이터 새로고침
             </button>
@@ -313,11 +358,12 @@ const AdminPage = () => {
                   <th onClick={() => handleSort('created_at')}>
                     등록일{renderSortArrow('created_at')}
                   </th>
+                  <th>집단</th>
                 </tr>
               </thead>
               <tbody>
                 {
-                  getSortedParticipants().map((participant, index) => (
+                  getFilteredAndSortedParticipants().map((participant, index) => (
                     <tr key={participant.id || index}>
                       <td>{index + 1}</td>
                       <td>{participant.name || '-'}</td>
@@ -333,6 +379,9 @@ const AdminPage = () => {
                         {participant.stress !== null ? participant.stress : '-'}
                       </td>
                       <td>{formatDate(participant.created_at)}</td>
+                      <td className={`group-${getGroupType(participant).type}`}>
+                        {getGroupType(participant).label}
+                      </td>
                     </tr>
                   ))
                 }
@@ -341,7 +390,9 @@ const AdminPage = () => {
           </div>
           
           <div className="admin-footer">
-            <p>총 {participants.length}명의 대기자가 등록되어 있습니다.</p>
+            <p>총 {participants.length}명의 대기자가 등록되어 있습니다.
+            {groupFilter !== 'all' && ` (현재 ${getFilteredAndSortedParticipants().length}명 표시)`}
+            </p>
           </div>
         </>
       )}
