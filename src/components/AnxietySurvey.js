@@ -56,7 +56,7 @@ const AnxietySurvey = ({ updateUserData, nextPage, prevPage }) => {
   return (
     <div className="survey-container">
       <h1>불안증상 설문조사</h1>
-      <p>지난 2주일 동안 당신은 다음의 문제들로 인해서 얼마나 자주 방해를 받았습니까?</p>
+      <p>각 문항을 잘 읽고, 지난 2주일 동안 얼마나 자주 느끼거나 생각했는지를 체크해 주시기 바랍니다.</p>
       
       <form onSubmit={handleSubmit}>
         <table className="survey-table">
@@ -96,7 +96,7 @@ const AnxietySurvey = ({ updateUserData, nextPage, prevPage }) => {
             className="btn next-btn"
             disabled={!isFormComplete()}
           >
-            결과 확인
+            다음
           </button>
         </div>
       </form>

@@ -57,8 +57,7 @@ const AdminPage = () => {
       
       const { data, error } = await supabase
         .from('survey-person')
-        .select('*')
-        .order(sortField, { ascending: sortDirection === 'asc' });
+        .select('*');
         
       if (error) {
         throw error;
@@ -72,7 +71,7 @@ const AdminPage = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [sortField, sortDirection]);
+  }, []); // sortField, sortDirection 의존성 제거
 
   // 컴포넌트가 마운트될 때 초기 설정
   useEffect(() => {
@@ -82,13 +81,32 @@ const AdminPage = () => {
     }
   }, [isAuthenticated, loadParticipants]);
   
-  // 정렬 기준이 변경될 때 데이터 로드 (깨빡임 없이)
-  useEffect(() => {
-    // 초기 로드가 아닐 때만 실행
-    if (!isLoading) {
-      loadParticipants(false);
-    }
-  }, [sortField, sortDirection, isLoading, loadParticipants]);
+  // 정렬된 참가자 목록을 계산하는 함수
+  const getSortedParticipants = () => {
+    if (!participants || participants.length === 0) return [];
+    
+    return [...participants].sort((a, b) => {
+      let aValue = a[sortField];
+      let bValue = b[sortField];
+      
+      // null 값 처리
+      if (aValue === null && bValue === null) return 0;
+      if (aValue === null) return 1;
+      if (bValue === null) return -1;
+      
+      // 문자열과 숫자 비교
+      if (typeof aValue === 'string') {
+        aValue = aValue.toLowerCase();
+        bValue = bValue.toLowerCase();
+      }
+      
+      if (sortDirection === 'asc') {
+        return aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
+      } else {
+        return aValue < bValue ? 1 : aValue > bValue ? -1 : 0;
+      }
+    });
+  };
 
   // 정렬 처리 함수 - 단일 정렬
   const handleSort = (field) => {
@@ -140,7 +158,8 @@ const AdminPage = () => {
       '이메일', 
       '전화번호', 
       '우울점수', 
-      '불안점수', 
+      '불안점수',
+      '스트레스점수',
       '등록일'
     ];
     
@@ -152,6 +171,7 @@ const AdminPage = () => {
       `="${person.phone}"`,
       person.depressive,
       person.anxiety,
+      person.stress !== null ? person.stress : '-',
       formatDate(person.created_at)
     ]);
     
@@ -225,8 +245,6 @@ const AdminPage = () => {
     if (pinError) setPinError('');
   };
 
-
-
   // 인증 화면 렌더링
   const renderAuthForm = () => {
     return (
@@ -289,6 +307,9 @@ const AdminPage = () => {
                   <th onClick={() => handleSort('anxiety')}>
                     불안점수{renderSortArrow('anxiety')}
                   </th>
+                  <th onClick={() => handleSort('stress')}>
+                    스트레스점수{renderSortArrow('stress')}
+                  </th>
                   <th onClick={() => handleSort('created_at')}>
                     등록일{renderSortArrow('created_at')}
                   </th>
@@ -296,17 +317,20 @@ const AdminPage = () => {
               </thead>
               <tbody>
                 {
-                  participants.map((participant, index) => (
+                  getSortedParticipants().map((participant, index) => (
                     <tr key={participant.id || index}>
                       <td>{index + 1}</td>
                       <td>{participant.name || '-'}</td>
                       <td>{participant.email || '-'}</td>
                       <td>{participant.phone || '-'}</td>
-                      <td className={participant.depressive >= 12 ? 'highlight' : ''}>
+                      <td className={participant.depressive >= 10 ? 'highlight' : ''}>
                         {participant.depressive || 0}
                       </td>
                       <td className={participant.anxiety >= 10 ? 'highlight' : ''}>
                         {participant.anxiety || 0}
+                      </td>
+                      <td className={participant.stress !== null && participant.stress >= 17 ? 'highlight' : ''}>
+                        {participant.stress !== null ? participant.stress : '-'}
                       </td>
                       <td>{formatDate(participant.created_at)}</td>
                     </tr>

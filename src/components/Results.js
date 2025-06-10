@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import supabase from '../supabaseClient';
 
 const Results = ({ userData, restartSurvey, updateUserData }) => {
-  const { depressionScore, anxietyScore } = userData;
+  const { depressionScore, anxietyScore, stressScore } = userData;
   
   // 상태 관리
   const [isRegistering, setIsRegistering] = useState(false);
@@ -18,20 +18,15 @@ const Results = ({ userData, restartSurvey, updateUserData }) => {
   const [emailError, setEmailError] = useState('');
   const [phoneFormatted, setPhoneFormatted] = useState('');
   const [phoneError, setPhoneError] = useState('');
-  const [isFormValid, setIsFormValid] = useState(false);
-  const [showContactForm, setShowContactForm] = useState(false);
   
-  // Determine if scores exceed thresholds
-  const needsContact = depressionScore >= 12;
-  
-  // 모든 사용자가 연락처 양식을 볼 수 있도록 설정
+  // 컴포넌트 마운트 시 스크롤을 최상단으로 이동
   useEffect(() => {
-    setShowContactForm(true);
+    window.scrollTo(0, 0);
   }, []);
   
   // Determine depression severity
   const getDepressionSeverity = (score) => {
-    if (score <= 4) return '정상';
+    if (score <= 4) return '정상 수준';
     if (score <= 9) return '경미한 수준';
     if (score <= 14) return '중간 수준';
     if (score <= 19) return '약간심한 수준';
@@ -40,9 +35,17 @@ const Results = ({ userData, restartSurvey, updateUserData }) => {
   
   // Determine anxiety severity
   const getAnxietySeverity = (score) => {
-    if (score <= 4) return '정상';
+    if (score <= 4) return '정상 수준';
     if (score <= 9) return '경미한 수준';
     if (score <= 14) return '중간 수준';
+    return '심한 수준';
+  };
+
+  // Determine stress severity (PSS scoring)
+  const getStressSeverity = (score) => {
+    if (score <= 12) return '정상 수준';
+    if (score <= 15) return '경미한 수준';
+    if (score <= 18) return '중간 수준';
     return '심한 수준';
   };
 
@@ -96,23 +99,6 @@ const Results = ({ userData, restartSurvey, updateUserData }) => {
     }
   }, [userData.phone, formatPhoneNumber]);
   
-  // 폼 유효성 검사
-  useEffect(() => {
-    if (!showContactForm) return;
-    
-    // 모든 필수 필드가 채워져 있고 오류가 없는지 확인
-    const isValid = (
-      userData.email && 
-      userData.name && 
-      userData.phone && 
-      !emailError && 
-      !phoneError &&
-      validatePhoneNumber(userData.phone)
-    );
-    
-    setIsFormValid(isValid);
-  }, [userData.email, userData.name, userData.phone, emailError, phoneError, showContactForm]);
-  
   // 이메일 입력 처리
   const handleEmailChange = (e) => {
     const { value } = e.target;
@@ -155,6 +141,17 @@ const Results = ({ userData, restartSurvey, updateUserData }) => {
     updateUserData({ [id]: value });
   };
 
+  // 집단 분류 함수
+  const getGroupType = () => {
+    if (depressionScore >= 10) {
+      return 'depression'; // 우울 집단
+    } else if (stressScore >= 17) {
+      return 'stress'; // 스트레스 고위험 집단
+    } else {
+      return 'normal'; // 정상 집단
+    }
+  };
+
   // 임상시험 대기자 등록 함수
   const registerForClinicalTrial = async () => {
     // 필수 동의 항목 확인
@@ -195,7 +192,8 @@ const Results = ({ userData, restartSurvey, updateUserData }) => {
         email: userData.email, 
         phone: userData.phone, 
         depressive: depressionScore,
-        anxiety: anxietyScore
+        anxiety: anxietyScore,
+        stress: stressScore
       });
       
       // Supabase에 데이터 저장
@@ -208,6 +206,7 @@ const Results = ({ userData, restartSurvey, updateUserData }) => {
             phone: userData.phone, 
             depressive: depressionScore,
             anxiety: anxietyScore,
+            stress: stressScore,
             // created_at은 Supabase에서 now() 함수로 자동 처리됩니다
           }
         ]);
@@ -272,24 +271,35 @@ const Results = ({ userData, restartSurvey, updateUserData }) => {
           <p className="score">{anxietyScore}</p>
           <p className="severity">{getAnxietySeverity(anxietyScore)}</p>
         </div>
+
+        <div className="score-box">
+          <h2>스트레스 점수</h2>
+          <p className="score">{stressScore}</p>
+          <p className="severity">{getStressSeverity(stressScore)}</p>
+        </div>
       </div>
       
       <div className="expert-advice">
-        {needsContact ? (
+        <h3>귀하는 임상시험 대상자입니다.</h3>
+        {getGroupType() === 'depression' ? (
           <>
-            <h3>귀하는 임상시험 대상자입니다.</h3>
-            <p>임상시험에 관심이 있으신 분들은 임상시험 대기자 등록을 진행해주세요.</p>
-            <p>임상시험 대상자 조건: 우울증상 점수 12점 이상</p>
+            <p><strong>우울 집단</strong>으로 분류되었습니다.</p>
+            <p>임상시험 대상자 조건: 우울증상 점수 10점 이상</p>
+          </>
+        ) : getGroupType() === 'stress' ? (
+          <>
+            <p><strong>스트레스 고위험 집단</strong>으로 분류되었습니다.</p>
+            <p>임상시험 대상자 조건: 우울 점수 10점 미만, 스트레스 점수 17점 이상</p>
           </>
         ) : (
           <>
-            <h3>귀하의 결과는 건강한 수준입니다.</h3>
-            <p>건강한 실험군으로서 임상실험에 관심이 있으신 분들은 대기자 등록을 진행해 주세요.</p>
-            <p>건강한 실험군 점수: 우울 점수 12점 미만</p>
+            <p><strong>정상 집단</strong>으로 분류되었습니다.</p>
+            <p>임상시험 대상자 조건: 우울 점수 10점 미만, 스트레스 점수 17점 미만</p>
           </>
         )}
+        <p>임상시험에 관심이 있으신 분들은 임상시험 대기자 등록을 진행해주세요.</p>
         
-        {showContactForm && !registrationSuccess && (
+        {!registrationSuccess && (
           <div className="contact-form">
             <h3>실험 참여 안내를 위한 개인정보 입력</h3>
             <div className="form-group">
@@ -336,7 +346,13 @@ const Results = ({ userData, restartSurvey, updateUserData }) => {
           </div>
         )}
         
-        {!registrationSuccess ? (
+        {registrationSuccess ? (
+          <div className="registration-success">
+            <h3>등록이 완료되었습니다!</h3>
+            <p>임상시험 대기자로 등록되었습니다.</p>
+            <p>임상시험 담당자가 곧 연락드릴 예정입니다. 감사합니다.</p>
+          </div>
+        ) : (
           <div className="registration-section">
             <h3>임상시험 대기자 등록</h3>
             
@@ -372,12 +388,6 @@ const Results = ({ userData, restartSurvey, updateUserData }) => {
             >
               {isRegistering ? '등록 중...' : '임상시험 대기자 등록'}
             </button>
-          </div>
-        ) : (
-          <div className="registration-success">
-            <h3>등록이 완료되었습니다!</h3>
-            <p>임상시험 대기자로 등록되었습니다.</p>
-            <p>임상시험 담당자가 곧 연락드릴 예정입니다. 감사합니다.</p>
           </div>
         )}
       </div>

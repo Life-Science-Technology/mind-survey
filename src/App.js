@@ -4,6 +4,7 @@ import './App.css';
 import IntroPage from './components/IntroPage';
 import DepressionSurvey from './components/DepressionSurvey';
 import AnxietySurvey from './components/AnxietySurvey';
+import StressSurvey from './components/StressSurvey';
 import Results from './components/Results';
 import AdminPage from './components/AdminPage';
 
@@ -15,7 +16,8 @@ const SurveyApp = () => {
   // State to store user data
   const [userData, setUserData] = useState({
     depressionScore: 0,
-    anxietyScore: 0
+    anxietyScore: 0,
+    stressScore: 0
   });
 
   // Function to move to the next page
@@ -33,7 +35,8 @@ const SurveyApp = () => {
     setPage(0);
     setUserData({
       depressionScore: 0,
-      anxietyScore: 0
+      anxietyScore: 0,
+      stressScore: 0
     });
   };
 
@@ -65,6 +68,12 @@ const SurveyApp = () => {
                  prevPage={prevPage} 
                />;
       case 3:
+        return <StressSurvey 
+                 updateUserData={updateUserData} 
+                 nextPage={nextPage} 
+                 prevPage={prevPage} 
+               />;
+      case 4:
         return <Results 
                  userData={userData} 
                  restartSurvey={restartSurvey} 
@@ -85,12 +94,12 @@ const SurveyApp = () => {
             <div className="progress-bar">
               <div 
                 className="progress" 
-                style={{ width: `${(page / 3) * 100}%` }}
+                style={{ width: `${(page / 4) * 100}%` }}
               ></div>
             </div>
           </div>
           <div className="page-indicator">
-            <span>페이지 {page}/3</span>
+            <span>페이지 {page}/4</span>
           </div>
         </>
       )}
