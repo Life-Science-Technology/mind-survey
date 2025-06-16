@@ -248,14 +248,13 @@ const DataCollectionGuide = () => {
             </a>, 'Police stress monitoring’으로 검색)</p>
         </div>
 
-        {/* 실증 참여 섹션 - 점수가 있는 경우에만 표시 */}
-        {(depressionScore > 0 || anxietyScore > 0 || stressScore > 0) && (
-          <div className="guide-section">
-            <h2>■ 실증 참여</h2>
-            <p>귀하는 <strong>
-              {getGroupType() === 'depression' ? '우울군' : 
-              getGroupType() === 'stress' ? '스트레스 고위험군' : '건강군'}</strong>으로 분류되어 실증 실험 참여가 가능합니다.</p>
-            <p>실증 실험에 참여를 원하시면 개별 연락을 위해 대기자 등록을 진행해 주시기 바랍니다.</p>
+        {/* 실증 참여 섹션 - 항상 표시 */}
+        <div className="guide-section">
+          <h2>■ 실증 참여</h2>
+          <p>귀하는 <strong>
+            {getGroupType() === 'depression' ? '우울군' : 
+            getGroupType() === 'stress' ? '스트레스 고위험군' : '건강군'}</strong>으로 분류되어 실증 실험 참여가 가능합니다.</p>
+          <p>실증 실험에 참여를 원하시면 개별 연락을 위해 대기자 등록을 진행해 주시기 바랍니다.</p>
             
             <div className="registration-form-container">
               <h4>■ 실증 실험 대기자 등록</h4>
@@ -352,8 +351,7 @@ const DataCollectionGuide = () => {
                 </div>
               )}
             </div>
-          </div>
-        )}
+        </div>
       </div>
       
       <div className="guide-actions">
