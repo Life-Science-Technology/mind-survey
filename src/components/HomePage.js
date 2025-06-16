@@ -43,8 +43,7 @@ const HomePage = () => {
 
       <main className="home-content">
         <div className="description">
-          <p>(워드 파일을 참고로 현재 실문 페이지가 없다)</p>
-          <p className="simple-description">(간단한 페이지 설명 필요)</p>
+          <p className="simple-description">(간단한 페이지 설명)</p>
         </div>
 
         <div className="action-buttons">
