@@ -208,7 +208,7 @@ const DataCollectionGuide = () => {
           <h2>■ 모집 개요</h2>
           <ul>
             <li>모집 기간: <strong>25.6.23 (월) – 충원시까지</strong></li>
-            <li>모집 인원: <strong>우울군 50명, 스트레스 고위험군 25명, 건강군 25명</strong></li>
+            <li>모집 인원: <strong>우울군 50명, 스트레스 고위험군 25명, 건강인 25명</strong></li>
             <li>실험 기간: <strong>25.7.14 – 25.9.28 (워치 측정 시작한 날로부터 3주간)</strong></li>
           </ul>
         </div>
@@ -253,7 +253,7 @@ const DataCollectionGuide = () => {
           <h2>■ 실증 참여</h2>
           <p>귀하는 <strong>
             {getGroupType() === 'depression' ? '우울군' : 
-            getGroupType() === 'stress' ? '스트레스 고위험군' : '건강군'}</strong>으로 분류되어 실증 실험 참여가 가능합니다.</p>
+            getGroupType() === 'stress' ? '스트레스 고위험군' : '건강인'}</strong>으로 분류되어 실증 실험 참여가 가능합니다.</p>
           <p>실증 실험에 참여를 원하시면 개별 연락을 위해 대기자 등록을 진행해 주시기 바랍니다.</p>
             
             <div className="registration-form-container">
