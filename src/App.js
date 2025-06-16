@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
+import HomePage from './components/HomePage';
 import IntroPage from './components/IntroPage';
 import DepressionSurvey from './components/DepressionSurvey';
 import AnxietySurvey from './components/AnxietySurvey';
 import StressSurvey from './components/StressSurvey';
 import Results from './components/Results';
+import DataCollectionGuide from './components/DataCollectionGuide';
 import AdminPage from './components/AdminPage';
 
 // 설문 앱 컴포넌트
@@ -114,7 +116,9 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<SurveyApp />} />
+        <Route path="/" element={<HomePage />} />
+        <Route path="/survey" element={<SurveyApp />} />
+        <Route path="/data-collection-guide" element={<DataCollectionGuide />} />
         <Route path="/admin" element={<AdminPage />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
