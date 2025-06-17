@@ -1,32 +1,26 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import supabase from '../supabaseClient';
 
 const DataCollectionGuide = () => {
   const navigate = useNavigate();
   const location = useLocation();
   
   // 전달받은 점수 데이터
-  const { depressionScore = 0, anxietyScore = 0, stressScore = 0, userData: initialUserData = {} } = location.state || {};
-  
-  // 상태 관리
-  const [isRegistering, setIsRegistering] = useState(false);
-  const [registrationSuccess, setRegistrationSuccess] = useState(false);
-  const [registrationError, setRegistrationError] = useState('');
-  const [consentChecked, setConsentChecked] = useState({
-    personalInfo: false,
-    thirdParty: false,
-    marketing: false
-  });
-  
-  // 개인정보 입력 관련 상태
-  const [userData, setUserData] = useState(initialUserData);
-  const [emailError, setEmailError] = useState('');
-  const [phoneFormatted, setPhoneFormatted] = useState('');
-  const [phoneError, setPhoneError] = useState('');
+  const { depressionScore = 0, anxietyScore = 0, stressScore = 0 } = location.state || {};
 
   const handleBackClick = () => {
-    navigate(-1); // 이전 페이지로 돌아가기
+    navigate(-1);
+  };
+
+  // 등록 페이지로 이동 핸들러
+  const handleRegistrationClick = () => {
+    navigate('/registration', {
+      state: {
+        depressionScore,
+        anxietyScore,
+        stressScore
+      }
+    });
   };
 
   // 집단 분류 함수
@@ -37,148 +31,6 @@ const DataCollectionGuide = () => {
       return 'stress'; // 스트레스 고위험 집단
     } else {
       return 'normal'; // 정상 집단
-    }
-  };
-
-  // 체크박스 상태 변경 핸들러
-  const handleConsentChange = (e) => {
-    const { name, checked } = e.target;
-    setConsentChecked(prev => ({
-      ...prev,
-      [name]: checked
-    }));
-  };
-
-  // 필수 동의 항목 확인 함수
-  const isConsentValid = () => {
-    return consentChecked.personalInfo;
-  };
-  
-  // 이메일 형식 검증
-  const validateEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-  
-  // 전화번호 형식 검증
-  const validatePhoneNumber = (phone) => {
-    const digits = phone.replace(/\D/g, '');
-    return digits.startsWith('010') && digits.length === 11;
-  };
-  
-  // 전화번호 형식화 함수
-  const formatPhoneNumber = useCallback((phone) => {
-    const digits = phone.replace(/\D/g, '');
-    
-    if (digits.length <= 3) {
-      return digits;
-    } else if (digits.length <= 7) {
-      return `${digits.slice(0, 3)}-${digits.slice(3)}`;
-    } else {
-      return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7, 11)}`;
-    }
-  }, []);
-  
-  // 전화번호 초기화
-  useEffect(() => {
-    if (userData.phone) {
-      setPhoneFormatted(formatPhoneNumber(userData.phone));
-    }
-  }, [userData.phone, formatPhoneNumber]);
-  
-  // 사용자 데이터 업데이트 함수
-  const updateUserData = (newData) => {
-    setUserData(prevData => ({
-      ...prevData,
-      ...newData
-    }));
-  };
-  
-  // 이메일 입력 처리
-  const handleEmailChange = (e) => {
-    const { value } = e.target;
-    updateUserData({ email: value });
-    
-    if (value && !validateEmail(value)) {
-      setEmailError('유효한 이메일 주소를 입력해주세요.');
-    } else {
-      setEmailError('');
-    }
-  };
-  
-  // 전화번호 입력 처리
-  const handlePhoneChange = (e) => {
-    const { value } = e.target;
-    const digits = value.replace(/\D/g, '');
-    
-    if (digits.length >= 3 && !digits.startsWith('010')) {
-      setPhoneError('전화번호는 010으로 시작해야 합니다.');
-    } else if (digits.length > 0 && digits.length < 11) {
-      setPhoneError('전화번호는 11자리여야 합니다.');
-    } else {
-      setPhoneError('');
-    }
-    
-    const formatted = formatPhoneNumber(value);
-    setPhoneFormatted(formatted);
-    updateUserData({ phone: digits });
-  };
-  
-  // 일반 입력 처리 (이름)
-  const handleChange = (e) => {
-    const { id, value } = e.target;
-    updateUserData({ [id]: value });
-  };
-
-  // 임상시험 대기자 등록 함수
-  const registerForClinicalTrial = async () => {
-    if (!isConsentValid()) {
-      setRegistrationError('필수 동의 항목에 동의해주세요.');
-      return;
-    }
-    
-    if (!userData.name || !userData.email || !userData.phone) {
-      setRegistrationError('모든 필수 정보를 입력해주세요.');
-      return;
-    }
-    
-    if (!validateEmail(userData.email)) {
-      setRegistrationError('유효한 이메일 주소를 입력해주세요.');
-      return;
-    }
-    
-    if (!validatePhoneNumber(userData.phone)) {
-      setRegistrationError('전화번호는 010으로 시작하는 11자리 번호여야 합니다.');
-      return;
-    }
-    
-    try {
-      setIsRegistering(true);
-      setRegistrationError('');
-      
-      const { error } = await supabase
-        .from('survey-person')
-        .insert([
-          { 
-            name: userData.name, 
-            email: userData.email, 
-            phone: userData.phone, 
-            depressive: depressionScore,
-            anxiety: anxietyScore,
-            stress: stressScore,
-          }
-        ]);
-      
-      if (error) {
-        throw new Error(`데이터 저장 오류: ${error.message || error}`);
-      }
-      
-      setRegistrationSuccess(true);
-    } catch (error) {
-      console.error('등록 오류:', error);
-      setRegistrationError(`등록 중 오류가 발생했습니다. 담당자에게 문의해주세요.`);
-    } finally {
-      setIsRegistering(false);
     }
   };
 
@@ -255,102 +107,23 @@ const DataCollectionGuide = () => {
             {getGroupType() === 'depression' ? '우울군' : 
             getGroupType() === 'stress' ? '스트레스 고위험군' : '건강인'}</strong>으로 분류되어 실증 실험 참여가 가능합니다.</p>
           <p>실증 실험에 참여를 원하시면 개별 연락을 위해 대기자 등록을 진행해 주시기 바랍니다.</p>
-            
-            <div className="registration-form-container">
-              <h4>■ 실증 실험 대기자 등록</h4>
-              
-              {registrationSuccess ? (
-                <div className="registration-success-box">
-                  <p><strong>등록이 완료되었습니다!</strong></p>
-                  <p>실증 실험 대기자로 등록되었습니다.</p>
-                  <p>담당자가 곧 연락드릴 예정입니다. 감사합니다.</p>
-                </div>
-              ) : (
-                <div className="registration-form-box">
-                  <div className="form-section">
-                    <h5>개인정보 입력</h5>
-                    <div className="form-group">
-                      <label htmlFor="name"><strong>이름</strong></label>
-                      <input 
-                        type="text" 
-                        id="name" 
-                        value={userData.name || ''}
-                        onChange={handleChange}
-                        required
-                      />
-                    </div>
-                    
-                    <div className="form-group">
-                      <label htmlFor="email"><strong>이메일</strong></label>
-                      <input 
-                        type="email" 
-                        id="email" 
-                        value={userData.email || ''}
-                        onChange={handleEmailChange}
-                        required
-                        className={emailError ? 'input-error' : ''}
-                      />
-                      {emailError && <p className="error-message">{emailError}</p>}
-                    </div>
-                    
-                    <div className="form-group">
-                      <label htmlFor="phone"><strong>전화번호</strong></label>
-                      <input 
-                        type="tel" 
-                        id="phone" 
-                        value={phoneFormatted}
-                        onChange={handlePhoneChange}
-                        placeholder="010-0000-0000"
-                        required
-                        className={phoneError ? 'input-error' : ''}
-                      />
-                      {phoneError ? (
-                        <p className="error-message">{phoneError}</p>
-                      ) : (
-                        <p className="helper-text">형식: 010-0000-0000</p>
-                      )}
-                    </div>
-                  </div>
 
-                  <div className="consent-section">
-                    {registrationError && (
-                      <p className="error-message">{registrationError}</p>
-                    )}
-                    
-                    <div className="consent-item">
-                      <input 
-                        type="checkbox" 
-                        id="personalInfo" 
-                        name="personalInfo" 
-                        checked={consentChecked.personalInfo}
-                        onChange={handleConsentChange}
-                      />
-                      <label htmlFor="personalInfo">
-                        <strong>[필수]</strong> 개인정보 수집 및 이용에 동의합니다.
-                      </label>
-                      <div className="consent-details">
-                        <ul>
-                          <li>개인 정보 수집 항목: 이름, 성별, 휴대폰 번호, 이메일 주소, 테스트 결과</li>
-                          <li>수집 목적: 실험 참여 의사를 밝힌 분의 본인 확인 및 실험 방법 안내</li>
-                          <li>보유기간: 동의 철회 시까지</li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="submit-section">
-                    <button 
-                      type="button" 
-                      className={`btn register-btn ${isConsentValid() ? 'active' : 'disabled'}`}
-                      onClick={registerForClinicalTrial}
-                      disabled={isRegistering || !isConsentValid()}
-                    >
-                      {isRegistering ? '등록 중...' : '실증 실험 대기자 등록'}
-                    </button>
-                  </div>
-                </div>
-              )}
+          {/* 실증 실험 대기자 등록 섹션 */}
+          <div className="registration-form-container">
+            <h4>■ 실증 실험 대기자 등록</h4>
+            
+            <div className="registration-button-container">
+              <p>실증 실험 대기자 등록을 위해 개인정보 입력과 동의서 작성이 필요합니다.</p>
+              <p>아래 버튼을 클릭하여 등록 절차를 진행해 주세요.</p>
+              <button 
+                type="button" 
+                className="btn register-btn"
+                onClick={handleRegistrationClick}
+              >
+                실증 실험 대기자 등록하기
+              </button>
             </div>
+          </div>
         </div>
       </div>
       

@@ -26,7 +26,6 @@ const MultiStepRegistration = () => {
   const [userData, setUserData] = useState({
     ...initialUserData,
     address: '',
-    detailedAddress: '',
     gender: '',
     birthDate: '',
     signatureName: ''
@@ -39,7 +38,8 @@ const MultiStepRegistration = () => {
   const [files, setFiles] = useState({
     idCard: null,
     bankAccount: null,
-    consentForm: null
+    consentForm: null,
+    signature: null
   });
   const [isUploading, setIsUploading] = useState(false);
 
@@ -73,9 +73,14 @@ const MultiStepRegistration = () => {
     }));
   };
 
-  // 필수 동의 항목 확인 함수
+  // 필수 동의 항목 및 파일 업로드 확인 함수
   const isConsentValid = () => {
     return consentChecked.personalInfo;
+  };
+
+  // 4단계 등록 완료 버튼 활성화 조건
+  const isFinalSubmitValid = () => {
+    return consentChecked.personalInfo && files.idCard && files.bankAccount;
   };
   
   // 이메일 형식 검증
@@ -159,11 +164,20 @@ const MultiStepRegistration = () => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // 파일 타입 검증
-    const allowedTypes = [...ALLOWED_IMAGE_TYPES, ...ALLOWED_DOCUMENT_TYPES];
-    if (!validateFileType(file, allowedTypes)) {
-      setRegistrationError('지원하지 않는 파일 형식입니다. 이미지 파일(JPG, PNG, GIF) 또는 문서 파일(PDF, HWP, DOC)을 업로드해주세요.');
-      return;
+    // 파일 타입 검증 - signature는 .hwp, .pdf만 허용
+    let allowedTypes;
+    if (fileType === 'signature') {
+      allowedTypes = ['application/pdf', 'application/haansofthwp', 'application/x-hwp'];
+      if (!file.type.includes('pdf') && !file.name.toLowerCase().endsWith('.hwp')) {
+        setRegistrationError('동의서는 HWP 또는 PDF 파일만 업로드할 수 있습니다.');
+        return;
+      }
+    } else {
+      allowedTypes = [...ALLOWED_IMAGE_TYPES, ...ALLOWED_DOCUMENT_TYPES];
+      if (!validateFileType(file, allowedTypes)) {
+        setRegistrationError('지원하지 않는 파일 형식입니다. 이미지 파일(JPG, PNG, GIF) 또는 문서 파일(PDF, HWP, DOC)을 업로드해주세요.');
+        return;
+      }
     }
 
     // 파일 크기 검증 (10MB 제한)
@@ -250,6 +264,11 @@ const MultiStepRegistration = () => {
       return;
     }
 
+    if (!files.signature) {
+      setRegistrationError('작성된 동의서를 업로드해주세요.');
+      return;
+    }
+
     setRegistrationError('');
     nextStep();
   };
@@ -286,7 +305,6 @@ const MultiStepRegistration = () => {
             email: userData.email, 
             phone: userData.phone, 
             address: userData.address,
-            detailed_address: userData.detailedAddress,
             gender: userData.gender,
             birth_date: userData.birthDate,
             signature_name: userData.signatureName,
@@ -345,6 +363,17 @@ const MultiStepRegistration = () => {
         });
       }
 
+      if (files.signature) {
+        const signaturePath = await uploadFileToStorage(files.signature, `signature_${participantId}`, 'signature');
+        fileUploads.push({
+          participant_id: participantId,
+          file_type: 'signature',
+          file_name: files.signature.name,
+          file_path: signaturePath,
+          file_size: files.signature.size
+        });
+      }
+
       // 파일 정보 데이터베이스에 저장
       if (fileUploads.length > 0) {
         const { error: fileError } = await supabase
@@ -370,9 +399,6 @@ const MultiStepRegistration = () => {
     <div className="data-collection-guide">
       <div className="guide-header">
         <h1>실증 실험 참여 대기자 등록</h1>
-        <p>귀하는 <strong>
-          {getGroupType() === 'depression' ? '우울군' : 
-          getGroupType() === 'stress' ? '스트레스 고위험군' : '건강인'}</strong>으로 분류되어 실증 실험 참여가 가능합니다.</p>
       </div>
       
       <div className="guide-content">
@@ -497,7 +523,7 @@ const MultiStepRegistration = () => {
                         checked={consentChecked.experimentParticipation}
                         onChange={handleConsentChange}
                       />
-                      동의를 원합니다.
+                      통보를 원합니다.
                     </label>
                     <label>
                       <input 
@@ -506,13 +532,13 @@ const MultiStepRegistration = () => {
                         checked={!consentChecked.experimentParticipation}
                         onChange={(e) => setConsentChecked(prev => ({...prev, experimentParticipation: !e.target.checked}))}
                       />
-                      동의를 원치 않습니다.
+                      통보를 원치 않습니다.
                     </label>
                   </div>
 
                   <div className="consent-details-box">
                     <h6>세부 동의 2</h6>
-                    <p>연구과정에서 취득된 검체 및 자료는 연구목적으로 본 연구 이외에 향후 사용될 수 있습니다.</p>
+                    <p>연구과정에서 채취된 검체 및 자료는 연구목적으로 본 연구 이외에도 향후 사용될 수 있습니다.</p>
                     <label>
                       <input 
                         type="checkbox" 
@@ -531,6 +557,44 @@ const MultiStepRegistration = () => {
                       />
                       사용을 원치 않습니다.
                     </label>
+                  </div>
+
+                  <div className="consent-details-box">
+                    <h6>동의서 다운로드 및 업로드</h6>
+                    <p>아래 버튼을 클릭하여 피험자동의서를 다운로드하고, 작성 후 업로드해 주세요.</p>
+                    
+                    <div className="download-section">
+                      <button 
+                        type="button" 
+                        className="btn download-btn"
+                        onClick={() => {
+                          const link = document.createElement('a');
+                          link.href = '/[2025] 피험자동의서.hwp';
+                          link.download = '[2025] 피험자동의서.hwp';
+                          document.body.appendChild(link);
+                          link.click();
+                          document.body.removeChild(link);
+                        }}
+                      >
+                        📄 피험자동의서 다운로드
+                      </button>
+                    </div>
+
+                    <div className="file-upload-item">
+                      <label><strong>작성된 동의서 업로드 *</strong></label>
+                      <input 
+                        type="file" 
+                        accept=".hwp,.pdf"
+                        onChange={(e) => handleFileChange(e, 'signature')}
+                        required
+                      />
+                      {files.signature && (
+                        <p className="file-info">
+                          선택된 파일: {files.signature.name} ({formatFileSize(files.signature.size)})
+                        </p>
+                      )}
+                      <p className="helper-text">HWP 또는 PDF 파일만 업로드 가능합니다. (필수)</p>
+                    </div>
                   </div>
                 </div>
 
@@ -574,30 +638,35 @@ const MultiStepRegistration = () => {
                       required
                     />
                   </div>
-
-                  <div className="form-group">
-                    <label htmlFor="detailedAddress">상세주소</label>
-                    <input 
-                      type="text" 
-                      id="detailedAddress" 
-                      value={userData.detailedAddress || ''}
-                      onChange={handleChange}
-                      placeholder="상세주소 (선택사항)"
-                    />
-                  </div>
                   
                   <div className="form-group">
                     <label htmlFor="gender"><strong>성별</strong></label>
-                    <select 
-                      id="gender" 
-                      value={userData.gender || ''}
-                      onChange={handleChange}
-                      required
-                    >
-                      <option value="">선택하세요</option>
-                      <option value="male">남성</option>
-                      <option value="female">여성</option>
-                    </select>
+                    <div className="gender-options">
+                      <label className="radio-option">
+                        <input 
+                          type="radio" 
+                          name="gender" 
+                          value="male" 
+                          checked={userData.gender === 'male'}
+                          onChange={(e) => updateUserData({ gender: e.target.value })}
+                          required
+                        />
+                        <span className="radio-custom"></span>
+                        남성
+                      </label>
+                      <label className="radio-option">
+                        <input 
+                          type="radio" 
+                          name="gender" 
+                          value="female" 
+                          checked={userData.gender === 'female'}
+                          onChange={(e) => updateUserData({ gender: e.target.value })}
+                          required
+                        />
+                        <span className="radio-custom"></span>
+                        여성
+                      </label>
+                    </div>
                   </div>
 
                   <div className="form-group">
@@ -607,6 +676,7 @@ const MultiStepRegistration = () => {
                       id="birthDate" 
                       value={userData.birthDate || ''}
                       onChange={handleChange}
+                      className="date-input"
                       required
                     />
                   </div>
@@ -672,7 +742,7 @@ const MultiStepRegistration = () => {
                     <li><strong>동의서 서명 및 통장 사본, 신분증 사본 전송 (업로드 또는 카톡 등)</strong></li>
                   </ol>
                   <p>이 완료되면 제출하신 서류를 한국과학기술연구원 행정팀에 상신하여 결재가 이루어지면 지급됩니다.</p>
-                  <p>행정 절차가 일일적으로 진행되는 부분이 있어, 개인마다 차이가 있으나 통상 실험 완료 후 1주일에서 1달 이내에 등장으로 지급이 이루어집니다.</p>
+                  <p>행정 절차가 일괄적으로 진행되는 부분이 있어, 개인마다 차이가 있으나 통상 <strong>실험 완료 후 1주일에서 1달 이내에</strong> 통장으로 지급이 이루어집니다.</p>
                   <p>필요한 서류를 제출해 주시면 가능한 빠른 시일 안에 사례비가 지급되도록 하겠습니다.</p>
                   <p>제출하신 파일은 행정팀 제출 위한 연구원 확인 후 즉시 <strong>폐기</strong>되어 사례비 지급용도만 사용됩니다.</p>
 
@@ -680,11 +750,12 @@ const MultiStepRegistration = () => {
                     <h6>■ 파일 업로드</h6>
                     
                     <div className="file-upload-item">
-                      <label><strong>신분증 사본</strong></label>
+                      <label><strong>신분증 사본 *</strong></label>
                       <input 
                         type="file" 
                         accept=".jpg,.jpeg,.png,.gif,.pdf,.hwp,.doc,.docx"
                         onChange={(e) => handleFileChange(e, 'idCard')}
+                        required
                       />
                       {files.idCard && (
                         <p className="file-info">
@@ -694,11 +765,12 @@ const MultiStepRegistration = () => {
                     </div>
 
                     <div className="file-upload-item">
-                      <label><strong>통장 사본</strong></label>
+                      <label><strong>통장 사본 *</strong></label>
                       <input 
                         type="file" 
                         accept=".jpg,.jpeg,.png,.gif,.pdf,.hwp,.doc,.docx"
                         onChange={(e) => handleFileChange(e, 'bankAccount')}
+                        required
                       />
                       {files.bankAccount && (
                         <p className="file-info">
@@ -707,23 +779,7 @@ const MultiStepRegistration = () => {
                       )}
                     </div>
 
-                    <div className="file-upload-item">
-                      <label>동의서 (선택사항)</label>
-                      <input 
-                        type="file" 
-                        accept=".jpg,.jpeg,.png,.gif,.pdf,.hwp,.doc,.docx"
-                        onChange={(e) => handleFileChange(e, 'consentForm')}
-                      />
-                      {files.consentForm && (
-                        <p className="file-info">
-                          선택된 파일: {files.consentForm.name} ({formatFileSize(files.consentForm.size)})
-                        </p>
-                      )}
-                    </div>
 
-                    <div className="file-upload-note">
-                      <p><small>※ 연구자가 입력한 내용을 txt 버전으로 다운로드 받을 수 있으며 좋겠습니다.</small></p>
-                    </div>
                   </div>
 
                   <div className="consent-item">
@@ -761,9 +817,9 @@ const MultiStepRegistration = () => {
                   </button>
                   <button 
                     type="button" 
-                    className={`btn register-btn ${isConsentValid() ? 'active' : 'disabled'}`}
+                    className={`btn register-btn ${isFinalSubmitValid() ? 'active' : 'disabled'}`}
                     onClick={handleFinalSubmit}
-                    disabled={isRegistering || isUploading || !isConsentValid()}
+                    disabled={isRegistering || isUploading || !isFinalSubmitValid()}
                   >
                     {isRegistering ? (isUploading ? '파일 업로드 중...' : '등록 중...') : '실증 실험 대기자 등록 완료'}
                   </button>

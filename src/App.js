@@ -8,6 +8,7 @@ import AnxietySurvey from './components/AnxietySurvey';
 import StressSurvey from './components/StressSurvey';
 import Results from './components/Results';
 import DataCollectionGuide from './components/DataCollectionGuide';
+import MultiStepRegistration from './components/MultiStepRegistration';
 import AdminPage from './components/AdminPage';
 
 // 설문 앱 컴포넌트
@@ -119,6 +120,7 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/survey" element={<SurveyApp />} />
         <Route path="/data-collection-guide" element={<DataCollectionGuide />} />
+        <Route path="/registration" element={<MultiStepRegistration />} />
         <Route path="/admin" element={<AdminPage />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
