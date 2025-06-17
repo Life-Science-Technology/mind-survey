@@ -67,7 +67,7 @@ const Results = ({ userData, restartSurvey, updateUserData }) => {
 
   return (
     <div className="results-container">
-      <h1>설문조사 결과</h1>
+      <h1>설문(테스트) 결과</h1>
       
       <div className="score-container">
         <div className="score-box">
@@ -103,7 +103,7 @@ const Results = ({ userData, restartSurvey, updateUserData }) => {
           className="btn data-collection-btn"
           onClick={handleDataCollectionGuide}
         >
-          데이터 수집 참여 안내
+          실험 참여 안내
         </button>
       </div>
 

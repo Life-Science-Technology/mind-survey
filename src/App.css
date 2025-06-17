@@ -1471,3 +1471,240 @@ input[type="tel"]:focus {
     padding: 12px 16px;
   }
 }
+
+/* MultiStepRegistration 스타일 */
+.multi-step-registration {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.step-indicator {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 30px;
+  padding: 0 20px;
+}
+
+.step {
+  flex: 1;
+  text-align: center;
+  padding: 10px;
+  background-color: #f8f9fa;
+  color: #6c757d;
+  border-radius: 5px;
+  margin: 0 5px;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.step.active {
+  background-color: #007bff;
+  color: white;
+}
+
+.registration-step {
+  background-color: #ffffff;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.registration-step h5 {
+  color: #2c3e50;
+  margin-bottom: 20px;
+  font-size: 20px;
+  border-bottom: 2px solid #e0e0e0;
+  padding-bottom: 10px;
+}
+
+.consent-document {
+  background-color: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.consent-document h6 {
+  color: #2c3e50;
+  margin-bottom: 15px;
+  font-size: 18px;
+}
+
+.consent-content {
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+
+.consent-details-box {
+  background-color: #ffffff;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  margin-bottom: 15px;
+}
+
+.consent-details-box h6 {
+  color: #007bff;
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+
+.consent-details-box label {
+  display: block;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+
+.consent-details-box input[type="checkbox"] {
+  width: auto;
+  margin-right: 8px;
+}
+
+.document-upload-section {
+  background-color: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.document-upload-section h6 {
+  color: #2c3e50;
+  margin-bottom: 15px;
+  font-size: 18px;
+}
+
+.document-upload-section ol {
+  margin-bottom: 20px;
+  padding-left: 20px;
+}
+
+.document-upload-section ol li {
+  margin-bottom: 8px;
+  line-height: 1.6;
+}
+
+.file-upload-group {
+  background-color: #ffffff;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  margin-bottom: 20px;
+}
+
+.file-upload-group h6 {
+  color: #007bff;
+  margin-bottom: 15px;
+  font-size: 16px;
+}
+
+.file-upload-item {
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.file-upload-item:last-child {
+  border-bottom: none;
+}
+
+.file-upload-item label {
+  display: block;
+  margin-bottom: 8px;
+  color: #2c3e50;
+  font-weight: bold;
+}
+
+.file-upload-item input[type="file"] {
+  width: 100%;
+  padding: 10px;
+  border: 2px dashed #ddd;
+  border-radius: 5px;
+  background-color: #f8f9fa;
+  cursor: pointer;
+}
+
+.file-upload-item input[type="file"]:hover {
+  border-color: #007bff;
+  background-color: #e3f2fd;
+}
+
+.file-info {
+  color: #28a745;
+  font-size: 14px;
+  margin-top: 5px;
+  font-weight: bold;
+}
+
+.file-upload-note {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.file-upload-note p {
+  color: #6c757d;
+  font-style: italic;
+}
+
+.step-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  margin-top: 30px;
+}
+
+.step-actions .btn {
+  flex: 1;
+  max-width: 200px;
+}
+
+.next-btn {
+  background-color: #007bff;
+  color: white;
+}
+
+.next-btn:hover {
+  background-color: #0056b3;
+}
+
+.register-btn.active {
+  background-color: #28a745;
+  color: white;
+}
+
+.register-btn.active:hover {
+  background-color: #218838;
+}
+
+.register-btn.disabled {
+  background-color: #6c757d;
+  color: white;
+  cursor: not-allowed;
+}
+
+.registration-success-box {
+  background-color: #d4edda;
+  border: 1px solid #c3e6cb;
+  color: #155724;
+  padding: 30px;
+  border-radius: 8px;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.registration-success-box h3 {
+  color: #155724;
+  margin-bottom: 20px;
+}
+
+.registration-success-box p {
+  margin-bottom: 10px;
+  line-height: 1.6;
+}
+
+.readonly-input {
+  background-color: #f8f9fa !important;
+  color: #6c757d !important;
+  cursor: not-allowed !important;
+}
