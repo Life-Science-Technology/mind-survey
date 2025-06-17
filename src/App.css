@@ -1214,6 +1214,12 @@ input[type="tel"]:focus {
   margin: 0;
 }
 
+.experiment-eligible {
+  font-size: 22px;
+  font-weight: bold;
+  color: #007bff;
+}
+
 @media (max-width: 768px) {
   .score-interpretation {
     padding: 20px;
@@ -1251,12 +1257,16 @@ input[type="tel"]:focus {
 .data-collection-btn {
   background-color: #28a745;
   color: #fff;
-  padding: 15px 30px;
-  font-size: 16px;
-  font-weight: 600;
-  border-radius: 8px;
+  padding: 25px 60px;
+  font-size: 24px;
+  font-weight: 700;
+  border-radius: 12px;
   transition: all 0.3s ease;
-  min-width: 220px;
+  min-width: 400px;
+  min-height: 80px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .data-collection-btn:hover {
@@ -1412,8 +1422,10 @@ input[type="tel"]:focus {
 
   .data-collection-btn {
     width: 100%;
-    max-width: 300px;
-    padding: 12px 20px;
+    max-width: 350px;
+    padding: 20px 40px;
+    font-size: 20px;
+    min-height: 70px;
   }
   
   .data-collection-guide {

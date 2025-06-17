@@ -92,9 +92,9 @@ const Results = ({ userData, restartSurvey, updateUserData }) => {
       {/* 점수 해석 표 */}
       
       <div className="test-info">
-        <p>테스트 결과 귀하는 <strong>
+        <p>테스트 결과 귀하는 <span className="experiment-eligible"><strong>
           {getGroupType() === 'depression' ? '우울군' : 
-          getGroupType() === 'stress' ? '스트레스 고위험군' : '건강인'}</strong> 으로 실험 참여가 가능합니다.</p>
+          getGroupType() === 'stress' ? '스트레스 고위험군' : '건강인'}</strong> 으로 실험 참여가 가능</span>합니다.</p>
       </div>
 
       <div className="data-collection-info">
