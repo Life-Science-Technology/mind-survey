@@ -28,7 +28,7 @@ const MultiStepRegistration = () => {
     address: '',
     gender: '',
     birthDate: '',
-    signatureName: ''
+    signatureUploadMethod: '' // 'upload' 또는 'direct'
   });
   const [emailError, setEmailError] = useState('');
   const [phoneFormatted, setPhoneFormatted] = useState('');
@@ -39,7 +39,8 @@ const MultiStepRegistration = () => {
     idCard: null,
     bankAccount: null,
     consentForm: null,
-    signature: null
+    signature: null,
+    signatureImage: null
   });
   const [isUploading, setIsUploading] = useState(false);
 
@@ -164,12 +165,18 @@ const MultiStepRegistration = () => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // 파일 타입 검증 - signature는 .hwp, .pdf만 허용
+    // 파일 타입 검증
     let allowedTypes;
     if (fileType === 'signature') {
       allowedTypes = ['application/pdf', 'application/haansofthwp', 'application/x-hwp'];
       if (!file.type.includes('pdf') && !file.name.toLowerCase().endsWith('.hwp')) {
         setRegistrationError('동의서는 HWP 또는 PDF 파일만 업로드할 수 있습니다.');
+        return;
+      }
+    } else if (fileType === 'signatureImage') {
+      allowedTypes = ALLOWED_IMAGE_TYPES;
+      if (!validateFileType(file, allowedTypes)) {
+        setRegistrationError('서명 이미지는 이미지 파일(JPG, PNG, GIF)만 업로드할 수 있습니다.');
         return;
       }
     } else {
@@ -275,8 +282,18 @@ const MultiStepRegistration = () => {
 
   // 3단계: 상세 개인정보 입력
   const handleStep3Submit = () => {
-    if (!userData.address || !userData.gender || !userData.birthDate || !userData.signatureName) {
+    if (!userData.address || !userData.gender || !userData.birthDate) {
       setRegistrationError('모든 필수 정보를 입력해주세요.');
+      return;
+    }
+
+    if (!userData.signatureUploadMethod) {
+      setRegistrationError('서명 제출 방법을 선택해주세요.');
+      return;
+    }
+
+    if (userData.signatureUploadMethod === 'upload' && !files.signatureImage) {
+      setRegistrationError('서명 이미지를 업로드해주세요.');
       return;
     }
 
@@ -297,6 +314,24 @@ const MultiStepRegistration = () => {
       setRegistrationError('');
 
       // 먼저 사용자 데이터 저장
+      console.log('사용자 데이터 저장 시도:', {
+        name: userData.name, 
+        email: userData.email, 
+        phone: userData.phone, 
+        address: userData.address,
+        gender: userData.gender,
+        birth_date: userData.birthDate,
+        signature_upload_method: userData.signatureUploadMethod,
+        consent_date: new Date().toISOString().split('T')[0],
+        registration_step: 4,
+        experiment_consent: consentChecked.experimentParticipation,
+        data_usage_consent: consentChecked.dataUsage,
+        third_party_consent: consentChecked.thirdParty,
+        depressive: depressionScore,
+        anxiety: anxietyScore,
+        stress: stressScore,
+      });
+
       const { data: insertedUser, error: userError } = await supabase
         .from('survey-person')
         .insert([
@@ -307,7 +342,7 @@ const MultiStepRegistration = () => {
             address: userData.address,
             gender: userData.gender,
             birth_date: userData.birthDate,
-            signature_name: userData.signatureName,
+            signature_upload_method: userData.signatureUploadMethod,
             consent_date: new Date().toISOString().split('T')[0],
             registration_step: 4,
             experiment_consent: consentChecked.experimentParticipation,
@@ -322,8 +357,11 @@ const MultiStepRegistration = () => {
         .single();
 
       if (userError) {
+        console.error('사용자 데이터 저장 상세 오류:', userError);
         throw new Error(`사용자 데이터 저장 오류: ${userError.message}`);
       }
+
+      console.log('사용자 데이터 저장 성공:', insertedUser);
 
       const participantId = insertedUser.id;
 
@@ -374,15 +412,29 @@ const MultiStepRegistration = () => {
         });
       }
 
+      if (files.signatureImage) {
+        const signatureImagePath = await uploadFileToStorage(files.signatureImage, `signature_image_${participantId}`, 'signatureImage');
+        fileUploads.push({
+          participant_id: participantId,
+          file_type: 'signature_image',
+          file_name: files.signatureImage.name,
+          file_path: signatureImagePath,
+          file_size: files.signatureImage.size
+        });
+      }
+
       // 파일 정보 데이터베이스에 저장
       if (fileUploads.length > 0) {
+        console.log('파일 정보 저장 시도:', fileUploads);
         const { error: fileError } = await supabase
           .from('uploaded_files')
           .insert(fileUploads);
 
         if (fileError) {
+          console.error('파일 정보 저장 상세 오류:', fileError);
           throw new Error(`파일 정보 저장 오류: ${fileError.message}`);
         }
+        console.log('파일 정보 저장 성공');
       }
 
       setRegistrationSuccess(true);
@@ -682,15 +734,59 @@ const MultiStepRegistration = () => {
                   </div>
 
                   <div className="form-group">
-                    <label htmlFor="signatureName"><strong>서명 (이름)</strong></label>
-                    <input 
-                      type="text" 
-                      id="signatureName" 
-                      value={userData.signatureName || ''}
-                      onChange={handleChange}
-                      placeholder="서명할 이름을 입력하세요"
-                      required
-                    />
+                    <label><strong>서명 제출 방법 선택 *</strong></label>
+                    
+                    <div className="signature-method-options">
+                      <label className="radio-option">
+                        <input 
+                          type="radio" 
+                          name="signatureUploadMethod" 
+                          value="upload" 
+                          checked={userData.signatureUploadMethod === 'upload'}
+                          onChange={(e) => updateUserData({ signatureUploadMethod: e.target.value })}
+                          required
+                        />
+                        <span className="radio-custom"></span>
+                        서명 이미지 업로드
+                      </label>
+                      <label className="radio-option">
+                        <input 
+                          type="radio" 
+                          name="signatureUploadMethod" 
+                          value="direct" 
+                          checked={userData.signatureUploadMethod === 'direct'}
+                          onChange={(e) => updateUserData({ signatureUploadMethod: e.target.value })}
+                          required
+                        />
+                        <span className="radio-custom"></span>
+                        이미지 직접 전송 (카톡, 메일 등)
+                      </label>
+                    </div>
+
+                    {userData.signatureUploadMethod === 'upload' && (
+                      <div className="file-upload-item" style={{ marginTop: '15px' }}>
+                        <label>서명 이미지 파일</label>
+                        <input 
+                          type="file" 
+                          accept=".jpg,.jpeg,.png,.gif"
+                          onChange={(e) => handleFileChange(e, 'signatureImage')}
+                        />
+                        {files.signatureImage && (
+                          <p className="file-info">
+                            선택된 파일: {files.signatureImage.name} ({formatFileSize(files.signatureImage.size)})
+                          </p>
+                        )}
+                        <p className="helper-text">이미지 파일(JPG, PNG, GIF)만 업로드 가능합니다.</p>
+                      </div>
+                    )}
+
+                    {userData.signatureUploadMethod === 'direct' && (
+                      <div className="direct-submission-info" style={{ marginTop: '15px', padding: '15px', backgroundColor: '#f8f9ff', borderRadius: '8px', border: '1px solid #e6ecff' }}>
+                        <p><strong>직접 전송 안내:</strong></p>
+                        <p>서명 이미지를 카카오톡, 이메일 등을 통해 직접 전송하시면 됩니다.</p>
+                        <p>연구팀에서 별도로 연락드릴 예정입니다.</p>
+                      </div>
+                    )}
                   </div>
 
                   <div className="form-group">
@@ -738,7 +834,7 @@ const MultiStepRegistration = () => {
                   <p>실험 종료 확인 후,</p>
                   <ol>
                     <li><strong>삼성 헬스 데이터 업로드 (메일 또는 카톡 전송 가능)</strong></li>
-                    <li><strong>위치 반납</strong></li>
+                    <li><strong>워치 반납</strong></li>
                     <li><strong>동의서 서명 및 통장 사본, 신분증 사본 전송 (업로드 또는 카톡 등)</strong></li>
                   </ol>
                   <p>이 완료되면 제출하신 서류를 한국과학기술연구원 행정팀에 상신하여 결재가 이루어지면 지급됩니다.</p>
