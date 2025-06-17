@@ -6,7 +6,7 @@
 
 body {
   font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif;
-  background-color: #f8f9fa;
+  background-color: #ffffff;
   color: #333;
   line-height: 1.6;
 }
@@ -663,28 +663,63 @@ input[type="tel"]:focus {
 /* Home page styles */
 .home-container {
   text-align: center;
-  padding: 40px 20px;
+  padding: 60px 20px;
   max-width: 1000px;
   margin: 0 auto;
+}
+
+/* Logo Section Styles */
+.logo-section {
+  text-align: right;
+  margin-bottom: 40px;
+  padding-top: 20px;
+}
+
+.logo-container {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 30px;
+  flex-wrap: wrap;
+}
+
+.logo {
+  max-height: 80px;
+  width: auto;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.logo:hover {
+  transform: scale(1.05);
+}
+
+.police-logo {
+  max-height: 40px;
+}
+
+.kist-logo {
+  max-height: 40px;
 }
 
 .home-header h1 {
   color: #495057;
   font-size: 20px;
-  margin-bottom: 30px;
+  margin-bottom: 40px;
+  margin-top: 100px;
   font-weight: 600;
 }
 
 .home-title h2 {
   color: #343a40;
   font-size: 24px;
-  margin-bottom: 40px;
+  margin-bottom: 10px;
   font-weight: 700;
   line-height: 1.4;
 }
 
 .home-content {
-  background-color: #f8f9fa;
   border-radius: 15px;
   padding: 60px 40px;
   margin: 40px 0;
@@ -697,6 +732,38 @@ input[type="tel"]:focus {
 
 .description {
   margin-bottom: 40px;
+}
+
+.description-box {
+  background-color: #ffffff;
+  border-radius: 20px;
+  padding: 40px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  margin: 20px 0;
+  border: 1px solid #e9ecef;
+}
+
+.description-text {
+  color: #333333;
+  font-size: 16px;
+  line-height: 1.8;
+  margin-bottom: 15px;
+  font-weight: 400;
+  text-align: left;
+}
+
+.description-text:last-child {
+  margin-bottom: 0;
+}
+
+.highlight-teal {
+  color: #20c997;
+  font-weight: 600;
+}
+
+.highlight-pink {
+  color: #e83e8c;
+  font-weight: 600;
 }
 
 .description p {
@@ -719,8 +786,8 @@ input[type="tel"]:focus {
 
 .action-card {
   background-color: #fff;
-  border: 2px dashed #adb5bd;
-  border-radius: 10px;
+  border: 1px solid #e9ecef;
+  border-radius: 15px;
   padding: 40px 30px;
   min-width: 220px;
   min-height: 120px;
@@ -729,20 +796,47 @@ input[type="tel"]:focus {
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .action-card:hover,
 .action-card:focus {
+  background-color: #4c6ef5;
   border-color: #4c6ef5;
-  background-color: #f8f9ff;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(76, 110, 245, 0.15);
-  outline: 2px solid #4c6ef5;
-  outline-offset: 2px;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(76, 110, 245, 0.3);
+  outline: none;
 }
 
-.action-card:focus {
-  outline-width: 3px;
+.action-card:hover .card-subtitle,
+.action-card:focus .card-subtitle {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.action-card:hover .card-title,
+.action-card:focus .card-title {
+  color: #ffffff;
+}
+
+.card-content {
+  text-align: center;
+}
+
+.card-subtitle {
+  color: #6c757d;
+  font-size: 14px;
+  font-weight: 400;
+  margin: 0 0 8px 0;
+  transition: color 0.3s ease;
+}
+
+.card-title {
+  color: #495057;
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.2;
+  transition: color 0.3s ease;
 }
 
 .card-content h3 {
@@ -755,7 +849,31 @@ input[type="tel"]:focus {
 
 @media (max-width: 768px) {
   .home-container {
-    padding: 20px 15px;
+    padding: 30px 15px;
+  }
+  
+  .logo-section {
+    margin-bottom: 30px;
+    padding-top: 10px;
+    text-align: center;
+  }
+  
+  .logo-container {
+    gap: 20px;
+    flex-direction: column;
+    justify-content: center;
+  }
+  
+  .logo {
+    max-height: 50px;
+  }
+  
+  .police-logo {
+    max-height: 50px;
+  }
+  
+  .kist-logo {
+    max-height: 40px;
   }
   
   .home-title h2 {
@@ -767,6 +885,18 @@ input[type="tel"]:focus {
     margin: 20px 0;
   }
   
+  .description-box {
+    padding: 25px;
+    border-radius: 15px;
+    margin: 15px 0;
+  }
+  
+  .description-text {
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 12px;
+  }
+  
   .action-buttons {
     flex-direction: column;
     gap: 20px;
@@ -775,6 +905,14 @@ input[type="tel"]:focus {
   .action-card {
     min-width: 200px;
     padding: 30px 20px;
+  }
+  
+  .card-title {
+    font-size: 20px;
+  }
+  
+  .card-subtitle {
+    font-size: 13px;
   }
 }
 
