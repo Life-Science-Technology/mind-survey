@@ -1257,16 +1257,18 @@ input[type="tel"]:focus {
 .data-collection-btn {
   background-color: #28a745;
   color: #fff;
-  padding: 25px 60px;
+  padding: 25px 40px;
   font-size: 24px;
   font-weight: 700;
   border-radius: 12px;
   transition: all 0.3s ease;
-  min-width: 400px;
+  width: 100%;
+  max-width: 500px;
   min-height: 80px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  word-break: keep-all;
 }
 
 .data-collection-btn:hover {
@@ -1422,15 +1424,15 @@ input[type="tel"]:focus {
 
   .data-collection-btn {
     width: 100%;
-    max-width: 350px;
-    padding: 20px 40px;
-    font-size: 20px;
-    min-height: 70px;
+    max-width: 100%;
+    padding: 18px 30px;
+    font-size: 18px;
+    min-height: 60px;
   }
   
   .data-collection-guide {
-    padding: 20px;
-    margin: 10px;
+    padding: 15px;
+    margin: 5px;
   }
   
   .guide-header h1 {
@@ -1438,7 +1440,7 @@ input[type="tel"]:focus {
   }
   
   .guide-content {
-    padding: 30px 20px;
+    padding: 20px 15px;
   }
   
   .guide-intro p {
@@ -1951,6 +1953,30 @@ input[type="tel"]:focus {
     padding: 18px 15px;
     font-size: 14px;
     min-height: 52px;
+  }
+  
+  .data-collection-btn {
+    padding: 16px 20px;
+    font-size: 16px;
+    min-height: 56px;
+    border-radius: 8px;
+  }
+  
+  .data-collection-guide {
+    padding: 10px;
+    margin: 0;
+  }
+  
+  .guide-content {
+    padding: 15px 10px;
+  }
+  
+  .guide-header h1 {
+    font-size: 20px;
+  }
+  
+  .guide-header h2 {
+    font-size: 18px;
   }
 }
 
