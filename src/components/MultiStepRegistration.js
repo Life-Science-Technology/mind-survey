@@ -28,7 +28,9 @@ const MultiStepRegistration = () => {
     address: '',
     gender: '',
     birthDate: '',
-    signatureUploadMethod: '' // 'upload' 또는 'direct'
+    signatureUploadMethod: '', // 'upload' 또는 'direct'
+    idCardUploadMethod: '', // 'upload' 또는 'direct'
+    bankAccountUploadMethod: '' // 'upload' 또는 'direct'
   });
   const [emailError, setEmailError] = useState('');
   const [phoneFormatted, setPhoneFormatted] = useState('');
@@ -76,9 +78,17 @@ const MultiStepRegistration = () => {
     return consentChecked.personalInfo;
   };
 
-  // 4단계 등록 완료 버튼 활성화 조건
+  // 3단계 등록 완료 버튼 활성화 조건
   const isFinalSubmitValid = () => {
-    return consentChecked.personalInfo && files.idCard && files.bankAccount;
+    if (!consentChecked.personalInfo) return false;
+    if (!userData.idCardUploadMethod || !userData.bankAccountUploadMethod) return false;
+    
+    // 업로드 방법을 선택했는데 파일이 없는 경우만 체크
+    // 직접 전송 방법을 선택한 경우는 파일이 없어도 됨
+    if (userData.idCardUploadMethod === 'upload' && !files.idCard) return false;
+    if (userData.bankAccountUploadMethod === 'upload' && !files.bankAccount) return false;
+    
+    return true;
   };
   
   // 이메일 형식 검증
@@ -289,12 +299,105 @@ const MultiStepRegistration = () => {
     setCurrentStep(3); // 바로 3단계(서류제출)로 이동
   };
 
+  // 파일 업로드 처리 함수 (리팩토링)
+  const processFileUploads = async (participantId) => {
+    const fileUploads = [];
+    const uploadErrors = [];
+    const directSubmissions = []; // 직접 전송 방법으로 선택된 파일들 추적
 
+    // 업로드 파일 처리 헬퍼 함수
+    const uploadFile = async (file, fileName, fileType, uploadMethod = 'upload') => {
+      if (uploadMethod === 'upload' && file) {
+        try {
+          console.log(`${fileType} 파일 업로드 시작:`, file.name);
+          const filePath = await uploadFileToStorage(file, fileName, fileType);
+          console.log(`${fileType} 파일 업로드 성공:`, filePath);
+          return {
+            participant_id: participantId,
+            file_type: fileType === 'idCard' ? 'identity_card' : 
+                      fileType === 'bankAccount' ? 'bank_account' :
+                      fileType === 'signatureImage' ? 'signature_image' :
+                      fileType,
+            file_name: file.name,
+            file_path: filePath,
+            file_size: file.size
+          };
+        } catch (error) {
+          console.error(`${fileType} 파일 업로드 오류:`, error);
+          uploadErrors.push(`${fileType} 파일 업로드 실패: ${error.message}`);
+          return null;
+        }
+      }
+      return null;
+    };
+
+    // 직접 전송 추적 헬퍼 함수
+    const trackDirectSubmission = (fileType, typeName) => {
+      console.log(`${typeName} 직접 전송 방법 선택됨 - 데이터베이스 저장 제외`);
+      directSubmissions.push({ fileType, typeName });
+    };
+
+    // 신분증 처리
+    if (userData.idCardUploadMethod === 'upload') {
+      const uploadResult = await uploadFile(files.idCard, `idcard_${participantId}`, 'idCard');
+      if (uploadResult) fileUploads.push(uploadResult);
+    } else if (userData.idCardUploadMethod === 'direct') {
+      trackDirectSubmission('identity_card', '신분증');
+    }
+
+    // 통장 처리
+    if (userData.bankAccountUploadMethod === 'upload') {
+      const uploadResult = await uploadFile(files.bankAccount, `bankaccount_${participantId}`, 'bankAccount');
+      if (uploadResult) fileUploads.push(uploadResult);
+    } else if (userData.bankAccountUploadMethod === 'direct') {
+      trackDirectSubmission('bank_account', '통장');
+    }
+
+    // 서명 이미지 처리
+    if (userData.signatureUploadMethod === 'upload') {
+      const uploadResult = await uploadFile(files.signatureImage, `signature_image_${participantId}`, 'signatureImage');
+      if (uploadResult) fileUploads.push(uploadResult);
+    } else if (userData.signatureUploadMethod === 'direct') {
+      trackDirectSubmission('signature_image', '서명');
+    }
+
+    // 기타 파일들 (항상 업로드 방식)
+    if (files.consentForm) {
+      const uploadResult = await uploadFile(files.consentForm, `consent_${participantId}`, 'consent_form');
+      if (uploadResult) fileUploads.push(uploadResult);
+    }
+
+    if (files.signature) {
+      const uploadResult = await uploadFile(files.signature, `signature_${participantId}`, 'signature');
+      if (uploadResult) fileUploads.push(uploadResult);
+    }
+
+    return { fileUploads, uploadErrors, directSubmissions };
+  };
 
   // 3단계: 파일 업로드 및 최종 등록
   const handleFinalSubmit = async () => {
-    if (!files.idCard || !files.bankAccount) {
-      setRegistrationError('신분증과 통장 사본을 업로드해주세요.');
+    // 신분증 제출 방법 검증
+    if (!userData.idCardUploadMethod) {
+      setRegistrationError('신분증 제출 방법을 선택해주세요.');
+      return;
+    }
+    
+    // 업로드 방법을 선택했는데 파일이 없는 경우만 체크 (직접 전송 방법은 제외)
+    if (userData.idCardUploadMethod === 'upload' && !files.idCard) {
+      setRegistrationError('신분증 사본 파일을 업로드해주세요.');
+      return;
+    }
+    
+    // 통장 제출 방법 검증
+    if (!userData.bankAccountUploadMethod) {
+      setRegistrationError('통장 사본 제출 방법을 선택해주세요.');
+      return;
+    }
+    
+    // 업로드 방법을 선택했는데 파일이 없는 경우만 체크 (직접 전송 방법은 제외)
+    if (userData.bankAccountUploadMethod === 'upload' && !files.bankAccount) {
+      setRegistrationError('통장 사본 파일을 업로드해주세요.');
       return;
     }
 
@@ -312,6 +415,8 @@ const MultiStepRegistration = () => {
         gender: userData.gender,
         birth_date: userData.birthDate,
         signature_upload_method: userData.signatureUploadMethod,
+        id_card_upload_method: userData.idCardUploadMethod,
+        bank_account_upload_method: userData.bankAccountUploadMethod,
         consent_date: new Date().toISOString().split('T')[0],
         registration_step: 3,
         experiment_consent: consentChecked.experimentParticipation === true,
@@ -333,6 +438,8 @@ const MultiStepRegistration = () => {
             gender: userData.gender,
             birth_date: userData.birthDate,
             signature_upload_method: userData.signatureUploadMethod,
+            id_card_upload_method: userData.idCardUploadMethod,
+            bank_account_upload_method: userData.bankAccountUploadMethod,
             consent_date: new Date().toISOString().split('T')[0],
             registration_step: 3,
             experiment_consent: consentChecked.experimentParticipation === true,
@@ -355,65 +462,20 @@ const MultiStepRegistration = () => {
 
       const participantId = insertedUser.id;
 
-      // 파일 업로드
-      const fileUploads = [];
-      
-      if (files.idCard) {
-        const idCardPath = await uploadFileToStorage(files.idCard, `idcard_${participantId}`, 'idCard');
-        fileUploads.push({
-          participant_id: participantId,
-          file_type: 'identity_card',
-          file_name: files.idCard.name,
-          file_path: idCardPath,
-          file_size: files.idCard.size
-        });
+      // 파일 업로드 처리 (리팩토링된 함수 사용)
+      const { fileUploads, uploadErrors, directSubmissions } = await processFileUploads(participantId);
+
+      // 업로드 오류가 있는 경우 경고 로그 출력
+      if (uploadErrors.length > 0) {
+        console.warn('파일 업로드 중 일부 오류 발생:', uploadErrors);
       }
 
-      if (files.bankAccount) {
-        const bankPath = await uploadFileToStorage(files.bankAccount, `bankaccount_${participantId}`, 'bankAccount');
-        fileUploads.push({
-          participant_id: participantId,
-          file_type: 'bank_account',
-          file_name: files.bankAccount.name,
-          file_path: bankPath,
-          file_size: files.bankAccount.size
-        });
+      // 직접 전송으로 선택된 파일들 로그 기록
+      if (directSubmissions.length > 0) {
+        console.log('직접 전송으로 선택된 파일들:', directSubmissions.map(item => item.typeName).join(', '));
       }
 
-      if (files.consentForm) {
-        const consentPath = await uploadFileToStorage(files.consentForm, `consent_${participantId}`, 'consentForm');
-        fileUploads.push({
-          participant_id: participantId,
-          file_type: 'consent_form',
-          file_name: files.consentForm.name,
-          file_path: consentPath,
-          file_size: files.consentForm.size
-        });
-      }
-
-      if (files.signature) {
-        const signaturePath = await uploadFileToStorage(files.signature, `signature_${participantId}`, 'signature');
-        fileUploads.push({
-          participant_id: participantId,
-          file_type: 'signature',
-          file_name: files.signature.name,
-          file_path: signaturePath,
-          file_size: files.signature.size
-        });
-      }
-
-      if (files.signatureImage) {
-        const signatureImagePath = await uploadFileToStorage(files.signatureImage, `signature_image_${participantId}`, 'signatureImage');
-        fileUploads.push({
-          participant_id: participantId,
-          file_type: 'signature_image',
-          file_name: files.signatureImage.name,
-          file_path: signatureImagePath,
-          file_size: files.signatureImage.size
-        });
-      }
-
-      // 파일 정보 데이터베이스에 저장
+      // 파일 정보 데이터베이스에 저장 (실제 업로드된 파일이 있는 경우만)
       if (fileUploads.length > 0) {
         console.log('파일 정보 저장 시도:', fileUploads);
         const { error: fileError } = await supabase
@@ -425,9 +487,21 @@ const MultiStepRegistration = () => {
           throw new Error(`파일 정보 저장 오류: ${fileError.message}`);
         }
         console.log('파일 정보 저장 성공');
+      } else {
+        console.log('실제 업로드된 파일이 없어 파일 정보 저장을 건너뜁니다.');
       }
 
+      // 등록 성공 처리
       setRegistrationSuccess(true);
+      
+      // 상황별 로그 기록
+      if (uploadErrors.length > 0) {
+        console.log('등록은 완료되었지만 일부 파일 업로드에 실패했습니다:', uploadErrors);
+      }
+      
+      if (directSubmissions.length > 0) {
+        console.log(`등록 완료 - 직접 전송 예정 파일: ${directSubmissions.map(item => item.typeName).join(', ')}`);
+      }
     } catch (error) {
       console.error('최종 등록 오류:', error);
       setRegistrationError(`등록 중 오류가 발생했습니다: ${error.message}`);
@@ -860,37 +934,221 @@ const MultiStepRegistration = () => {
                   <div className="file-upload-group">
                     <h6>■ 파일 업로드</h6>
                     
-                    <div className="file-upload-item">
-                      <label><strong>신분증 사본 *</strong></label>
-                      <input 
-                        type="file" 
-                        accept=".jpg,.jpeg,.png,.gif,.pdf,.hwp,.doc,.docx"
-                        onChange={(e) => handleFileChange(e, 'idCard')}
-                        required
-                      />
-                      {files.idCard && (
-                        <p className="file-info">
-                          선택된 파일: {files.idCard.name} ({formatFileSize(files.idCard.size)})
-                        </p>
+                    <div className="form-group">
+                      <label><strong>신분증 사본 제출 방법 선택 *</strong></label>
+                      
+                      <div className="signature-method-options">
+                        <label className="radio-option">
+                          <input 
+                            type="radio" 
+                            name="idCardUploadMethod" 
+                            value="upload" 
+                            checked={userData.idCardUploadMethod === 'upload'}
+                            onChange={(e) => updateUserData({ idCardUploadMethod: e.target.value })}
+                            required
+                          />
+                          <span className="radio-custom"></span>
+                          이미지 업로드
+                        </label>
+                        <label className="radio-option">
+                          <input 
+                            type="radio" 
+                            name="idCardUploadMethod" 
+                            value="direct" 
+                            checked={userData.idCardUploadMethod === 'direct'}
+                            onChange={(e) => updateUserData({ idCardUploadMethod: e.target.value })}
+                            required
+                          />
+                          <span className="radio-custom"></span>
+                          이미지 직접 전송 (카톡, 메일 등)
+                        </label>
+                      </div>
+
+                      {userData.idCardUploadMethod === 'upload' && (
+                        <div className="file-upload-item" style={{ marginTop: '15px' }}>
+                          <label>신분증 사본 파일</label>
+                          <input 
+                            type="file" 
+                            accept=".jpg,.jpeg,.png"
+                            onChange={(e) => handleFileChange(e, 'idCard')}
+                          />
+                          {files.idCard && (
+                            <p className="file-info">
+                              선택된 파일: {files.idCard.name} ({formatFileSize(files.idCard.size)})
+                            </p>
+                          )}
+                          <p className="helper-text">이미지 파일(JPG, JPEG, PNG)만 업로드 가능합니다.</p>
+                        </div>
+                      )}
+
+                      {userData.idCardUploadMethod === 'direct' && (
+                        <div className="direct-submission-info" style={{ marginTop: '15px', padding: '15px', backgroundColor: '#f8f9ff', borderRadius: '8px', border: '1px solid #e6ecff' }}>
+                          <p><strong>직접 전송 안내:</strong></p>
+                          <p>신분증 사본 이미지를 카카오톡, 이메일 등을 통해 직접 전송하시면 됩니다.</p>
+                          <p>연구팀에서 별도로 연락드릴 예정입니다.</p>
+                        </div>
                       )}
                     </div>
 
-                    <div className="file-upload-item">
-                      <label><strong>통장 사본 *</strong></label>
-                      <input 
-                        type="file" 
-                        accept=".jpg,.jpeg,.png,.gif,.pdf,.hwp,.doc,.docx"
-                        onChange={(e) => handleFileChange(e, 'bankAccount')}
-                        required
-                      />
-                      {files.bankAccount && (
-                        <p className="file-info">
-                          선택된 파일: {files.bankAccount.name} ({formatFileSize(files.bankAccount.size)})
-                        </p>
+                    <div className="form-group">
+                      <label><strong>통장 사본 제출 방법 선택 *</strong></label>
+                      
+                      <div className="signature-method-options">
+                        <label className="radio-option">
+                          <input 
+                            type="radio" 
+                            name="bankAccountUploadMethod" 
+                            value="upload" 
+                            checked={userData.bankAccountUploadMethod === 'upload'}
+                            onChange={(e) => updateUserData({ bankAccountUploadMethod: e.target.value })}
+                            required
+                          />
+                          <span className="radio-custom"></span>
+                          이미지 업로드
+                        </label>
+                        <label className="radio-option">
+                          <input 
+                            type="radio" 
+                            name="bankAccountUploadMethod" 
+                            value="direct" 
+                            checked={userData.bankAccountUploadMethod === 'direct'}
+                            onChange={(e) => updateUserData({ bankAccountUploadMethod: e.target.value })}
+                            required
+                          />
+                          <span className="radio-custom"></span>
+                          이미지 직접 전송 (카톡, 메일 등)
+                        </label>
+                      </div>
+
+                      {userData.bankAccountUploadMethod === 'upload' && (
+                        <div className="file-upload-item" style={{ marginTop: '15px' }}>
+                          <label>통장 사본 파일</label>
+                          <input 
+                            type="file" 
+                            accept=".jpg,.jpeg,.png"
+                            onChange={(e) => handleFileChange(e, 'bankAccount')}
+                          />
+                          {files.bankAccount && (
+                            <p className="file-info">
+                              선택된 파일: {files.bankAccount.name} ({formatFileSize(files.bankAccount.size)})
+                            </p>
+                          )}
+                          <p className="helper-text">이미지 파일(JPG, JPEG, PNG)만 업로드 가능합니다.</p>
+                        </div>
+                      )}
+
+                      {userData.bankAccountUploadMethod === 'direct' && (
+                        <div className="direct-submission-info" style={{ marginTop: '15px', padding: '15px', backgroundColor: '#f8f9ff', borderRadius: '8px', border: '1px solid #e6ecff' }}>
+                          <p><strong>직접 전송 안내:</strong></p>
+                          <p>통장 사본 이미지를 카카오톡, 이메일 등을 통해 직접 전송하시면 됩니다.</p>
+                          <p>연구팀에서 별도로 연락드릴 예정입니다.</p>
+                        </div>
                       )}
                     </div>
 
+                  </div>
 
+                  {/* 제출 파일 예시 */}
+                  <div className="file-examples-section" style={{ marginTop: '30px', marginBottom: '30px' }}>
+                    <h6 style={{ marginBottom: '20px', color: '#2c3e50' }}>제출 파일 예시</h6>
+                    
+                    <style>
+                      {`
+                        .examples-grid {
+                          display: grid;
+                          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+                          gap: 15px;
+                          margin-bottom: 20px;
+                        }
+                        .example-image-container {
+                          border: 1px solid #dee2e6;
+                          border-radius: 8px;
+                          overflow: hidden;
+                          background-color: white;
+                          height: 150px;
+                        }
+                        @media (max-width: 768px) {
+                          .examples-grid {
+                            grid-template-columns: 1fr;
+                            gap: 20px;
+                          }
+                          .example-image-container {
+                            height: 200px;
+                          }
+                        }
+                      `}
+                    </style>
+                    
+                    <div className="examples-grid">
+                      {/* 신분증 사본 예시 */}
+                      <div className="example-item" style={{
+                        border: '2px solid #e9ecef',
+                        borderRadius: '12px',
+                        padding: '15px',
+                        backgroundColor: '#f8f9fa',
+                        textAlign: 'center',
+                        maxWidth: '100%'
+                      }}>
+                        <h6 style={{ marginBottom: '15px', color: '#495057', fontSize: '14px' }}>신분증 사본</h6>
+                        <div className="example-image-container">
+                          <img 
+                            src={`${process.env.PUBLIC_URL || ''}/신분증 사본 1.png`}
+                            alt="신분증 사본 예시"
+                            style={{
+                              width: '100%',
+                              height: '100%',
+                              objectFit: 'contain'
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* 통장 사본 예시 1 */}
+                      <div className="example-item" style={{
+                        border: '2px solid #e9ecef',
+                        borderRadius: '12px',
+                        padding: '15px',
+                        backgroundColor: '#f8f9fa',
+                        textAlign: 'center',
+                        maxWidth: '100%'
+                      }}>
+                        <h6 style={{ marginBottom: '15px', color: '#495057', fontSize: '14px' }}>통장 사본 (통장 사진)</h6>
+                        <div className="example-image-container">
+                          <img 
+                            src={`${process.env.PUBLIC_URL || ''}/통장사본1.png`}
+                            alt="통장 사본 예시 1"
+                            style={{
+                              width: '100%',
+                              height: '100%',
+                              objectFit: 'contain'
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* 통장 사본 예시 2 */}
+                      <div className="example-item" style={{
+                        border: '2px solid #e9ecef',
+                        borderRadius: '12px',
+                        padding: '15px',
+                        backgroundColor: '#f8f9fa',
+                        textAlign: 'center',
+                        maxWidth: '100%'
+                      }}>
+                        <h6 style={{ marginBottom: '15px', color: '#495057', fontSize: '14px' }}>통장 사본 (출력물)</h6>
+                        <div className="example-image-container">
+                          <img 
+                            src={`${process.env.PUBLIC_URL || ''}/통장사본2.png`}
+                            alt="통장 사본 예시 2"
+                            style={{
+                              width: '100%',
+                              height: '100%',
+                              objectFit: 'contain'
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
                   <div className="consent-item">
