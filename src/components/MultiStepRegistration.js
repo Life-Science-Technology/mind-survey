@@ -55,6 +55,7 @@ const MultiStepRegistration = () => {
   };
 
   // 집단 분류 함수
+  // eslint-disable-next-line no-unused-vars
   const getGroupType = () => {
     if (depressionScore >= 10) {
       return 'depression';
@@ -75,6 +76,7 @@ const MultiStepRegistration = () => {
   };
 
   // 필수 동의 항목 및 파일 업로드 확인 함수
+  // eslint-disable-next-line no-unused-vars
   const isConsentValid = () => {
     return consentChecked.personalInfo;
   };
@@ -620,12 +622,19 @@ const MultiStepRegistration = () => {
                         type="button" 
                         className="btn download-btn"
                         onClick={() => {
-                          const link = document.createElement('a');
-                          link.href = '/[2025] 피험자동의서.hwp';
-                          link.download = '[2025] 피험자동의서.hwp';
-                          document.body.appendChild(link);
-                          link.click();
-                          document.body.removeChild(link);
+                          try {
+                            const fileName = '피험자동의서_2025.hwp';
+                            const link = document.createElement('a');
+                            link.href = `/${encodeURIComponent(fileName)}`;
+                            link.download = fileName;
+                            link.style.display = 'none';
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                          } catch (error) {
+                            console.error('파일 다운로드 중 오류 발생:', error);
+                            alert('파일 다운로드에 실패했습니다. 페이지를 새로고침 후 다시 시도해주세요.');
+                          }
                         }}
                       >
                         📄 피험자동의서 다운로드
