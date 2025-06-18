@@ -621,23 +621,62 @@ const MultiStepRegistration = () => {
                       <button 
                         type="button" 
                         className="btn download-btn"
-                        onClick={() => {
+                        onClick={async () => {
                           try {
-                            const fileName = '피험자동의서_2025.hwp';
+                            const fileName = '피험자동의서_2025.zip';
+                            const baseUrl = process.env.PUBLIC_URL || window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '');
+                            
+                            // 여러 경로를 시도
+                            const possiblePaths = [
+                              `${baseUrl}/${encodeURIComponent(fileName)}`,
+                              `${window.location.origin}${process.env.PUBLIC_URL || ''}/${encodeURIComponent(fileName)}`,
+                              `./${encodeURIComponent(fileName)}`,
+                              `/${encodeURIComponent(fileName)}`
+                            ];
+                            
+                            let response = null;
+                            let lastError = null;
+                            
+                            for (const path of possiblePaths) {
+                              try {
+                                console.log('시도하는 경로:', path);
+                                response = await fetch(path);
+                                if (response.ok) {
+                                  console.log('성공한 경로:', path);
+                                  break;
+                                }
+                              } catch (error) {
+                                lastError = error;
+                                console.log('실패한 경로:', path, error);
+                              }
+                            }
+                            
+                            if (!response || !response.ok) {
+                              throw new Error(`파일을 찾을 수 없습니다. 상태: ${response?.status || 'unknown'}`);
+                            }
+                            
+                            const blob = await response.blob();
+                            
+                            // Blob URL을 생성하여 다운로드
+                            const url = window.URL.createObjectURL(blob);
                             const link = document.createElement('a');
-                            link.href = `/${encodeURIComponent(fileName)}`;
+                            link.href = url;
                             link.download = fileName;
                             link.style.display = 'none';
                             document.body.appendChild(link);
                             link.click();
                             document.body.removeChild(link);
+                            
+                            // 메모리 정리
+                            window.URL.revokeObjectURL(url);
+                            
                           } catch (error) {
                             console.error('파일 다운로드 중 오류 발생:', error);
-                            alert('파일 다운로드에 실패했습니다. 페이지를 새로고침 후 다시 시도해주세요.');
+                            alert(`파일 다운로드에 실패했습니다: ${error.message}\n네트워크 연결을 확인하고 다시 시도해주세요.`);
                           }
                         }}
                       >
-                        📄 피험자동의서 다운로드
+                        📁 피험자동의서 다운로드 (ZIP)
                       </button>
                     </div>
 
