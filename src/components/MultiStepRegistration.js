@@ -268,10 +268,6 @@ const MultiStepRegistration = () => {
       return;
     }
 
-    if (!files.signature) {
-      setRegistrationError('작성된 동의서를 업로드해주세요.');
-      return;
-    }
 
     // 2단계에 추가된 상세정보 필드 유효성 검사
     if (!userData.address || !userData.gender || !userData.birthDate) {
@@ -554,13 +550,12 @@ const MultiStepRegistration = () => {
                     <p>아래 동의서를 읽어 보시고,</p>
                     <p>실험 참여에 동의하시면 세부 동의 1, 2에 체크하신 후</p>
                     <p><strong>주소 (동까지만), 연락처, 성명, 서명, 동의일자</strong>를 입력해 주세요.</p>
-                    <p>서명은 직접 <span style={{color: 'red'}}>업로드</span> 해주시거나 <span style={{color: 'blue'}}>가족, 메일, 문자</span>로 보내주셔도 됩니다.</p>
+                    <p>서명은 직접 <span style={{color: 'red'}}>업로드</span> 해주시거나 <span style={{color: 'blue'}}>카톡, 메일, 문자</span>로 보내주셔도 됩니다.</p>
                     <p>입력된 개인 정보는 연구원 확인 후 즉시 모두 <strong>폐기</strong>됩니다.</p>
                   </div>
 
                   <div className="consent-details-box">
                     <h6>실험 참여 동의서</h6>
-                    <p>아래 버튼을 클릭하여 피험자동의서를 다운로드하고, 작성 후 업로드해 주세요.</p>
                     
                     <div className="download-section">
                       <div className="consent-buttons">
@@ -622,7 +617,7 @@ const MultiStepRegistration = () => {
                             }
                           }}
                         >
-                          📁 다운로드 (ZIP)
+                          📁 실험 참여 동의서 다운로드 (ZIP)
                         </button>
                       </div>
                       
@@ -648,21 +643,7 @@ const MultiStepRegistration = () => {
                       </div>
                     </div>
 
-                    <div className="file-upload-item">
-                      <label><strong>작성된 동의서 업로드 *</strong></label>
-                      <input 
-                        type="file" 
-                        accept=".hwp,.pdf"
-                        onChange={(e) => handleFileChange(e, 'signature')}
-                        required
-                      />
-                      {files.signature && (
-                        <p className="file-info">
-                          선택된 파일: {files.signature.name} ({formatFileSize(files.signature.size)})
-                        </p>
-                      )}
-                      <p className="helper-text">HWP 또는 PDF 파일만 업로드 가능합니다. (필수)</p>
-                    </div>
+
                   </div>
 
                   <div className="consent-details-box">
@@ -800,7 +781,7 @@ const MultiStepRegistration = () => {
                         <label>서명 이미지 파일</label>
                         <input 
                           type="file" 
-                          accept=".jpg,.jpeg,.png,.gif"
+                          accept=".jpg,.jpeg,.png"
                           onChange={(e) => handleFileChange(e, 'signatureImage')}
                         />
                         {files.signatureImage && (
@@ -808,7 +789,7 @@ const MultiStepRegistration = () => {
                             선택된 파일: {files.signatureImage.name} ({formatFileSize(files.signatureImage.size)})
                           </p>
                         )}
-                        <p className="helper-text">이미지 파일(JPG, PNG, GIF)만 업로드 가능합니다.</p>
+                        <p className="helper-text">이미지 파일(JPG, JPEG, PNG)만 업로드 가능합니다.</p>
                       </div>
                     )}
 
