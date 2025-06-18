@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/mind-survey/static/css/main.5172691b.css",
-    "main.js": "/mind-survey/static/js/main.d81b365a.js",
+    "main.css": "/mind-survey/static/css/main.38d7a862.css",
+    "main.js": "/mind-survey/static/js/main.f513a48a.js",
     "static/js/952.fed4e14b.chunk.js": "/mind-survey/static/js/952.fed4e14b.chunk.js",
     "index.html": "/mind-survey/index.html",
-    "main.5172691b.css.map": "/mind-survey/static/css/main.5172691b.css.map",
-    "main.d81b365a.js.map": "/mind-survey/static/js/main.d81b365a.js.map",
+    "main.38d7a862.css.map": "/mind-survey/static/css/main.38d7a862.css.map",
+    "main.f513a48a.js.map": "/mind-survey/static/js/main.f513a48a.js.map",
     "952.fed4e14b.chunk.js.map": "/mind-survey/static/js/952.fed4e14b.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.5172691b.css",
-    "static/js/main.d81b365a.js"
+    "static/css/main.38d7a862.css",
+    "static/js/main.f513a48a.js"
   ]
 }
