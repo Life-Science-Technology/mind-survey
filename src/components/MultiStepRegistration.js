@@ -17,8 +17,8 @@ const MultiStepRegistration = () => {
   const [registrationError, setRegistrationError] = useState('');
   const [consentChecked, setConsentChecked] = useState({
     personalInfo: false,
-    experimentParticipation: false,
-    dataUsage: false,
+    experimentParticipation: null, // null: 선택 안함, true: 첫번째 선택, false: 두번째 선택
+    dataUsage: null, // null: 선택 안함, true: 첫번째 선택, false: 두번째 선택
     thirdParty: false
   });
   
@@ -68,14 +68,7 @@ const MultiStepRegistration = () => {
     }
   };
 
-  // 체크박스 상태 변경 핸들러
-  const handleConsentChange = (e) => {
-    const { name, checked } = e.target;
-    setConsentChecked(prev => ({
-      ...prev,
-      [name]: checked
-    }));
-  };
+
 
   // 필수 동의 항목 및 파일 업로드 확인 함수
   // eslint-disable-next-line no-unused-vars
@@ -240,7 +233,7 @@ const MultiStepRegistration = () => {
 
   // 단계 진행 함수
   const nextStep = () => {
-    setCurrentStep(prev => Math.min(prev + 1, 4));
+    setCurrentStep(prev => Math.min(prev + 1, 3));
   };
 
   const prevStep = () => {
@@ -270,8 +263,8 @@ const MultiStepRegistration = () => {
 
   // 2단계: 실험 참여 동의서
   const handleStep2Submit = () => {
-    if (!consentChecked.experimentParticipation || !consentChecked.dataUsage) {
-      setRegistrationError('필수 동의 항목에 동의해주세요.');
+    if (consentChecked.experimentParticipation === null || consentChecked.dataUsage === null) {
+      setRegistrationError('세부 동의 항목을 선택해주세요.');
       return;
     }
 
@@ -280,14 +273,9 @@ const MultiStepRegistration = () => {
       return;
     }
 
-    setRegistrationError('');
-    nextStep();
-  };
-
-  // 3단계: 상세 개인정보 입력
-  const handleStep3Submit = () => {
+    // 2단계에 추가된 상세정보 필드 유효성 검사
     if (!userData.address || !userData.gender || !userData.birthDate) {
-      setRegistrationError('모든 필수 정보를 입력해주세요.');
+      setRegistrationError('주소, 성별, 생년월일을 모두 입력해주세요.');
       return;
     }
 
@@ -302,10 +290,12 @@ const MultiStepRegistration = () => {
     }
 
     setRegistrationError('');
-    nextStep();
+    setCurrentStep(3); // 바로 3단계(서류제출)로 이동
   };
 
-  // 4단계: 파일 업로드 및 최종 등록
+
+
+  // 3단계: 파일 업로드 및 최종 등록
   const handleFinalSubmit = async () => {
     if (!files.idCard || !files.bankAccount) {
       setRegistrationError('신분증과 통장 사본을 업로드해주세요.');
@@ -327,9 +317,9 @@ const MultiStepRegistration = () => {
         birth_date: userData.birthDate,
         signature_upload_method: userData.signatureUploadMethod,
         consent_date: new Date().toISOString().split('T')[0],
-        registration_step: 4,
-        experiment_consent: consentChecked.experimentParticipation,
-        data_usage_consent: consentChecked.dataUsage,
+        registration_step: 3,
+        experiment_consent: consentChecked.experimentParticipation === true,
+        data_usage_consent: consentChecked.dataUsage === true,
         third_party_consent: consentChecked.thirdParty,
         depressive: depressionScore,
         anxiety: anxietyScore,
@@ -348,9 +338,9 @@ const MultiStepRegistration = () => {
             birth_date: userData.birthDate,
             signature_upload_method: userData.signatureUploadMethod,
             consent_date: new Date().toISOString().split('T')[0],
-            registration_step: 4,
-            experiment_consent: consentChecked.experimentParticipation,
-            data_usage_consent: consentChecked.dataUsage,
+            registration_step: 3,
+            experiment_consent: consentChecked.experimentParticipation === true,
+            data_usage_consent: consentChecked.dataUsage === true,
             third_party_consent: consentChecked.thirdParty,
             depressive: depressionScore,
             anxiety: anxietyScore,
@@ -479,8 +469,7 @@ const MultiStepRegistration = () => {
             <div className="step-indicator">
               <div className={`step ${currentStep >= 1 ? 'active' : ''}`}>1. 기본정보</div>
               <div className={`step ${currentStep >= 2 ? 'active' : ''}`}>2. 동의서</div>
-              <div className={`step ${currentStep >= 3 ? 'active' : ''}`}>3. 상세정보</div>
-              <div className={`step ${currentStep >= 4 ? 'active' : ''}`}>4. 서류제출</div>
+              <div className={`step ${currentStep >= 3 ? 'active' : ''}`}>3. 서류제출</div>
             </div>
 
             {/* 1단계: 기본 정보 입력 */}
@@ -570,53 +559,7 @@ const MultiStepRegistration = () => {
                   </div>
 
                   <div className="consent-details-box">
-                    <h6>세부 동의 1</h6>
-                    <p>본 연구진행 중 본인에게 영향을 줄 수도 있는 새로운 정보를 연구자가 획득 시 그 내용을 통보 받을 수 있습니다.</p>
-                    <label>
-                      <input 
-                        type="checkbox" 
-                        name="experimentParticipation" 
-                        checked={consentChecked.experimentParticipation}
-                        onChange={handleConsentChange}
-                      />
-                      통보를 원합니다.
-                    </label>
-                    <label>
-                      <input 
-                        type="checkbox" 
-                        name="experimentParticipation" 
-                        checked={!consentChecked.experimentParticipation}
-                        onChange={(e) => setConsentChecked(prev => ({...prev, experimentParticipation: !e.target.checked}))}
-                      />
-                      통보를 원치 않습니다.
-                    </label>
-                  </div>
-
-                  <div className="consent-details-box">
-                    <h6>세부 동의 2</h6>
-                    <p>연구과정에서 채취된 검체 및 자료는 연구목적으로 본 연구 이외에도 향후 사용될 수 있습니다.</p>
-                    <label>
-                      <input 
-                        type="checkbox" 
-                        name="dataUsage" 
-                        checked={consentChecked.dataUsage}
-                        onChange={handleConsentChange}
-                      />
-                      사안 발생 시 본인에게 사용허락을 받기 원합니다.
-                    </label>
-                    <label>
-                      <input 
-                        type="checkbox" 
-                        name="dataUsage" 
-                        checked={!consentChecked.dataUsage}
-                        onChange={(e) => setConsentChecked(prev => ({...prev, dataUsage: !e.target.checked}))}
-                      />
-                      사용을 원치 않습니다.
-                    </label>
-                  </div>
-
-                  <div className="consent-details-box">
-                    <h6>동의서 다운로드 및 업로드</h6>
+                    <h6>실험 참여 동의서</h6>
                     <p>아래 버튼을 클릭하여 피험자동의서를 다운로드하고, 작성 후 업로드해 주세요.</p>
                     
                     <div className="download-section">
@@ -721,37 +664,53 @@ const MultiStepRegistration = () => {
                       <p className="helper-text">HWP 또는 PDF 파일만 업로드 가능합니다. (필수)</p>
                     </div>
                   </div>
-                </div>
 
-                {registrationError && (
-                  <p className="error-message">{registrationError}</p>
-                )}
+                  <div className="consent-details-box">
+                    <h6>세부 동의 1</h6>
+                    <p>본 연구진행 중 본인에게 영향을 줄 수도 있는 새로운 정보를 연구자가 획득 시 그 내용을 통보 받을 수 있습니다.</p>
+                    <label>
+                      <input 
+                        type="checkbox" 
+                        name="experimentParticipation" 
+                        checked={consentChecked.experimentParticipation === true}
+                        onChange={() => setConsentChecked(prev => ({...prev, experimentParticipation: prev.experimentParticipation === true ? null : true}))}
+                      />
+                      통보를 원합니다.
+                    </label>
+                    <label>
+                      <input 
+                        type="checkbox" 
+                        name="experimentParticipation" 
+                        checked={consentChecked.experimentParticipation === false}
+                        onChange={() => setConsentChecked(prev => ({...prev, experimentParticipation: prev.experimentParticipation === false ? null : false}))}
+                      />
+                      통보를 원치 않습니다.
+                    </label>
+                  </div>
 
-                <div className="step-actions">
-                  <button 
-                    type="button" 
-                    className="btn prev-btn"
-                    onClick={prevStep}
-                  >
-                    이전 단계
-                  </button>
-                  <button 
-                    type="button" 
-                    className="btn next-btn"
-                    onClick={handleStep2Submit}
-                  >
-                    다음 단계
-                  </button>
-                </div>
-              </div>
-            )}
+                  <div className="consent-details-box">
+                    <h6>세부 동의 2</h6>
+                    <p>연구과정에서 채취된 검체 및 자료는 연구목적으로 본 연구 이외에도 향후 사용될 수 있습니다.</p>
+                    <label>
+                      <input 
+                        type="checkbox" 
+                        name="dataUsage" 
+                        checked={consentChecked.dataUsage === true}
+                        onChange={() => setConsentChecked(prev => ({...prev, dataUsage: prev.dataUsage === true ? null : true}))}
+                      />
+                      사안 발생 시 본인에게 사용허락을 받기 원합니다.
+                    </label>
+                    <label>
+                      <input 
+                        type="checkbox" 
+                        name="dataUsage" 
+                        checked={consentChecked.dataUsage === false}
+                        onChange={() => setConsentChecked(prev => ({...prev, dataUsage: prev.dataUsage === false ? null : false}))}
+                      />
+                      사용을 원치 않습니다.
+                    </label>
+                  </div>
 
-            {/* 3단계: 상세 개인정보 입력 */}
-            {currentStep === 3 && (
-              <div className="registration-step">
-                <h5>3단계: 상세 개인정보 입력</h5>
-                
-                <div className="form-section">
                   <div className="form-group">
                     <label htmlFor="address"><strong>주소 (동까지만)</strong></label>
                     <input 
@@ -888,7 +847,7 @@ const MultiStepRegistration = () => {
                   <button 
                     type="button" 
                     className="btn next-btn"
-                    onClick={handleStep3Submit}
+                    onClick={handleStep2Submit}
                   >
                     다음 단계
                   </button>
@@ -896,10 +855,12 @@ const MultiStepRegistration = () => {
               </div>
             )}
 
-            {/* 4단계: 서류 제출 */}
-            {currentStep === 4 && (
+
+
+            {/* 3단계: 서류 제출 */}
+            {currentStep === 3 && (
               <div className="registration-step">
-                <h5>4단계: 서류 제출</h5>
+                <h5>3단계: 서류 제출</h5>
                 
                 <div className="document-upload-section">
                   <h6>사례비 지급을 위한 서류 제출</h6>
@@ -957,7 +918,7 @@ const MultiStepRegistration = () => {
                       id="personalInfo" 
                       name="personalInfo" 
                       checked={consentChecked.personalInfo}
-                      onChange={handleConsentChange}
+                      onChange={(e) => setConsentChecked(prev => ({...prev, personalInfo: e.target.checked}))}
                     />
                     <label htmlFor="personalInfo">
                       <strong>[필수]</strong> 개인정보 수집 및 이용에 동의합니다.
