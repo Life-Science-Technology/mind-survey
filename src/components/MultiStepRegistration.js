@@ -43,6 +43,8 @@ const MultiStepRegistration = () => {
     signatureImage: null
   });
   const [isUploading, setIsUploading] = useState(false);
+  
+
 
   // 컴포넌트 마운트 시 스크롤을 최상단으로 이동
   useEffect(() => {
@@ -618,66 +620,89 @@ const MultiStepRegistration = () => {
                     <p>아래 버튼을 클릭하여 피험자동의서를 다운로드하고, 작성 후 업로드해 주세요.</p>
                     
                     <div className="download-section">
-                      <button 
-                        type="button" 
-                        className="btn download-btn"
-                        onClick={async () => {
-                          try {
-                            const fileName = '피험자동의서_2025.zip';
-                            const baseUrl = process.env.PUBLIC_URL || window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '');
-                            
-                            // 여러 경로를 시도
-                            const possiblePaths = [
-                              `${baseUrl}/${encodeURIComponent(fileName)}`,
-                              `${window.location.origin}${process.env.PUBLIC_URL || ''}/${encodeURIComponent(fileName)}`,
-                              `./${encodeURIComponent(fileName)}`,
-                              `/${encodeURIComponent(fileName)}`
-                            ];
-                            
-                            let response = null;
-                            let lastError = null;
-                            
-                            for (const path of possiblePaths) {
-                              try {
-                                console.log('시도하는 경로:', path);
-                                response = await fetch(path);
-                                if (response.ok) {
-                                  console.log('성공한 경로:', path);
-                                  break;
+                      <div className="consent-buttons">
+                        <button 
+                          type="button" 
+                          className="btn download-btn"
+                          onClick={async () => {
+                            try {
+                              const fileName = '피험자동의서_2025.zip';
+                              const baseUrl = process.env.PUBLIC_URL || window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '');
+                              
+                              // 여러 경로를 시도
+                              const possiblePaths = [
+                                `${baseUrl}/${encodeURIComponent(fileName)}`,
+                                `${window.location.origin}${process.env.PUBLIC_URL || ''}/${encodeURIComponent(fileName)}`,
+                                `./${encodeURIComponent(fileName)}`,
+                                `/${encodeURIComponent(fileName)}`
+                              ];
+                              
+                              let response = null;
+                              let lastError = null;
+                              
+                              for (const path of possiblePaths) {
+                                try {
+                                  console.log('시도하는 경로:', path);
+                                  response = await fetch(path);
+                                  if (response.ok) {
+                                    console.log('성공한 경로:', path);
+                                    break;
+                                  }
+                                } catch (error) {
+                                  lastError = error;
+                                  console.log('실패한 경로:', path, error);
                                 }
-                              } catch (error) {
-                                lastError = error;
-                                console.log('실패한 경로:', path, error);
                               }
+                              
+                              if (!response || !response.ok) {
+                                throw new Error(`파일을 찾을 수 없습니다. 상태: ${response?.status || 'unknown'}`);
+                              }
+                              
+                              const blob = await response.blob();
+                              
+                              // Blob URL을 생성하여 다운로드
+                              const url = window.URL.createObjectURL(blob);
+                              const link = document.createElement('a');
+                              link.href = url;
+                              link.download = fileName;
+                              link.style.display = 'none';
+                              document.body.appendChild(link);
+                              link.click();
+                              document.body.removeChild(link);
+                              
+                              // 메모리 정리
+                              window.URL.revokeObjectURL(url);
+                              
+                            } catch (error) {
+                              console.error('파일 다운로드 중 오류 발생:', error);
+                              alert(`파일 다운로드에 실패했습니다: ${error.message}\n네트워크 연결을 확인하고 다시 시도해주세요.`);
                             }
-                            
-                            if (!response || !response.ok) {
-                              throw new Error(`파일을 찾을 수 없습니다. 상태: ${response?.status || 'unknown'}`);
-                            }
-                            
-                            const blob = await response.blob();
-                            
-                            // Blob URL을 생성하여 다운로드
-                            const url = window.URL.createObjectURL(blob);
-                            const link = document.createElement('a');
-                            link.href = url;
-                            link.download = fileName;
-                            link.style.display = 'none';
-                            document.body.appendChild(link);
-                            link.click();
-                            document.body.removeChild(link);
-                            
-                            // 메모리 정리
-                            window.URL.revokeObjectURL(url);
-                            
-                          } catch (error) {
-                            console.error('파일 다운로드 중 오류 발생:', error);
-                            alert(`파일 다운로드에 실패했습니다: ${error.message}\n네트워크 연결을 확인하고 다시 시도해주세요.`);
-                          }
-                        }}
-                      >
-                        📁 피험자동의서 다운로드 (ZIP)
-                      </button>
+                          }}
+                        >
+                          📁 다운로드 (ZIP)
+                        </button>
+                      </div>
+                      
+                      {/* 인라인 PDF 뷰어 - 항상 표시 */}
+                      <div className="inline-pdf-viewer">
+                        <div className="pdf-viewer-header">
+                          <h6>피험자동의서</h6>
+                        </div>
+                        <div className="pdf-iframe-container">
+                          <iframe 
+                            src={`${process.env.PUBLIC_URL || ''}/피험자동의서.pdf`}
+                            width="100%"
+                            height="500"
+                            title="피험자동의서"
+                            style={{
+                              border: '1px solid #ddd',
+                              borderRadius: '4px'
+                            }}
+                          >
+                            <p>PDF를 표시할 수 없습니다. <a href={`${process.env.PUBLIC_URL || ''}/피험자동의서.pdf`} target="_blank" rel="noopener noreferrer">여기를 클릭하여 PDF를 확인하세요.</a></p>
+                          </iframe>
+                        </div>
+                      </div>
                     </div>
 
                     <div className="file-upload-item">
@@ -973,6 +998,8 @@ const MultiStepRegistration = () => {
           </div>
         )}
       </div>
+      
+
     </div>
   );
 };

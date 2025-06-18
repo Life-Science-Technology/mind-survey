@@ -1,0 +1,234 @@
+/* PDF 뷰어 오버레이 */
+.consent-viewer-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+/* PDF 뷰어 모달 */
+.consent-viewer-modal {
+  background: white;
+  border-radius: 8px;
+  width: 95%;
+  max-width: 800px;
+  height: 85vh;
+  max-height: 700px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+}
+
+/* 헤더 */
+.consent-viewer-header {
+  background: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+  padding: 15px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.consent-viewer-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #495057;
+}
+
+/* 뷰어 컨트롤 */
+.viewer-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.viewer-controls button {
+  background: #fff;
+  border: 1px solid #ced4da;
+  color: #495057;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.viewer-controls button:hover:not(:disabled) {
+  background: #e9ecef;
+  border-color: #adb5bd;
+}
+
+.viewer-controls button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.zoom-level {
+  color: #495057;
+  font-size: 14px;
+  font-weight: 500;
+  min-width: 45px;
+  text-align: center;
+}
+
+.close-btn {
+  background: #f8f9fa !important;
+  border: 1px solid #ced4da !important;
+  color: #495057 !important;
+  padding: 8px 12px !important;
+  font-size: 14px !important;
+  font-weight: bold !important;
+}
+
+.close-btn:hover {
+  background: #e9ecef !important;
+  color: #343a40 !important;
+}
+
+/* 콘텐츠 영역 */
+.consent-viewer-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #f8f9fa;
+}
+
+/* PDF 컨테이너 */
+.pdf-container {
+  flex: 1;
+  overflow: auto;
+  padding: 20px;
+  background: #f8f9fa;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* PDF 페이지 스타일 */
+.react-pdf__Document {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.react-pdf__Page {
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: white;
+}
+
+.react-pdf__Page:last-child {
+  margin-bottom: 0;
+}
+
+.react-pdf__Page__canvas {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+/* 로딩 및 에러 메시지 */
+.loading-message,
+.error-message {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  padding: 40px;
+  text-align: center;
+}
+
+.loading-message p {
+  font-size: 16px;
+  color: #6c757d;
+  margin: 0;
+}
+
+.error-message p {
+  font-size: 16px;
+  color: #dc3545;
+  margin: 0 0 20px 0;
+}
+
+.error-message .btn {
+  background: #4c6ef5;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.error-message .btn:hover {
+  background: #3b5bdb;
+}
+
+/* 모바일 반응형 */
+@media (max-width: 768px) {
+  .consent-viewer-overlay {
+    padding: 10px;
+  }
+
+  .consent-viewer-modal {
+    width: 100%;
+    height: 90vh;
+    border-radius: 4px;
+  }
+
+  .consent-viewer-header {
+    padding: 12px 15px;
+  }
+
+  .consent-viewer-header h3 {
+    font-size: 16px;
+  }
+
+  .viewer-controls {
+    gap: 8px;
+  }
+
+  .viewer-controls button {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  .zoom-level {
+    font-size: 12px;
+    min-width: 40px;
+  }
+
+  .pdf-container {
+    padding: 15px;
+  }
+}
+
+/* 작은 모바일 화면 */
+@media (max-width: 480px) {
+  .viewer-controls button {
+    padding: 5px 8px;
+    font-size: 11px;
+  }
+
+  .consent-viewer-header h3 {
+    font-size: 14px;
+  }
+
+  .pdf-container {
+    padding: 10px;
+  }
+}
+
+ 
