@@ -1669,6 +1669,10 @@ input[type="tel"]:focus {
 .step-actions .btn {
   flex: 1;
   max-width: 200px;
+  word-break: keep-all;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* 등록 완료 섹션의 버튼 중앙 정렬 */
@@ -1921,6 +1925,32 @@ input[type="tel"]:focus {
   .consent-buttons {
     flex-direction: column;
     gap: 10px;
+  }
+
+  .step-actions {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .step-actions .btn {
+    width: 100%;
+    max-width: none;
+    white-space: normal;
+    word-break: keep-all;
+    line-height: 1.4;
+    padding: 16px 20px;
+    text-align: center;
+    flex: none;
+    font-size: 15px;
+    min-height: 48px;
+  }
+}
+
+@media (max-width: 480px) {
+  .step-actions .btn {
+    padding: 18px 15px;
+    font-size: 14px;
+    min-height: 52px;
   }
 }
 

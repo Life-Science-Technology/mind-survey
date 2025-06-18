@@ -1152,14 +1152,71 @@ const MultiStepRegistration = () => {
                   </div>
 
                   <div className="consent-item">
-                    <input 
-                      type="checkbox" 
-                      id="personalInfo" 
-                      name="personalInfo" 
-                      checked={consentChecked.personalInfo}
-                      onChange={(e) => setConsentChecked(prev => ({...prev, personalInfo: e.target.checked}))}
-                    />
-                    <label htmlFor="personalInfo">
+                    <style>
+                      {`
+                        .consent-item {
+                          margin: 20px 0;
+                          padding: 15px;
+                          background-color: #f8f9fa;
+                          border: 1px solid #e9ecef;
+                          border-radius: 8px;
+                        }
+                        .consent-item input[type="checkbox"] {
+                          margin-right: 10px;
+                          transform: scale(1.2);
+                        }
+                        .consent-item label {
+                          display: flex;
+                          align-items: flex-start;
+                          gap: 10px;
+                          cursor: pointer;
+                          line-height: 1.5;
+                          word-break: keep-all;
+                          font-size: 14px;
+                        }
+                        .consent-details {
+                          margin-top: 15px;
+                          padding-left: 30px;
+                        }
+                        .consent-details ul {
+                          margin: 0;
+                          padding-left: 20px;
+                        }
+                        .consent-details li {
+                          margin-bottom: 8px;
+                          line-height: 1.4;
+                          word-break: keep-all;
+                          font-size: 13px;
+                          color: #6c757d;
+                        }
+                        @media (max-width: 768px) {
+                          .consent-item {
+                            margin: 15px 0;
+                            padding: 12px;
+                          }
+                          .consent-item label {
+                            font-size: 13px;
+                            line-height: 1.4;
+                          }
+                          .consent-details {
+                            padding-left: 20px;
+                            margin-top: 12px;
+                          }
+                          .consent-details li {
+                            font-size: 12px;
+                            margin-bottom: 6px;
+                          }
+                        }
+                      `}
+                    </style>
+                    <label>
+                      <input 
+                        type="checkbox" 
+                        id="personalInfo" 
+                        name="personalInfo" 
+                        checked={consentChecked.personalInfo}
+                        onChange={(e) => setConsentChecked(prev => ({...prev, personalInfo: e.target.checked}))}
+                      />
                       <strong>[필수]</strong> 개인정보 수집 및 이용에 동의합니다.
                     </label>
                     <div className="consent-details">
@@ -1177,6 +1234,48 @@ const MultiStepRegistration = () => {
                 )}
 
                 <div className="step-actions">
+                  <style>
+                    {`
+                      .step-actions {
+                        display: flex;
+                        gap: 15px;
+                        justify-content: space-between;
+                        align-items: center;
+                      }
+                      .step-actions .btn {
+                        flex: 1;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        min-width: 0;
+                        padding: 12px 20px;
+                        font-size: 14px;
+                        font-weight: 600;
+                      }
+                      @media (max-width: 768px) {
+                        .step-actions {
+                          flex-direction: column;
+                          gap: 12px;
+                        }
+                        .step-actions .btn {
+                          width: 100%;
+                          white-space: normal;
+                          word-break: keep-all;
+                          line-height: 1.4;
+                          padding: 16px 20px;
+                          text-align: center;
+                          flex: none;
+                        }
+                      }
+                      @media (max-width: 480px) {
+                        .step-actions .btn {
+                          padding: 18px 15px;
+                          font-size: 14px;
+                          min-height: 52px;
+                        }
+                      }
+                    `}
+                  </style>
                   <button 
                     type="button" 
                     className="btn prev-btn"
@@ -1186,11 +1285,11 @@ const MultiStepRegistration = () => {
                   </button>
                   <button 
                     type="button" 
-                    className={`btn register-btn ${isFinalSubmitValid() ? 'active' : 'disabled'}`}
+                    className={`btn next-btn ${isFinalSubmitValid() ? 'active' : 'disabled'}`}
                     onClick={handleFinalSubmit}
                     disabled={isRegistering || isUploading || !isFinalSubmitValid()}
                   >
-                    {isRegistering ? (isUploading ? '파일 업로드 중...' : '등록 중...') : '실증 실험 대기자 등록 완료'}
+                    {isRegistering ? (isUploading ? '파일 업로드 중...' : '등록 중...') : '실증 실험 대기자 등록'}
                   </button>
                 </div>
               </div>
