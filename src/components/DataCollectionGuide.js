@@ -196,18 +196,40 @@ const DataCollectionGuide = () => {
         third_party_consent: false
       };
 
-      console.log('대기자 등록 시도:', waitlistData);
+      console.log('대기자 등록/업데이트 시도:', waitlistData);
 
-      // Supabase에 데이터 저장
-      const { data, error } = await supabase
+      // 먼저 기존 데이터가 있는지 확인 (이메일 또는 전화번호 기준)
+      const { data: existingData, error: searchError } = await supabase
         .from('survey-person')
-        .insert([waitlistData])
-        .select();
+        .select('*')
+        .or(`email.eq.${waitlistData.email},phone.eq.${waitlistData.phone}`)
+        .single();
 
+      console.log('기존 데이터 조회:', { existingData, searchError });
+
+      let result;
+      if (existingData && !searchError) {
+        // 기존 데이터가 있으면 업데이트
+        console.log('기존 데이터 업데이트 수행');
+        result = await supabase
+          .from('survey-person')
+          .update(waitlistData)
+          .eq('id', existingData.id)
+          .select();
+      } else {
+        // 기존 데이터가 없으면 새로 삽입
+        console.log('새 데이터 삽입 수행');
+        result = await supabase
+          .from('survey-person')
+          .insert([waitlistData])
+          .select();
+      }
+
+      const { data, error } = result;
       console.log('Supabase 응답:', { data, error });
 
       if (error) {
-        console.error('대기자 등록 중 오류 발생:', error);
+        console.error('대기자 등록/업데이트 중 오류 발생:', error);
         
         // 중복 데이터 오류 처리
         if (error.code === '23505') { // unique constraint violation
@@ -220,13 +242,14 @@ const DataCollectionGuide = () => {
 
       // 성공 시 상태 업데이트
       setRegistrationSuccess(true);
-      console.log('대기자 등록 성공:', { waitlistData, insertedData: data });
+      const isUpdate = existingData && !searchError;
+      console.log(`대기자 ${isUpdate ? '정보 업데이트' : '등록'} 성공:`, { waitlistData, resultData: data });
 
       // 3초 후 홈페이지로 이동
       setTimeout(() => {
         navigate('/', { 
           state: { 
-            message: '대기자 등록이 완료되었습니다. 추후 연락을 통해 실험 참여 일정을 안내해 드리겠습니다.' 
+            message: `대기자 ${isUpdate ? '정보 업데이트가' : '등록이'} 완료되었습니다. 추후 연락을 통해 실험 참여 일정을 안내해 드리겠습니다.` 
           } 
         });
       }, 3000);
@@ -397,7 +420,7 @@ const DataCollectionGuide = () => {
 
               {registrationSuccess && (
                 <div className="success-message">
-                  <p>✅ 대기자 등록이 완료되었습니다!</p>
+                  <p>✅ 대기자 정보가 성공적으로 등록되었습니다!</p>
                   <p>추후 연락을 통해 실험 참여 일정을 안내해 드리겠습니다.</p>
                   <p>잠시 후 홈페이지로 이동합니다...</p>
                 </div>

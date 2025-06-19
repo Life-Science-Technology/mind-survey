@@ -15,6 +15,7 @@ const MultiStepRegistration = () => {
   const [isRegistering, setIsRegistering] = useState(false);
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
   const [registrationError, setRegistrationError] = useState('');
+  const [existingUserId, setExistingUserId] = useState(null); // 1단계에서 가져온 기존 사용자 ID
   const [consentChecked, setConsentChecked] = useState({
     personalInfo: false,
     experimentParticipation: null, // null: 선택 안함, true: 첫번째 선택, false: 두번째 선택
@@ -275,8 +276,122 @@ const MultiStepRegistration = () => {
       return;
     }
 
-    setRegistrationError('');
-    nextStep();
+    // DB에서 기존 사용자 검증
+    try {
+      setRegistrationError('사용자 정보를 확인하는 중...');
+      
+      // 전화번호를 숫자만으로 정규화 (하이픈 제거)
+      const normalizedPhone = userData.phone.replace(/\D/g, '');
+      
+      console.log('사용자 검색 시도:', {
+        name: userData.name.trim(),
+        email: userData.email.trim(),
+        phone: normalizedPhone,
+        originalPhone: userData.phone
+      });
+      
+      // 먼저 테이블이 존재하는지 확인
+      console.log('🔍 테이블 존재 여부 확인...');
+      const { count, error: countError } = await supabase
+        .from('survey-person')
+        .select('*', { count: 'exact', head: true });
+      console.log('survey-person 테이블 row 수:', count, 'error:', countError?.message);
+      
+      const { data: existingUsers, error: searchError } = await supabase
+        .from('survey-person')
+        .select('id, name, email, phone, registration_step')
+        .eq('name', userData.name.trim())
+        .eq('email', userData.email.trim())
+        .eq('phone', normalizedPhone);
+
+      if (searchError) {
+        console.error('사용자 검색 중 오류:', searchError);
+        setRegistrationError('사용자 정보 확인 중 오류가 발생했습니다. 다시 시도해주세요.');
+        return;
+      }
+
+      console.log('검색 결과:', existingUsers);
+
+      // 동일한 이름, 이메일, 전화번호를 가진 사용자가 있는지 확인
+      if (existingUsers && existingUsers.length > 0) {
+        const existingUser = existingUsers[0];
+        console.log('찾은 사용자:', existingUser);
+        
+        // 등록 단계 확인
+        if (existingUser.registration_step >= 3) {
+          // 이미 등록이 완료된 사용자
+          setRegistrationError('이미 등록이 완료된 사용자입니다. 등록을 다시 진행할 수 없습니다.');
+          return;
+        } else {
+          // 등록이 완료되지 않은 사용자 (registration_step = 0~2) - 다음 단계로 진행 허용
+          console.log(`등록 진행 허용: registration_step = ${existingUser.registration_step}`);
+          console.log('기존 사용자 ID 저장:', existingUser.id);
+          setExistingUserId(existingUser.id);
+          setRegistrationError('');
+          nextStep();
+        }
+      } else {
+        // 정확한 매치 없음 - 개별 필드별 디버깅 검색
+        console.log('정확한 매치 없음, 개별 필드 검색으로 원인 파악...');
+        
+        // 이름으로만 검색
+        const { data: nameUsers } = await supabase
+          .from('survey-person')
+          .select('id, name, email, phone, registration_step')
+          .eq('name', userData.name.trim());
+        console.log('이름으로 검색 결과:', nameUsers);
+        
+        // 이메일로만 검색
+        const { data: emailUsers } = await supabase
+          .from('survey-person')
+          .select('id, name, email, phone, registration_step')
+          .eq('email', userData.email.trim());
+        console.log('이메일로 검색 결과:', emailUsers);
+        
+        // 전화번호로만 검색
+        const { data: phoneUsers } = await supabase
+          .from('survey-person')
+          .select('id, name, email, phone, registration_step')
+          .eq('phone', normalizedPhone);
+        console.log('전화번호로 검색 결과:', phoneUsers);
+        
+        // 디버깅용: 전체 사용자 목록 조회 (최근 10개)
+        const { data: allUsers, error: allUsersError } = await supabase
+          .from('survey-person')
+          .select('id, name, email, phone, registration_step, created_at')
+          .order('created_at', { ascending: false })
+          .limit(10);
+        console.log('최근 등록된 사용자 10명:', allUsers);
+        console.log('사용자 조회 오류:', allUsersError);
+        
+
+        
+        // 부분 매치 분석
+        let errorMessage = '등록되지 않은 사용자입니다.';
+        const matchInfo = [];
+        
+        if (nameUsers && nameUsers.length > 0) {
+          matchInfo.push(`이름 일치: ${nameUsers.length}건`);
+        }
+        if (emailUsers && emailUsers.length > 0) {
+          matchInfo.push(`이메일 일치: ${emailUsers.length}건`);
+        }
+        if (phoneUsers && phoneUsers.length > 0) {
+          matchInfo.push(`전화번호 일치: ${phoneUsers.length}건`);
+        }
+        
+        
+        errorMessage = '등록되지 않은 사용자입니다. 먼저 대기자 등록을 완료해주세요.';
+        
+        
+        setRegistrationError(errorMessage);
+        return;
+      }
+      
+    } catch (error) {
+      console.error('사용자 검증 중 예외 발생:', error);
+      setRegistrationError('시스템 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+    }
   };
 
   // 2단계: 실험 참여 동의서
@@ -418,11 +533,17 @@ const MultiStepRegistration = () => {
       const user = await ensureUserSession();
       console.log('사용자 세션:', user?.id || 'anonymous');
 
-      // 먼저 사용자 데이터 저장
-      console.log('사용자 데이터 저장 시도:', {
-        name: userData.name, 
-        email: userData.email, 
-        phone: userData.phone, 
+      // 기존 사용자 레코드 업데이트 방식 (단순화)
+      console.log('기존 사용자 레코드 업데이트 시도...');
+      console.log('기존 사용자 ID:', existingUserId);
+      
+      if (!existingUserId) {
+        console.warn('기존 사용자 ID가 없습니다. 1단계부터 다시 진행해주세요.');
+        throw new Error('사용자 ID가 없습니다. 1단계부터 다시 진행해주세요.');
+      }
+      
+      // 기존 레코드 업데이트 데이터 준비
+      const updateData = {
         address: userData.address,
         gender: userData.gender,
         birth_date: userData.birthDate,
@@ -436,78 +557,58 @@ const MultiStepRegistration = () => {
         third_party_consent: consentChecked.thirdParty,
         depressive: depressionScore,
         anxiety: anxietyScore,
-        stress: stressScore,
-      });
+        stress: stressScore
+      };
 
-      // 사용자 데이터 삽입 시도 (RETURNING으로 ID 가져오기)
-      let participantId = null;
+      console.log('업데이트 데이터:', updateData);
+
+      // RPC 함수를 통한 업데이트 시도 (CORS 우회)
+      let updateSuccess = false;
+      let participantId = existingUserId;
       
       try {
-        const insertResult = await supabase.rpc('insert_survey_person_with_id', {
-          p_name: userData.name,
-          p_email: userData.email,
-          p_phone: userData.phone,
-          p_address: userData.address,
-          p_gender: userData.gender,
-          p_birth_date: userData.birthDate,
-          p_signature_upload_method: userData.signatureUploadMethod,
-          p_id_card_upload_method: userData.idCardUploadMethod,
-          p_bank_account_upload_method: userData.bankAccountUploadMethod,
-          p_consent_date: new Date().toISOString().split('T')[0],
-          p_registration_step: 3,
-          p_experiment_consent: consentChecked.experimentParticipation === true,
-          p_data_usage_consent: consentChecked.dataUsage === true,
-          p_third_party_consent: consentChecked.thirdParty,
-          p_depressive: depressionScore,
-          p_anxiety: anxietyScore,
-          p_stress: stressScore
+        console.log('RPC 함수로 업데이트 시도...');
+        const { error: rpcError } = await supabase.rpc('update_person_registration', {
+          person_id: existingUserId,
+          update_data: updateData
         });
-
-        if (insertResult.error) {
-          throw insertResult.error;
+        
+        if (!rpcError) {
+          console.log('RPC 함수로 업데이트 성공');
+          updateSuccess = true;
+        } else {
+          console.log('RPC 함수 실패:', rpcError.message);
         }
-        
-        participantId = insertResult.data;
-        console.log('사용자 데이터 저장 성공, ID:', participantId);
-        
-      } catch (rpcError) {
-        console.log('RPC 함수 사용 실패, 일반 INSERT 시도:', rpcError.message);
-        
-        // RPC 함수가 없는 경우 일반 INSERT 시도
-        const { error: userError } = await supabase
-          .from('survey-person')
-          .insert([
-            { 
-              name: userData.name, 
-              email: userData.email, 
-              phone: userData.phone, 
-              address: userData.address,
-              gender: userData.gender,
-              birth_date: userData.birthDate,
-              signature_upload_method: userData.signatureUploadMethod,
-              id_card_upload_method: userData.idCardUploadMethod,
-              bank_account_upload_method: userData.bankAccountUploadMethod,
-              consent_date: new Date().toISOString().split('T')[0],
-              registration_step: 3,
-              experiment_consent: consentChecked.experimentParticipation === true,
-              data_usage_consent: consentChecked.dataUsage === true,
-              third_party_consent: consentChecked.thirdParty,
-              depressive: depressionScore,
-              anxiety: anxietyScore,
-              stress: stressScore,
-            }
-          ]);
-
-        if (userError) {
-          console.error('사용자 데이터 저장 상세 오류:', userError);
-          throw new Error(`사용자 데이터 저장 오류: ${userError.message}`);
-        }
-
-        console.log('사용자 데이터 저장 성공 (ID 없음)');
-        // 고유한 식별자 생성 (이메일 + 타임스탬프 조합)
-        participantId = `${userData.email}_${Date.now()}`;
-        console.log('생성된 고유 식별자:', participantId);
+      } catch (error) {
+        console.log('RPC 시도 중 예외:', error.message);
       }
+
+      // RPC 실패 시 기존 방식으로 시도
+      if (!updateSuccess) {
+        console.log('직접 UPDATE 시도...');
+        try {
+          const { error: updateError } = await supabase
+            .from('survey-person')
+            .update(updateData)
+            .eq('id', existingUserId);
+          
+          if (updateError) {
+            console.error('직접 UPDATE 실패:', updateError);
+            throw new Error(`데이터 업데이트에 실패했습니다: ${updateError.message}`);
+          } else {
+            console.log('직접 UPDATE 성공');
+            updateSuccess = true;
+          }
+        } catch (error) {
+          throw new Error(`등록 처리에 실패했습니다: ${error.message}`);
+        }
+      }
+
+      if (!updateSuccess) {
+        throw new Error('데이터 업데이트에 실패했습니다. 관리자에게 문의해주세요.');
+      }
+
+      console.log('사용할 participant ID:', participantId);
 
       // 파일 업로드 처리 (스토리지 업로드 + DB 저장)
       console.log('파일 업로드 처리 시작');
