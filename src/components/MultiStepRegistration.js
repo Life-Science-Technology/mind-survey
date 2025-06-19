@@ -105,7 +105,7 @@ const MultiStepRegistration = () => {
   
   // 전화번호 형식화 함수
   const formatPhoneNumber = useCallback((phone) => {
-    const digits = phone.replace(/\D/g, '');
+    const digits = phone.replace(/\D/g, '').slice(0, 11); // 11자리로 제한
     
     if (digits.length <= 3) {
       return digits;
@@ -148,11 +148,19 @@ const MultiStepRegistration = () => {
     const { value } = e.target;
     const digits = value.replace(/\D/g, '');
     
-    if (digits.length >= 3 && !digits.startsWith('010')) {
+    // 11자리를 초과하는 입력은 무시
+    if (digits.length > 11) {
+      return;
+    }
+    
+    // 전화번호 검증 및 에러 메시지 설정
+    if (digits.length === 0) {
+      setPhoneError('');
+    } else if (digits.length >= 3 && !digits.startsWith('010')) {
       setPhoneError('전화번호는 010으로 시작해야 합니다.');
     } else if (digits.length > 0 && digits.length < 11) {
       setPhoneError('전화번호는 11자리여야 합니다.');
-    } else {
+    } else if (digits.length === 11) {
       setPhoneError('');
     }
     
