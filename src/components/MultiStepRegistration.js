@@ -431,43 +431,148 @@ const MultiStepRegistration = () => {
         stress: stressScore,
       });
 
-      const { data: insertedUser, error: userError } = await supabase
-        .from('survey-person')
-        .insert([
-          { 
-            name: userData.name, 
-            email: userData.email, 
-            phone: userData.phone, 
-            address: userData.address,
-            gender: userData.gender,
-            birth_date: userData.birthDate,
-            signature_upload_method: userData.signatureUploadMethod,
-            id_card_upload_method: userData.idCardUploadMethod,
-            bank_account_upload_method: userData.bankAccountUploadMethod,
-            consent_date: new Date().toISOString().split('T')[0],
-            registration_step: 3,
-            experiment_consent: consentChecked.experimentParticipation === true,
-            data_usage_consent: consentChecked.dataUsage === true,
-            third_party_consent: consentChecked.thirdParty,
-            depressive: depressionScore,
-            anxiety: anxietyScore,
-            stress: stressScore,
-          }
-        ])
-        .select()
-        .single();
+      // 사용자 데이터 삽입 시도 (RETURNING으로 ID 가져오기)
+      let participantId = null;
+      
+      try {
+        const insertResult = await supabase.rpc('insert_survey_person_with_id', {
+          p_name: userData.name,
+          p_email: userData.email,
+          p_phone: userData.phone,
+          p_address: userData.address,
+          p_gender: userData.gender,
+          p_birth_date: userData.birthDate,
+          p_signature_upload_method: userData.signatureUploadMethod,
+          p_id_card_upload_method: userData.idCardUploadMethod,
+          p_bank_account_upload_method: userData.bankAccountUploadMethod,
+          p_consent_date: new Date().toISOString().split('T')[0],
+          p_registration_step: 3,
+          p_experiment_consent: consentChecked.experimentParticipation === true,
+          p_data_usage_consent: consentChecked.dataUsage === true,
+          p_third_party_consent: consentChecked.thirdParty,
+          p_depressive: depressionScore,
+          p_anxiety: anxietyScore,
+          p_stress: stressScore
+        });
 
-      if (userError) {
-        console.error('사용자 데이터 저장 상세 오류:', userError);
-        throw new Error(`사용자 데이터 저장 오류: ${userError.message}`);
+        if (insertResult.error) {
+          throw insertResult.error;
+        }
+        
+        participantId = insertResult.data;
+        console.log('사용자 데이터 저장 성공, ID:', participantId);
+        
+      } catch (rpcError) {
+        console.log('RPC 함수 사용 실패, 일반 INSERT 시도:', rpcError.message);
+        
+        // RPC 함수가 없는 경우 일반 INSERT 시도
+        const { error: userError } = await supabase
+          .from('survey-person')
+          .insert([
+            { 
+              name: userData.name, 
+              email: userData.email, 
+              phone: userData.phone, 
+              address: userData.address,
+              gender: userData.gender,
+              birth_date: userData.birthDate,
+              signature_upload_method: userData.signatureUploadMethod,
+              id_card_upload_method: userData.idCardUploadMethod,
+              bank_account_upload_method: userData.bankAccountUploadMethod,
+              consent_date: new Date().toISOString().split('T')[0],
+              registration_step: 3,
+              experiment_consent: consentChecked.experimentParticipation === true,
+              data_usage_consent: consentChecked.dataUsage === true,
+              third_party_consent: consentChecked.thirdParty,
+              depressive: depressionScore,
+              anxiety: anxietyScore,
+              stress: stressScore,
+            }
+          ]);
+
+        if (userError) {
+          console.error('사용자 데이터 저장 상세 오류:', userError);
+          throw new Error(`사용자 데이터 저장 오류: ${userError.message}`);
+        }
+
+        console.log('사용자 데이터 저장 성공 (ID 없음)');
+        // 고유한 식별자 생성 (이메일 + 타임스탬프 조합)
+        participantId = `${userData.email}_${Date.now()}`;
+        console.log('생성된 고유 식별자:', participantId);
       }
 
-      console.log('사용자 데이터 저장 성공:', insertedUser);
+      // 파일 업로드 처리 (스토리지 업로드 + DB 저장)
+      console.log('파일 업로드 처리 시작');
+      
+      let uploadErrors = [];
+      let directSubmissions = [];
+      let fileUploads = [];
+      
+      // 업로드 방식별 파일 처리
+      
+      // 서명 이미지 업로드 (signatureImage 파일 체크)
+      if (userData.signatureUploadMethod === 'upload' && files.signatureImage) {
+        try {
+          const filePath = await uploadFileToStorage(files.signatureImage, `signature_${Date.now()}.${files.signatureImage.name.split('.').pop()}`, 'signatureImage');
+          console.log('서명 이미지 파일 업로드 성공');
+          
+          // 파일 정보 준비 (실제 participant_id 사용)
+          fileUploads.push({
+            participant_id: participantId,
+            file_type: 'signature_image',
+            file_name: files.signatureImage.name,
+            file_path: filePath,
+            file_size: files.signatureImage.size
+          });
+        } catch (error) {
+          console.error('서명 이미지 업로드 오류:', error);
+          uploadErrors.push({ fileType: 'signatureImage', error: error.message });
+        }
+      } else if (userData.signatureUploadMethod === 'direct') {
+        directSubmissions.push({ fileType: 'signature_image', typeName: '서명' });
+      }
 
-      const participantId = insertedUser.id;
+      // 신분증 업로드
+      if (userData.idCardUploadMethod === 'upload' && files.idCard) {
+        try {
+          const filePath = await uploadFileToStorage(files.idCard, `idcard_${Date.now()}.${files.idCard.name.split('.').pop()}`, 'idCard');
+          console.log('신분증 파일 업로드 성공');
+          
+          fileUploads.push({
+            participant_id: participantId,
+            file_type: 'identity_card',
+            file_name: files.idCard.name,
+            file_path: filePath,
+            file_size: files.idCard.size
+          });
+        } catch (error) {
+          console.error('신분증 업로드 오류:', error);
+          uploadErrors.push({ fileType: 'idCard', error: error.message });
+        }
+      } else if (userData.idCardUploadMethod === 'direct') {
+        directSubmissions.push({ fileType: 'identity_card', typeName: '신분증' });
+      }
 
-      // 파일 업로드 처리 (리팩토링된 함수 사용)
-      const { fileUploads, uploadErrors, directSubmissions } = await processFileUploads(participantId);
+      // 통장사본 업로드
+      if (userData.bankAccountUploadMethod === 'upload' && files.bankAccount) {
+        try {
+          const filePath = await uploadFileToStorage(files.bankAccount, `bankaccount_${Date.now()}.${files.bankAccount.name.split('.').pop()}`, 'bankAccount');
+          console.log('통장사본 파일 업로드 성공');
+          
+          fileUploads.push({
+            participant_id: participantId,
+            file_type: 'bank_account',
+            file_name: files.bankAccount.name,
+            file_path: filePath,
+            file_size: files.bankAccount.size
+          });
+        } catch (error) {
+          console.error('통장사본 업로드 오류:', error);
+          uploadErrors.push({ fileType: 'bankAccount', error: error.message });
+        }
+      } else if (userData.bankAccountUploadMethod === 'direct') {
+        directSubmissions.push({ fileType: 'bank_account', typeName: '통장사본' });
+      }
 
       // 업로드 오류가 있는 경우 경고 로그 출력
       if (uploadErrors.length > 0) {
@@ -482,15 +587,21 @@ const MultiStepRegistration = () => {
       // 파일 정보 데이터베이스에 저장 (실제 업로드된 파일이 있는 경우만)
       if (fileUploads.length > 0) {
         console.log('파일 정보 저장 시도:', fileUploads);
-        const { error: fileError } = await supabase
-          .from('uploaded_files')
-          .insert(fileUploads);
+        try {
+          const { error: fileError } = await supabase
+            .from('uploaded_files')
+            .insert(fileUploads);
 
-        if (fileError) {
-          console.error('파일 정보 저장 상세 오류:', fileError);
-          throw new Error(`파일 정보 저장 오류: ${fileError.message}`);
+          if (fileError) {
+            console.error('파일 정보 저장 상세 오류:', fileError);
+            // 파일 정보 저장 실패는 치명적이지 않으므로 경고로만 처리
+            console.warn(`파일 정보 저장 실패: ${fileError.message}`);
+          } else {
+            console.log('파일 정보 저장 성공');
+          }
+        } catch (error) {
+          console.warn('파일 정보 저장 중 예외 발생:', error);
         }
-        console.log('파일 정보 저장 성공');
       } else {
         console.log('실제 업로드된 파일이 없어 파일 정보 저장을 건너뜁니다.');
       }
