@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const DataCollectionGuide = () => {
@@ -8,17 +8,163 @@ const DataCollectionGuide = () => {
   // 전달받은 점수 데이터
   const { depressionScore = 0, anxietyScore = 0, stressScore = 0 } = location.state || {};
 
+  // 개인정보 입력 상태 관리
+  const [personalInfo, setPersonalInfo] = useState({
+    name: '',
+    phoneNumber: '',
+    email: ''
+  });
+
+  // 개인정보 동의 상태 관리
+  const [privacyConsent, setPrivacyConsent] = useState(false);
+
+  // 검증 에러 상태 관리
+  const [emailError, setEmailError] = useState('');
+  const [phoneError, setPhoneError] = useState('');
+  const [phoneFormatted, setPhoneFormatted] = useState('');
+  const [registrationError, setRegistrationError] = useState('');
+
   const handleBackClick = () => {
     navigate(-1);
   };
 
+  // 이메일 형식 검증
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+  
+  // 전화번호 형식 검증
+  const validatePhoneNumber = (phone) => {
+    const digits = phone.replace(/\D/g, '');
+    return digits.startsWith('010') && digits.length === 11;
+  };
+  
+  // 전화번호 형식화 함수
+  const formatPhoneNumber = useCallback((phone) => {
+    const digits = phone.replace(/\D/g, '').slice(0, 11); // 11자리로 제한
+    
+    if (digits.length <= 3) {
+      return digits;
+    } else if (digits.length <= 7) {
+      return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+    } else {
+      return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7, 11)}`;
+    }
+  }, []);
+
+  // 전화번호 초기화
+  useEffect(() => {
+    if (personalInfo.phoneNumber) {
+      setPhoneFormatted(formatPhoneNumber(personalInfo.phoneNumber));
+    }
+  }, [personalInfo.phoneNumber, formatPhoneNumber]);
+
+  // 이메일 입력 처리
+  const handleEmailChange = (e) => {
+    const { value } = e.target;
+    setPersonalInfo(prev => ({
+      ...prev,
+      email: value
+    }));
+    
+    if (value && !validateEmail(value)) {
+      setEmailError('유효한 이메일 주소를 입력해주세요.');
+    } else {
+      setEmailError('');
+    }
+    
+    // 입력 시 등록 에러 메시지 초기화
+    setRegistrationError('');
+  };
+  
+  // 전화번호 입력 처리
+  const handlePhoneChange = (e) => {
+    const { value } = e.target;
+    const digits = value.replace(/\D/g, '');
+    
+    // 11자리를 초과하는 입력은 무시
+    if (digits.length > 11) {
+      return;
+    }
+    
+    // 전화번호 검증 및 에러 메시지 설정
+    if (digits.length === 0) {
+      setPhoneError('');
+    } else if (digits.length >= 3 && !digits.startsWith('010')) {
+      setPhoneError('전화번호는 010으로 시작해야 합니다.');
+    } else if (digits.length > 0 && digits.length < 11) {
+      setPhoneError('전화번호는 11자리여야 합니다.');
+    } else if (digits.length === 11) {
+      setPhoneError('');
+    }
+    
+    const formatted = formatPhoneNumber(value);
+    setPhoneFormatted(formatted);
+    setPersonalInfo(prev => ({
+      ...prev,
+      phoneNumber: digits
+    }));
+    
+    // 입력 시 등록 에러 메시지 초기화
+    setRegistrationError('');
+  };
+
+  // 일반 입력 처리 (이름)
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setPersonalInfo(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    
+    // 입력 시 등록 에러 메시지 초기화
+    setRegistrationError('');
+  };
+
+  // 개인정보 동의 체크박스 핸들러
+  const handlePrivacyConsentChange = (e) => {
+    setPrivacyConsent(e.target.checked);
+    
+    // 동의 체크 시 등록 에러 메시지 초기화
+    setRegistrationError('');
+  };
+
   // 등록 페이지로 이동 핸들러
   const handleRegistrationClick = () => {
+    // 필수 필드 검증
+    if (!personalInfo.name.trim() || !personalInfo.phoneNumber.trim() || !personalInfo.email.trim()) {
+      setRegistrationError('이름, 전화번호, 이메일 주소를 모두 입력해 주세요.');
+      return;
+    }
+
+    // 개인정보 동의 검증
+    if (!privacyConsent) {
+      setRegistrationError('개인정보 수집 및 이용에 동의해 주세요.');
+      return;
+    }
+
+    // 이메일 형식 검증
+    if (!validateEmail(personalInfo.email)) {
+      setRegistrationError('올바른 이메일 주소 형식을 입력해 주세요.');
+      return;
+    }
+
+    // 전화번호 형식 검증
+    if (!validatePhoneNumber(personalInfo.phoneNumber)) {
+      setRegistrationError('전화번호는 010으로 시작하는 11자리 번호여야 합니다.');
+      return;
+    }
+
+    // 모든 검증 통과 시 에러 메시지 초기화 후 페이지 이동
+    setRegistrationError('');
+    
     navigate('/registration', {
       state: {
         depressionScore,
         anxietyScore,
-        stressScore
+        stressScore,
+        personalInfo
       }
     });
   };
@@ -112,16 +258,93 @@ const DataCollectionGuide = () => {
           <div className="registration-form-container">
             <h4>■ 실증 실험 대기자 등록</h4>
             
-            <div className="registration-button-container">
-              <p>실증 실험 대기자 등록을 위해 개인정보 입력과 동의서 작성이 필요합니다.</p>
-              <p>아래 버튼을 클릭하여 등록 절차를 진행해 주세요.</p>
-              <button 
-                type="button" 
-                className="btn register-btn"
-                onClick={handleRegistrationClick}
-              >
-                실증 실험 대기자 등록하기
-              </button>
+            <div className="registration-form">
+              <div className="personal-info-section">
+                <h5>개인정보 입력</h5>
+                
+                <div className="form-group">
+                  <label htmlFor="name">이름</label>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    value={personalInfo.name}
+                    onChange={handleInputChange}
+                    className="form-input"
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="email">이메일</label>
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    value={personalInfo.email}
+                    onChange={handleEmailChange}
+                    className={emailError ? 'form-input input-error' : 'form-input'}
+                    required
+                  />
+                  {emailError && <p className="error-message">{emailError}</p>}
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="phoneNumber">전화번호</label>
+                  <input
+                    type="tel"
+                    id="phoneNumber"
+                    name="phoneNumber"
+                    value={phoneFormatted}
+                    onChange={handlePhoneChange}
+                    placeholder="010-0000-0000"
+                    className={phoneError ? 'form-input input-error' : 'form-input'}
+                    required
+                  />
+                  {phoneError ? (
+                    <p className="error-message">{phoneError}</p>
+                  ) : (
+                    <small className="helper-text">형식: 010-0000-0000</small>
+                  )}
+                </div>
+              </div>
+
+              <div className="consent-section">
+                <div className="consent-checkbox">
+                  <input
+                    type="checkbox"
+                    id="privacyConsent"
+                    checked={privacyConsent}
+                    onChange={handlePrivacyConsentChange}
+                    className="consent-checkbox-input"
+                  />
+                  <label htmlFor="privacyConsent" className="consent-checkbox-label">
+                    [필수]개인정보 수집 및 이용에 동의합니다.
+                  </label>
+                </div>
+
+                <div className="privacy-notice-box">
+                  <ul>
+                    <li>개인 정보 수집 항목: 이름, 성별, 휴대폰 번호, 이메일 주소, 테스트 결과</li>
+                    <li>수집 목적: 실험 참여 의사를 밝힌 분의 본인 확인 및 실험 방법 안내</li>
+                    <li>보유기간: 동의 철회 시까지</li>
+                  </ul>
+                </div>
+              </div>
+
+              {registrationError && (
+                <p className="error-message">{registrationError}</p>
+              )}
+
+              <div className="registration-button-container">
+                <button 
+                  type="button" 
+                  className="btn register-btn"
+                  onClick={handleRegistrationClick}
+                >
+                  실증 실험 대기자 등록
+                </button>
+              </div>
             </div>
           </div>
         </div>
