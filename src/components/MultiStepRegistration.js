@@ -643,7 +643,7 @@ const MultiStepRegistration = () => {
                           onClick={async () => {
                             try {
                               const fileName = '피험자동의서_2025.zip';
-                              const baseUrl = process.env.PUBLIC_URL || window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '');
+                              const baseUrl = process.env.PUBLIC_URL || window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '');
                               
                               // 여러 경로를 시도
                               const possiblePaths = [
@@ -654,6 +654,7 @@ const MultiStepRegistration = () => {
                               ];
                               
                               let response = null;
+                              // eslint-disable-next-line no-unused-vars
                               let lastError = null;
                               
                               for (const path of possiblePaths) {

@@ -4,7 +4,11 @@ import '../styles/AdminPage.css';
 
 const AdminPage = () => {
   const [participants, setParticipants] = useState([]);
+  const [participantFiles, setParticipantFiles] = useState({});
+  const [selectedParticipant, setSelectedParticipant] = useState(null);
+  const [showFiles, setShowFiles] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingFiles, setIsLoadingFiles] = useState(false);
   const [error, setError] = useState(null);
   // 정렬 상태 관리 - 단일 정렬
   const [sortField, setSortField] = useState('created_at');
@@ -78,6 +82,120 @@ const AdminPage = () => {
       setIsLoading(false);
     }
   }, []); // sortField, sortDirection 의존성 제거
+
+  // 참가자 파일 목록 조회 함수
+  const loadParticipantFiles = useCallback(async (participantId) => {
+    try {
+      setIsLoadingFiles(true);
+      
+      // RLS를 위한 사용자 세션 확보 (실패해도 계속 진행)
+      const user = await ensureUserSession();
+      console.log('파일 조회 세션:', user?.id || 'anonymous');
+      
+      // 보안 함수를 통한 파일 목록 조회
+      const { data, error } = await supabase
+        .rpc('get_participant_files_for_admin', { participant_id_param: participantId });
+        
+      if (error) {
+        console.error('파일 목록 조회 오류:', error);
+        throw error;
+      }
+      
+      setParticipantFiles(prev => ({
+        ...prev,
+        [participantId]: data || []
+      }));
+      
+    } catch (error) {
+      console.error('파일 목록 로드 오류:', error);
+      setError('파일 목록 로드 실패: ' + error.message);
+    } finally {
+      setIsLoadingFiles(false);
+    }
+  }, []);
+
+  // 파일 다운로드 함수
+  const downloadFile = async (filePath, fileName) => {
+    try {
+      // 관리자 세션 확보
+      const user = await ensureUserSession();
+      if (!user) {
+        throw new Error('관리자 세션을 확인할 수 없습니다.');
+      }
+
+      // Service Key를 사용하여 파일 다운로드 (RLS 우회)
+      // 실제로는 서버 사이드에서 구현해야 하지만, 현재는 클라이언트에서 시도
+      const { data, error } = await supabase.storage
+        .from('participant-files')
+        .download(filePath);
+
+      if (error) {
+        throw error;
+      }
+
+      // 파일 다운로드
+      const url = URL.createObjectURL(data);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      console.log('파일 다운로드 완료:', fileName);
+    } catch (error) {
+      console.error('파일 다운로드 오류:', error);
+      alert(`파일 다운로드 실패: ${error.message}\n\n참고: 현재 Storage RLS 정책으로 인해 클라이언트에서 직접 다운로드가 제한될 수 있습니다.`);
+    }
+  };
+
+  // 파일 형식별 아이콘 반환
+  const getFileIcon = (fileType) => {
+    switch (fileType) {
+      case 'identity_card':
+      case 'idCard':
+        return '🆔';
+      case 'bank_account':
+      case 'bankAccount':
+        return '🏦';
+      case 'signature_image':
+      case 'signatureImage':
+        return '✍️';
+      case 'consent_form':
+        return '📋';
+      default:
+        return '📄';
+    }
+  };
+
+  // 파일 형식별 이름 반환
+  const getFileTypeName = (fileType) => {
+    switch (fileType) {
+      case 'identity_card':
+      case 'idCard':
+        return '신분증';
+      case 'bank_account':
+      case 'bankAccount':
+        return '통장사본';
+      case 'signature_image':
+      case 'signatureImage':
+        return '서명이미지';
+      case 'consent_form':
+        return '동의서';
+      default:
+        return fileType;
+    }
+  };
+
+  // 파일 크기 포맷팅
+  const formatFileSize = (bytes) => {
+    if (!bytes || bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
 
   // 컴포넌트가 마운트될 때 초기 설정
   useEffect(() => {
@@ -364,6 +482,7 @@ const AdminPage = () => {
                     등록일{renderSortArrow('created_at')}
                   </th>
                   <th>집단</th>
+                  <th>업로드된 파일</th>
                 </tr>
               </thead>
               <tbody>
@@ -387,6 +506,18 @@ const AdminPage = () => {
                       <td className={`group-${getGroupType(participant).type}`}>
                         {getGroupType(participant).label}
                       </td>
+                      <td>
+                        <button 
+                          className="file-view-btn"
+                          onClick={() => {
+                            setSelectedParticipant(participant);
+                            setShowFiles(true);
+                            loadParticipantFiles(participant.id);
+                          }}
+                        >
+                          📁 파일 보기
+                        </button>
+                      </td>
                     </tr>
                   ))
                 }
@@ -400,6 +531,63 @@ const AdminPage = () => {
             </p>
           </div>
         </>
+      )}
+
+      {/* 파일 목록 모달 */}
+      {showFiles && selectedParticipant && (
+        <div className="file-modal-overlay" onClick={() => setShowFiles(false)}>
+          <div className="file-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="file-modal-header">
+              <h3>{selectedParticipant.name}님의 업로드된 파일</h3>
+              <button 
+                className="modal-close-btn"
+                onClick={() => setShowFiles(false)}
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div className="file-modal-content">
+              {isLoadingFiles ? (
+                <p>파일 목록을 불러오는 중...</p>
+              ) : participantFiles[selectedParticipant.id]?.length > 0 ? (
+                <div className="file-list">
+                  {participantFiles[selectedParticipant.id].map((file, index) => (
+                    <div key={index} className="file-item">
+                      <div className="file-info">
+                        <div className="file-details">
+                          <div className="file-name">{file.file_name}</div>
+                          <div className="file-meta">
+                            <span className="file-type">{getFileTypeName(file.file_type)}</span>
+                            <span className="file-size">{formatFileSize(file.file_size)}</span>
+                            <span className="file-date">{formatDate(file.uploaded_at)}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <button 
+                        className="file-download-btn"
+                        onClick={() => downloadFile(file.file_path, file.file_name)}
+                      >
+                        다운로드
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p>업로드된 파일이 없습니다.</p>
+              )}
+            </div>
+            
+            <div className="file-modal-footer">
+              <button 
+                className="modal-close-btn secondary"
+                onClick={() => setShowFiles(false)}
+              >
+                닫기
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
