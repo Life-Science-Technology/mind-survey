@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import supabase from '../supabaseClient';
+import supabase, { ensureUserSession } from '../supabaseClient';
 import { compressImage, formatFileSize, validateFileType, ALLOWED_IMAGE_TYPES, ALLOWED_DOCUMENT_TYPES, shouldCompress } from '../utils/fileCompression';
 
 const MultiStepRegistration = () => {
@@ -405,6 +405,10 @@ const MultiStepRegistration = () => {
       setIsRegistering(true);
       setIsUploading(true);
       setRegistrationError('');
+
+      // RLS를 위한 사용자 세션 확보 (실패해도 계속 진행)
+      const user = await ensureUserSession();
+      console.log('사용자 세션:', user?.id || 'anonymous');
 
       // 먼저 사용자 데이터 저장
       console.log('사용자 데이터 저장 시도:', {

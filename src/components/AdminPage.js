@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import supabase from '../supabaseClient';
+import supabase, { ensureUserSession } from '../supabaseClient';
 import '../styles/AdminPage.css';
 
 const AdminPage = () => {
@@ -56,19 +56,24 @@ const AdminPage = () => {
         setIsLoading(true);
       }
       
+      // RLS를 위한 사용자 세션 확보 (실패해도 계속 진행)
+      const user = await ensureUserSession();
+      console.log('관리자 세션:', user?.id || 'anonymous');
+      
+      // 보안 함수를 통한 데이터 조회 (RLS 우회)
       const { data, error } = await supabase
-        .from('survey-person')
-        .select('*');
+        .rpc('get_participants_for_admin');
         
       if (error) {
+        console.error('관리자 데이터 조회 오류:', error);
         throw error;
       }
       
-      setParticipants(data);
+      setParticipants(data || []);
       setError(null);
     } catch (error) {
       console.error('Error loading participants:', error);
-      setError('Error loading participants');
+      setError('관리자 데이터 로드 실패: ' + error.message);
     } finally {
       setIsLoading(false);
     }
