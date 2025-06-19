@@ -990,6 +990,25 @@ const MultiStepRegistration = () => {
                         <p>연구팀에서 별도로 연락드릴 예정입니다.</p>
                       </div>
                     )}
+
+                    {/* 서명 예시 */}
+                    <div className="signature-example" style={{ marginTop: '20px', padding: '15px', backgroundColor: '#f8f9fa', borderRadius: '8px', border: '1px solid #e9ecef' }}>
+                      <h6 style={{ marginBottom: '15px', color: '#495057', fontSize: '14px', fontWeight: '600' }}>서명 예시</h6>
+                      <div className="signature-example-image" style={{ textAlign: 'center' }}>
+                        <img 
+                          src={`${process.env.PUBLIC_URL || ''}/sign_reference.png`}
+                          alt="서명 예시"
+                          className="signature-example-img"
+                          style={{
+                            width: '100%',
+                            height: 'auto',
+                            border: '1px solid #ddd',
+                            borderRadius: '4px',
+                            backgroundColor: '#fff'
+                          }}
+                        />
+                      </div>
+                    </div>
                   </div>
 
                   <div className="form-group">
