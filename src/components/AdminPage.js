@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import supabase, { ensureUserSession } from '../supabaseClient';
+import JSZip from 'jszip';
 import '../styles/AdminPage.css';
 
 const AdminPage = () => {
@@ -52,6 +53,47 @@ const AdminPage = () => {
     return !!authToken && validateAuthToken(authToken);
   });
 
+  // 모든 참가자의 파일 정보를 미리 로드하는 함수
+  const loadAllParticipantFiles = useCallback(async () => {
+    try {
+      // RLS를 위한 사용자 세션 확보
+      const user = await ensureUserSession();
+      console.log('전체 파일 조회 세션:', user?.id || 'anonymous');
+      
+      // 모든 참가자의 파일 목록 조회
+      const { data, error } = await supabase
+        .rpc('get_all_participant_files_for_admin');
+        
+      if (error) {
+        console.error('전체 파일 목록 조회 오류:', error);
+        throw error;
+      }
+      
+      // 참가자별로 파일 그룹화
+      const filesByParticipant = {};
+      if (data) {
+        data.forEach(file => {
+          if (!filesByParticipant[file.participant_id]) {
+            filesByParticipant[file.participant_id] = [];
+          }
+          filesByParticipant[file.participant_id].push({
+            file_id: file.file_id,
+            file_name: file.file_name,
+            file_type: file.file_type,
+            file_path: file.file_path,
+            file_size: file.file_size,
+            uploaded_at: file.uploaded_at
+          });
+        });
+      }
+      
+      setParticipantFiles(filesByParticipant);
+      
+    } catch (error) {
+      console.error('전체 파일 목록 로드 오류:', error);
+    }
+  }, []);
+
   // 데이터 로드 함수 - useCallback으로 감싸서 메모이제이션 적용
   const loadParticipants = useCallback(async (isInitialLoad = false) => {
     try {
@@ -75,13 +117,17 @@ const AdminPage = () => {
       
       setParticipants(data || []);
       setError(null);
+      
+      // 참가자 데이터 로드 후 모든 파일 정보도 로드
+      await loadAllParticipantFiles();
+      
     } catch (error) {
       console.error('Error loading participants:', error);
       setError('관리자 데이터 로드 실패: ' + error.message);
     } finally {
       setIsLoading(false);
     }
-  }, []); // sortField, sortDirection 의존성 제거
+  }, [loadAllParticipantFiles]); // loadAllParticipantFiles 의존성 추가
 
   // 참가자 파일 목록 조회 함수
   const loadParticipantFiles = useCallback(async (participantId) => {
@@ -114,7 +160,29 @@ const AdminPage = () => {
     }
   }, []);
 
-  // 파일 다운로드 함수
+  // 업로드 상태 확인 함수 (실제 파일 존재 여부 기반)
+  const getUploadStatus = (participant) => {
+    const participantId = participant.id;
+    const files = participantFiles[participantId] || [];
+    
+    // 실제 업로드된 파일 타입들을 확인
+    const uploadedTypes = files.map(file => file.file_type);
+    
+    return {
+      signature: uploadedTypes.includes('signature_image'),
+      idCard: uploadedTypes.includes('identity_card'),
+      bankAccount: uploadedTypes.includes('bank_account')
+    };
+  };
+
+  // 업로드된 파일 개수 확인 함수 (실제 파일 기반)
+  const getUploadedFileCount = (participant) => {
+    const participantId = participant.id;
+    const files = participantFiles[participantId] || [];
+    return files.length;
+  };
+
+  // 파일 다운로드 함수 (개별)
   const downloadFile = async (filePath, fileName) => {
     try {
       // 관리자 세션 확보
@@ -147,6 +215,82 @@ const AdminPage = () => {
     } catch (error) {
       console.error('파일 다운로드 오류:', error);
       alert(`파일 다운로드 실패: ${error.message}\n\n참고: 현재 Storage RLS 정책으로 인해 클라이언트에서 직접 다운로드가 제한될 수 있습니다.`);
+    }
+  };
+
+  // 전체 파일 ZIP 다운로드 함수
+  const downloadAllFiles = async (participant) => {
+    try {
+      const participantId = participant.id;
+      const files = participantFiles[participantId];
+      
+      if (!files || files.length === 0) {
+        alert('다운로드할 파일이 없습니다.');
+        return;
+      }
+
+      const zip = new JSZip();
+      const downloadPromises = [];
+      let successCount = 0;
+
+      // 각 파일을 ZIP에 추가
+      for (const file of files) {
+        const promise = supabase.storage
+          .from('participant-files')
+          .download(file.file_path)
+          .then(({ data, error }) => {
+            if (error) {
+              console.error(`파일 다운로드 실패: ${file.file_name}`, error);
+              return null;
+            }
+            return { data, fileName: file.file_name };
+          });
+        
+        downloadPromises.push(promise);
+      }
+
+      // 모든 파일 다운로드 완료 대기
+      const results = await Promise.all(downloadPromises);
+      
+      // 성공한 파일들만 ZIP에 추가
+      results.forEach(result => {
+        if (result && result.data) {
+          zip.file(result.fileName, result.data);
+          successCount++;
+        }
+      });
+
+      if (successCount === 0) {
+        alert('다운로드할 수 있는 파일이 없습니다.');
+        return;
+      }
+
+      // ZIP 파일 생성 및 다운로드
+      const zipBlob = await zip.generateAsync({ type: 'blob' });
+      
+      // 파일명: 이름_이메일_전화번호.zip (특수문자 제거)
+      const safeName = participant.name.replace(/[^a-zA-Z0-9가-힣]/g, '');
+      const safeEmail = participant.email.replace(/[^a-zA-Z0-9@._-]/g, '');
+      const safePhone = participant.phone.replace(/[^0-9]/g, '');
+      const zipFileName = `${safeName}_${safeEmail}_${safePhone}.zip`;
+      
+      const url = URL.createObjectURL(zipBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = zipFileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      console.log(`ZIP 파일 다운로드 완료: ${zipFileName} (${successCount}/${files.length} 파일)`);
+      
+      if (successCount < files.length) {
+        alert(`일부 파일 다운로드에 실패했습니다. (성공: ${successCount}/${files.length})`);
+      }
+    } catch (error) {
+      console.error('ZIP 다운로드 오류:', error);
+      alert(`ZIP 다운로드 실패: ${error.message}`);
     }
   };
 
@@ -437,7 +581,10 @@ const AdminPage = () => {
       ) : error ? (
         <div className="error-message">{error}</div>
       ) : isLoading ? (
-        <p>데이터를 불러오는 중...</p>
+        <div className="loading-container">
+          <p>📊 데이터를 불러오는 중...</p>
+          <p className="loading-detail">참가자 정보와 파일 목록을 조회하고 있습니다.</p>
+        </div>
       ) : participants.length === 0 ? (
         <p>등록된 참가자가 없습니다.</p>
       ) : (
@@ -482,44 +629,67 @@ const AdminPage = () => {
                     등록일{renderSortArrow('created_at')}
                   </th>
                   <th>집단</th>
+                  <th>업로드 상태</th>
                   <th>업로드된 파일</th>
                 </tr>
               </thead>
               <tbody>
                 {
-                  getFilteredAndSortedParticipants().map((participant, index) => (
-                    <tr key={participant.id || index}>
-                      <td>{index + 1}</td>
-                      <td>{participant.name || '-'}</td>
-                      <td>{participant.email || '-'}</td>
-                      <td>{participant.phone || '-'}</td>
-                      <td className={participant.depressive >= 10 ? 'highlight' : ''}>
-                        {participant.depressive || 0}
-                      </td>
-                      <td className={participant.anxiety >= 10 ? 'highlight' : ''}>
-                        {participant.anxiety || 0}
-                      </td>
-                      <td className={participant.stress !== null && participant.stress >= 17 ? 'highlight' : ''}>
-                        {participant.stress !== null ? participant.stress : '-'}
-                      </td>
-                      <td>{formatDate(participant.created_at)}</td>
-                      <td className={`group-${getGroupType(participant).type}`}>
-                        {getGroupType(participant).label}
-                      </td>
-                      <td>
-                        <button 
-                          className="file-view-btn"
-                          onClick={() => {
-                            setSelectedParticipant(participant);
-                            setShowFiles(true);
-                            loadParticipantFiles(participant.id);
-                          }}
-                        >
-                          📁 파일 보기
-                        </button>
-                      </td>
-                    </tr>
-                  ))
+                  getFilteredAndSortedParticipants().map((participant, index) => {
+                    const uploadStatus = getUploadStatus(participant);
+                    const fileCount = getUploadedFileCount(participant);
+                    
+                    return (
+                      <tr key={participant.id || index}>
+                        <td>{index + 1}</td>
+                        <td>{participant.name || '-'}</td>
+                        <td>{participant.email || '-'}</td>
+                        <td>{participant.phone || '-'}</td>
+                        <td className={participant.depressive >= 10 ? 'highlight' : ''}>
+                          {participant.depressive || 0}
+                        </td>
+                        <td className={participant.anxiety >= 10 ? 'highlight' : ''}>
+                          {participant.anxiety || 0}
+                        </td>
+                        <td className={participant.stress !== null && participant.stress >= 17 ? 'highlight' : ''}>
+                          {participant.stress !== null ? participant.stress : '-'}
+                        </td>
+                        <td>{formatDate(participant.created_at)}</td>
+                        <td className={`group-${getGroupType(participant).type}`}>
+                          {getGroupType(participant).label}
+                        </td>
+                        <td>
+                          <div className="upload-status">
+                            <span className={`status-item ${uploadStatus.signature ? 'uploaded' : 'pending'}`}>
+                              서명: {uploadStatus.signature ? '✅' : '❌'}
+                            </span>
+                            <span className={`status-item ${uploadStatus.idCard ? 'uploaded' : 'pending'}`}>
+                              신분증: {uploadStatus.idCard ? '✅' : '❌'}
+                            </span>
+                            <span className={`status-item ${uploadStatus.bankAccount ? 'uploaded' : 'pending'}`}>
+                              통장: {uploadStatus.bankAccount ? '✅' : '❌'}
+                            </span>
+                          </div>
+                        </td>
+                        <td>
+                          {fileCount > 0 ? (
+                            <button 
+                              className="file-view-btn"
+                              onClick={() => {
+                                setSelectedParticipant(participant);
+                                setShowFiles(true);
+                                loadParticipantFiles(participant.id);
+                              }}
+                            >
+                              📁 파일 보기 ({fileCount})
+                            </button>
+                          ) : (
+                            <span className="no-files">파일 없음</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })
                 }
               </tbody>
             </table>
@@ -579,6 +749,12 @@ const AdminPage = () => {
             </div>
             
             <div className="file-modal-footer">
+              <button 
+                className="download-all-btn"
+                onClick={() => downloadAllFiles(selectedParticipant)}
+              >
+                📦 전체 다운로드 (ZIP)
+              </button>
               <button 
                 className="modal-close-btn secondary"
                 onClick={() => setShowFiles(false)}
