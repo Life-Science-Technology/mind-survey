@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 
 // 상수 정의
 const SURVEY_ROUTE = '/survey';
+const REGISTRATION_ROUTE = '/registration';
 const ALERT_MESSAGE = '실증 실험 안내 페이지는 준비 중입니다.';
 
 const HomePage = () => {
@@ -28,6 +29,16 @@ const HomePage = () => {
       navigate(SURVEY_ROUTE);
     } catch (error) {
       console.error('설문조사 페이지 이동 중 오류 발생:', error);
+      alert('페이지 이동 중 오류가 발생했습니다. 다시 시도해주세요.');
+    }
+  };
+
+  // 대기자 동의서 제출 클릭 핸들러
+  const handleRegistrationClick = () => {
+    try {
+      navigate(REGISTRATION_ROUTE);
+    } catch (error) {
+      console.error('대기자 동의서 제출 페이지 이동 중 오류 발생:', error);
       alert('페이지 이동 중 오류가 발생했습니다. 다시 시도해주세요.');
     }
   };
@@ -111,6 +122,20 @@ const HomePage = () => {
             <div className="card-content">
               <p className="card-subtitle">실증 실험 참여를 위한</p>
               <h3 className="card-title">정신 건강 설문</h3>
+            </div>
+          </div>
+
+          <div 
+            className="action-card" 
+            onClick={handleRegistrationClick}
+            onKeyDown={(e) => handleKeyDown(e, handleRegistrationClick)}
+            role="button"
+            tabIndex={0}
+            aria-label="실증 실험 대기자 동의서 제출"
+          >
+            <div className="card-content">
+              <p className="card-subtitle">참여 대상자</p>
+              <h3 className="card-title">대기자 동의서 제출</h3>
             </div>
           </div>
 
