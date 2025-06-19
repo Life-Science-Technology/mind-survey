@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import supabase from '../supabaseClient';
 
 const DataCollectionGuide = () => {
   const navigate = useNavigate();
@@ -23,6 +24,10 @@ const DataCollectionGuide = () => {
   const [phoneError, setPhoneError] = useState('');
   const [phoneFormatted, setPhoneFormatted] = useState('');
   const [registrationError, setRegistrationError] = useState('');
+
+  // 등록 진행 상태 관리
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [registrationSuccess, setRegistrationSuccess] = useState(false);
 
   const handleBackClick = () => {
     navigate(-1);
@@ -76,6 +81,7 @@ const DataCollectionGuide = () => {
     
     // 입력 시 등록 에러 메시지 초기화
     setRegistrationError('');
+    setRegistrationSuccess(false);
   };
   
   // 전화번호 입력 처리
@@ -108,6 +114,7 @@ const DataCollectionGuide = () => {
     
     // 입력 시 등록 에러 메시지 초기화
     setRegistrationError('');
+    setRegistrationSuccess(false);
   };
 
   // 일반 입력 처리 (이름)
@@ -120,6 +127,7 @@ const DataCollectionGuide = () => {
     
     // 입력 시 등록 에러 메시지 초기화
     setRegistrationError('');
+    setRegistrationSuccess(false);
   };
 
   // 개인정보 동의 체크박스 핸들러
@@ -128,10 +136,22 @@ const DataCollectionGuide = () => {
     
     // 동의 체크 시 등록 에러 메시지 초기화
     setRegistrationError('');
+    setRegistrationSuccess(false);
   };
 
-  // 등록 페이지로 이동 핸들러
-  const handleRegistrationClick = () => {
+  // 집단 분류 함수
+  const getGroupType = () => {
+    if (depressionScore >= 10) {
+      return 'depression'; // 우울 집단
+    } else if (stressScore >= 17) {
+      return 'stress'; // 스트레스 고위험 집단
+    } else {
+      return 'normal'; // 정상 집단
+    }
+  };
+
+  // 대기자 등록 핸들러 (DB 저장)
+  const handleRegistrationClick = async () => {
     // 필수 필드 검증
     if (!personalInfo.name.trim() || !personalInfo.phoneNumber.trim() || !personalInfo.email.trim()) {
       setRegistrationError('이름, 전화번호, 이메일 주소를 모두 입력해 주세요.');
@@ -156,27 +176,66 @@ const DataCollectionGuide = () => {
       return;
     }
 
-    // 모든 검증 통과 시 에러 메시지 초기화 후 페이지 이동
+    // 모든 검증 통과 시 DB에 대기자 정보 저장
+    setIsRegistering(true);
     setRegistrationError('');
-    
-    navigate('/registration', {
-      state: {
-        depressionScore,
-        anxietyScore,
-        stressScore,
-        personalInfo
-      }
-    });
-  };
+    setRegistrationSuccess(false);
 
-  // 집단 분류 함수
-  const getGroupType = () => {
-    if (depressionScore >= 10) {
-      return 'depression'; // 우울 집단
-    } else if (stressScore >= 17) {
-      return 'stress'; // 스트레스 고위험 집단
-    } else {
-      return 'normal'; // 정상 집단
+    try {
+      // 대기자 정보 구성
+      const waitlistData = {
+        name: personalInfo.name.trim(),
+        phone: personalInfo.phoneNumber,
+        email: personalInfo.email.trim(),
+        depressive: depressionScore,
+        anxiety: anxietyScore,
+        stress: stressScore,
+        registration_step: 0, // 대기자 상태
+        experiment_consent: false,
+        data_usage_consent: false,
+        third_party_consent: false
+      };
+
+      console.log('대기자 등록 시도:', waitlistData);
+
+      // Supabase에 데이터 저장
+      const { data, error } = await supabase
+        .from('survey-person')
+        .insert([waitlistData])
+        .select();
+
+      console.log('Supabase 응답:', { data, error });
+
+      if (error) {
+        console.error('대기자 등록 중 오류 발생:', error);
+        
+        // 중복 데이터 오류 처리
+        if (error.code === '23505') { // unique constraint violation
+          setRegistrationError('이미 등록된 전화번호 또는 이메일입니다.');
+        } else {
+          setRegistrationError('등록 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+        }
+        return;
+      }
+
+      // 성공 시 상태 업데이트
+      setRegistrationSuccess(true);
+      console.log('대기자 등록 성공:', { waitlistData, insertedData: data });
+
+      // 3초 후 홈페이지로 이동
+      setTimeout(() => {
+        navigate('/', { 
+          state: { 
+            message: '대기자 등록이 완료되었습니다. 추후 연락을 통해 실험 참여 일정을 안내해 드리겠습니다.' 
+          } 
+        });
+      }, 3000);
+
+    } catch (error) {
+      console.error('예기치 못한 오류 발생:', error);
+      setRegistrationError('시스템 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+    } finally {
+      setIsRegistering(false);
     }
   };
 
@@ -243,7 +302,7 @@ const DataCollectionGuide = () => {
           <p>본 실험 과정에 대한 문의는 오픈 카카오톡으로 하실 수 있습니다
             (<a href="https://open.kakao.com/o/gTH3TfCg" target="_blank" rel="noopener noreferrer">
                 https://open.kakao.com/o/gTH3TfCg
-            </a>, 'Police stress monitoring’으로 검색)</p>
+            </a>, 'Police stress monitoring'으로 검색)</p>
         </div>
 
         {/* 실증 참여 섹션 - 항상 표시 */}
@@ -336,13 +395,22 @@ const DataCollectionGuide = () => {
                 <p className="error-message">{registrationError}</p>
               )}
 
+              {registrationSuccess && (
+                <div className="success-message">
+                  <p>✅ 대기자 등록이 완료되었습니다!</p>
+                  <p>추후 연락을 통해 실험 참여 일정을 안내해 드리겠습니다.</p>
+                  <p>잠시 후 홈페이지로 이동합니다...</p>
+                </div>
+              )}
+
               <div className="registration-button-container">
                 <button 
                   type="button" 
-                  className="btn register-btn"
+                  className={`btn register-btn ${isRegistering ? 'registering' : ''} ${registrationSuccess ? 'success' : ''}`}
                   onClick={handleRegistrationClick}
+                  disabled={isRegistering || registrationSuccess}
                 >
-                  실증 실험 대기자 등록
+                  {isRegistering ? '등록 중...' : registrationSuccess ? '등록 완료' : '실증 실험 대기자 등록'}
                 </button>
               </div>
             </div>

@@ -1,5 +1,5 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 // 상수 정의
 const SURVEY_ROUTE = '/survey';
@@ -7,6 +7,20 @@ const ALERT_MESSAGE = '실증 실험 안내 페이지는 준비 중입니다.';
 
 const HomePage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [successMessage, setSuccessMessage] = useState('');
+
+  // 대기자 등록 성공 메시지 확인
+  useEffect(() => {
+    if (location.state?.message) {
+      setSuccessMessage(location.state.message);
+      // 5초 후 메시지 자동 제거
+      const timer = setTimeout(() => {
+        setSuccessMessage('');
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [location.state]);
 
   // 설문조사 페이지 이동 핸들러
   const handleSurveyClick = () => {
@@ -65,6 +79,12 @@ const HomePage = () => {
       </div>
 
       <main className="home-content">
+        {successMessage && (
+          <div className="success-notification">
+            <p className="success-text">✅ {successMessage}</p>
+          </div>
+        )}
+        
         <div className="description">
           <div className="description-box">
             <p className="description-text">
