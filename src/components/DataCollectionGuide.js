@@ -235,15 +235,6 @@ const DataCollectionGuide = () => {
       setRegistrationSuccess(true);
       const isUpdate = existingData && !searchError;
 
-      // 3초 후 홈페이지로 이동
-      setTimeout(() => {
-        navigate('/', { 
-          state: { 
-            message: `대기자 ${isUpdate ? '정보 업데이트가' : '등록이'} 완료되었습니다. 추후 연락을 통해 실험 참여 일정을 안내해 드리겠습니다.` 
-          } 
-        });
-      }, 3000);
-
     } catch (error) {
       setRegistrationError('시스템 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
     } finally {
@@ -402,18 +393,6 @@ const DataCollectionGuide = () => {
                   </ul>
                 </div>
               </div>
-
-              {registrationError && (
-                <p className="error-message">{registrationError}</p>
-              )}
-
-              {registrationSuccess && (
-                <div className="success-message">
-                  <p>✅ 대기자 정보가 성공적으로 등록되었습니다!</p>
-                  <p>추후 연락을 통해 실험 참여 일정을 안내해 드리겠습니다.</p>
-                  <p>잠시 후 홈페이지로 이동합니다...</p>
-                </div>
-              )}
 
               <div className="registration-button-container">
                 <button 
