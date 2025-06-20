@@ -28,7 +28,6 @@ const HomePage = () => {
     try {
       navigate(SURVEY_ROUTE);
     } catch (error) {
-      console.error('설문조사 페이지 이동 중 오류 발생:', error);
       alert('페이지 이동 중 오류가 발생했습니다. 다시 시도해주세요.');
     }
   };
@@ -38,7 +37,6 @@ const HomePage = () => {
     try {
       navigate(REGISTRATION_ROUTE);
     } catch (error) {
-      console.error('대기자 동의서 제출 페이지 이동 중 오류 발생:', error);
       alert('페이지 이동 중 오류가 발생했습니다. 다시 시도해주세요.');
     }
   };
@@ -66,8 +64,7 @@ const HomePage = () => {
             className="logo police-logo"
             onError={(e) => {
               e.target.style.display = 'none';
-              console.log('경찰청 로고를 불러올 수 없습니다.');
-            }}
+            }}  
           />
           <img 
             src={`${process.env.PUBLIC_URL}/kist_logo.png`}
@@ -75,7 +72,6 @@ const HomePage = () => {
             className="logo kist-logo"
             onError={(e) => {
               e.target.style.display = 'none';
-              console.log('KIST 로고를 불러올 수 없습니다.');
             }}
           />
         </div>

@@ -196,8 +196,6 @@ const DataCollectionGuide = () => {
         third_party_consent: false
       };
 
-      console.log('대기자 등록/업데이트 시도:', waitlistData);
-
       // 먼저 기존 데이터가 있는지 확인 (이메일 또는 전화번호 기준)
       const { data: existingData, error: searchError } = await supabase
         .from('survey-person')
@@ -205,12 +203,9 @@ const DataCollectionGuide = () => {
         .or(`email.eq.${waitlistData.email},phone.eq.${waitlistData.phone}`)
         .single();
 
-      console.log('기존 데이터 조회:', { existingData, searchError });
-
       let result;
       if (existingData && !searchError) {
         // 기존 데이터가 있으면 업데이트
-        console.log('기존 데이터 업데이트 수행');
         result = await supabase
           .from('survey-person')
           .update(waitlistData)
@@ -218,7 +213,6 @@ const DataCollectionGuide = () => {
           .select();
       } else {
         // 기존 데이터가 없으면 새로 삽입
-        console.log('새 데이터 삽입 수행');
         result = await supabase
           .from('survey-person')
           .insert([waitlistData])
@@ -226,11 +220,8 @@ const DataCollectionGuide = () => {
       }
 
       const { data, error } = result;
-      console.log('Supabase 응답:', { data, error });
 
       if (error) {
-        console.error('대기자 등록/업데이트 중 오류 발생:', error);
-        
         // 중복 데이터 오류 처리
         if (error.code === '23505') { // unique constraint violation
           setRegistrationError('이미 등록된 전화번호 또는 이메일입니다.');
@@ -243,7 +234,6 @@ const DataCollectionGuide = () => {
       // 성공 시 상태 업데이트
       setRegistrationSuccess(true);
       const isUpdate = existingData && !searchError;
-      console.log(`대기자 ${isUpdate ? '정보 업데이트' : '등록'} 성공:`, { waitlistData, resultData: data });
 
       // 3초 후 홈페이지로 이동
       setTimeout(() => {
@@ -255,7 +245,6 @@ const DataCollectionGuide = () => {
       }, 3000);
 
     } catch (error) {
-      console.error('예기치 못한 오류 발생:', error);
       setRegistrationError('시스템 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
     } finally {
       setIsRegistering(false);

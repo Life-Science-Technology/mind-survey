@@ -217,7 +217,6 @@ const MultiStepRegistration = () => {
       if (shouldCompress(file)) {
         setRegistrationError('');
         processedFile = await compressImage(file, 0.8);
-        console.log(`파일 압축 완료: ${formatFileSize(file.size)} → ${formatFileSize(processedFile.size)}`);
       }
 
       setFiles(prev => ({
@@ -227,7 +226,6 @@ const MultiStepRegistration = () => {
       
       setRegistrationError('');
     } catch (error) {
-      console.error('파일 처리 오류:', error);
       setRegistrationError('파일 처리 중 오류가 발생했습니다.');
     }
   };
@@ -245,7 +243,6 @@ const MultiStepRegistration = () => {
 
       return filePath;
     } catch (error) {
-      console.error(`${fileType} 업로드 오류:`, error);
       throw error;
     }
   };
@@ -283,19 +280,10 @@ const MultiStepRegistration = () => {
       // 전화번호를 숫자만으로 정규화 (하이픈 제거)
       const normalizedPhone = userData.phone.replace(/\D/g, '');
       
-      console.log('사용자 검색 시도:', {
-        name: userData.name.trim(),
-        email: userData.email.trim(),
-        phone: normalizedPhone,
-        originalPhone: userData.phone
-      });
-      
       // 먼저 테이블이 존재하는지 확인
-      console.log('🔍 테이블 존재 여부 확인...');
       const { count, error: countError } = await supabase
         .from('survey-person')
         .select('*', { count: 'exact', head: true });
-      console.log('survey-person 테이블 row 수:', count, 'error:', countError?.message);
       
       const { data: existingUsers, error: searchError } = await supabase
         .from('survey-person')
@@ -305,17 +293,13 @@ const MultiStepRegistration = () => {
         .eq('phone', normalizedPhone);
 
       if (searchError) {
-        console.error('사용자 검색 중 오류:', searchError);
         setRegistrationError('사용자 정보 확인 중 오류가 발생했습니다. 다시 시도해주세요.');
         return;
       }
 
-      console.log('검색 결과:', existingUsers);
-
       // 동일한 이름, 이메일, 전화번호를 가진 사용자가 있는지 확인
       if (existingUsers && existingUsers.length > 0) {
         const existingUser = existingUsers[0];
-        console.log('찾은 사용자:', existingUser);
         
         // 등록 단계 확인
         if (existingUser.registration_step >= 3) {
@@ -324,36 +308,30 @@ const MultiStepRegistration = () => {
           return;
         } else {
           // 등록이 완료되지 않은 사용자 (registration_step = 0~2) - 다음 단계로 진행 허용
-          console.log(`등록 진행 허용: registration_step = ${existingUser.registration_step}`);
-          console.log('기존 사용자 ID 저장:', existingUser.id);
           setExistingUserId(existingUser.id);
           setRegistrationError('');
           nextStep();
         }
       } else {
         // 정확한 매치 없음 - 개별 필드별 디버깅 검색
-        console.log('정확한 매치 없음, 개별 필드 검색으로 원인 파악...');
         
         // 이름으로만 검색
         const { data: nameUsers } = await supabase
           .from('survey-person')
           .select('id, name, email, phone, registration_step')
           .eq('name', userData.name.trim());
-        console.log('이름으로 검색 결과:', nameUsers);
         
         // 이메일로만 검색
         const { data: emailUsers } = await supabase
           .from('survey-person')
           .select('id, name, email, phone, registration_step')
           .eq('email', userData.email.trim());
-        console.log('이메일로 검색 결과:', emailUsers);
         
         // 전화번호로만 검색
         const { data: phoneUsers } = await supabase
           .from('survey-person')
           .select('id, name, email, phone, registration_step')
           .eq('phone', normalizedPhone);
-        console.log('전화번호로 검색 결과:', phoneUsers);
         
         // 디버깅용: 전체 사용자 목록 조회 (최근 10개)
         const { data: allUsers, error: allUsersError } = await supabase
@@ -361,8 +339,6 @@ const MultiStepRegistration = () => {
           .select('id, name, email, phone, registration_step, created_at')
           .order('created_at', { ascending: false })
           .limit(10);
-        console.log('최근 등록된 사용자 10명:', allUsers);
-        console.log('사용자 조회 오류:', allUsersError);
         
 
         
@@ -389,7 +365,6 @@ const MultiStepRegistration = () => {
       }
       
     } catch (error) {
-      console.error('사용자 검증 중 예외 발생:', error);
       setRegistrationError('시스템 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
     }
   };
@@ -432,9 +407,7 @@ const MultiStepRegistration = () => {
     const uploadFile = async (file, fileName, fileType, uploadMethod = 'upload') => {
       if (uploadMethod === 'upload' && file) {
         try {
-          console.log(`${fileType} 파일 업로드 시작:`, file.name);
           const filePath = await uploadFileToStorage(file, fileName, fileType);
-          console.log(`${fileType} 파일 업로드 성공:`, filePath);
           return {
             participant_id: participantId,
             file_type: fileType === 'idCard' ? 'identity_card' : 
@@ -446,7 +419,6 @@ const MultiStepRegistration = () => {
             file_size: file.size
           };
         } catch (error) {
-          console.error(`${fileType} 파일 업로드 오류:`, error);
           uploadErrors.push(`${fileType} 파일 업로드 실패: ${error.message}`);
           return null;
         }
@@ -456,7 +428,6 @@ const MultiStepRegistration = () => {
 
     // 직접 전송 추적 헬퍼 함수
     const trackDirectSubmission = (fileType, typeName) => {
-      console.log(`${typeName} 직접 전송 방법 선택됨 - 데이터베이스 저장 제외`);
       directSubmissions.push({ fileType, typeName });
     };
 
@@ -531,14 +502,10 @@ const MultiStepRegistration = () => {
 
       // RLS를 위한 사용자 세션 확보 (실패해도 계속 진행)
       const user = await ensureUserSession();
-      console.log('사용자 세션:', user?.id || 'anonymous');
 
       // 기존 사용자 레코드 업데이트 방식 (단순화)
-      console.log('기존 사용자 레코드 업데이트 시도...');
-      console.log('기존 사용자 ID:', existingUserId);
       
       if (!existingUserId) {
-        console.warn('기존 사용자 ID가 없습니다. 1단계부터 다시 진행해주세요.');
         throw new Error('사용자 ID가 없습니다. 1단계부터 다시 진행해주세요.');
       }
       
@@ -560,32 +527,25 @@ const MultiStepRegistration = () => {
         stress: stressScore
       };
 
-      console.log('업데이트 데이터:', updateData);
-
       // RPC 함수를 통한 업데이트 시도 (CORS 우회)
       let updateSuccess = false;
       let participantId = existingUserId;
       
       try {
-        console.log('RPC 함수로 업데이트 시도...');
         const { error: rpcError } = await supabase.rpc('update_person_registration', {
           person_id: existingUserId,
           update_data: updateData
         });
         
         if (!rpcError) {
-          console.log('RPC 함수로 업데이트 성공');
           updateSuccess = true;
-        } else {
-          console.log('RPC 함수 실패:', rpcError.message);
         }
       } catch (error) {
-        console.log('RPC 시도 중 예외:', error.message);
+        // RPC 실패 시 기존 방식으로 시도
       }
 
       // RPC 실패 시 기존 방식으로 시도
       if (!updateSuccess) {
-        console.log('직접 UPDATE 시도...');
         try {
           const { error: updateError } = await supabase
             .from('survey-person')
@@ -593,10 +553,8 @@ const MultiStepRegistration = () => {
             .eq('id', existingUserId);
           
           if (updateError) {
-            console.error('직접 UPDATE 실패:', updateError);
             throw new Error(`데이터 업데이트에 실패했습니다: ${updateError.message}`);
           } else {
-            console.log('직접 UPDATE 성공');
             updateSuccess = true;
           }
         } catch (error) {
@@ -608,10 +566,7 @@ const MultiStepRegistration = () => {
         throw new Error('데이터 업데이트에 실패했습니다. 관리자에게 문의해주세요.');
       }
 
-      console.log('사용할 participant ID:', participantId);
-
       // 파일 업로드 처리 (스토리지 업로드 + DB 저장)
-      console.log('파일 업로드 처리 시작');
       
       let uploadErrors = [];
       let directSubmissions = [];
@@ -623,7 +578,6 @@ const MultiStepRegistration = () => {
       if (userData.signatureUploadMethod === 'upload' && files.signatureImage) {
         try {
           const filePath = await uploadFileToStorage(files.signatureImage, `signature_${Date.now()}.${files.signatureImage.name.split('.').pop()}`, 'signatureImage');
-          console.log('서명 이미지 파일 업로드 성공');
           
           // 파일 정보 준비 (실제 participant_id 사용)
           fileUploads.push({
@@ -634,7 +588,6 @@ const MultiStepRegistration = () => {
             file_size: files.signatureImage.size
           });
         } catch (error) {
-          console.error('서명 이미지 업로드 오류:', error);
           uploadErrors.push({ fileType: 'signatureImage', error: error.message });
         }
       } else if (userData.signatureUploadMethod === 'direct') {
@@ -645,7 +598,6 @@ const MultiStepRegistration = () => {
       if (userData.idCardUploadMethod === 'upload' && files.idCard) {
         try {
           const filePath = await uploadFileToStorage(files.idCard, `idcard_${Date.now()}.${files.idCard.name.split('.').pop()}`, 'idCard');
-          console.log('신분증 파일 업로드 성공');
           
           fileUploads.push({
             participant_id: participantId,
@@ -655,7 +607,6 @@ const MultiStepRegistration = () => {
             file_size: files.idCard.size
           });
         } catch (error) {
-          console.error('신분증 업로드 오류:', error);
           uploadErrors.push({ fileType: 'idCard', error: error.message });
         }
       } else if (userData.idCardUploadMethod === 'direct') {
@@ -666,7 +617,6 @@ const MultiStepRegistration = () => {
       if (userData.bankAccountUploadMethod === 'upload' && files.bankAccount) {
         try {
           const filePath = await uploadFileToStorage(files.bankAccount, `bankaccount_${Date.now()}.${files.bankAccount.name.split('.').pop()}`, 'bankAccount');
-          console.log('통장사본 파일 업로드 성공');
           
           fileUploads.push({
             participant_id: participantId,
@@ -676,58 +626,27 @@ const MultiStepRegistration = () => {
             file_size: files.bankAccount.size
           });
         } catch (error) {
-          console.error('통장사본 업로드 오류:', error);
           uploadErrors.push({ fileType: 'bankAccount', error: error.message });
         }
       } else if (userData.bankAccountUploadMethod === 'direct') {
         directSubmissions.push({ fileType: 'bank_account', typeName: '통장사본' });
       }
 
-      // 업로드 오류가 있는 경우 경고 로그 출력
-      if (uploadErrors.length > 0) {
-        console.warn('파일 업로드 중 일부 오류 발생:', uploadErrors);
-      }
-
-      // 직접 전송으로 선택된 파일들 로그 기록
-      if (directSubmissions.length > 0) {
-        console.log('직접 전송으로 선택된 파일들:', directSubmissions.map(item => item.typeName).join(', '));
-      }
-
       // 파일 정보 데이터베이스에 저장 (실제 업로드된 파일이 있는 경우만)
       if (fileUploads.length > 0) {
-        console.log('파일 정보 저장 시도:', fileUploads);
         try {
           const { error: fileError } = await supabase
             .from('uploaded_files')
             .insert(fileUploads);
 
-          if (fileError) {
-            console.error('파일 정보 저장 상세 오류:', fileError);
-            // 파일 정보 저장 실패는 치명적이지 않으므로 경고로만 처리
-            console.warn(`파일 정보 저장 실패: ${fileError.message}`);
-          } else {
-            console.log('파일 정보 저장 성공');
-          }
         } catch (error) {
-          console.warn('파일 정보 저장 중 예외 발생:', error);
         }
-      } else {
-        console.log('실제 업로드된 파일이 없어 파일 정보 저장을 건너뜁니다.');
       }
 
       // 등록 성공 처리
       setRegistrationSuccess(true);
       
-      // 상황별 로그 기록
-      if (uploadErrors.length > 0) {
-        console.log('등록은 완료되었지만 일부 파일 업로드에 실패했습니다:', uploadErrors);
-      }
-      
-      if (directSubmissions.length > 0) {
-        console.log(`등록 완료 - 직접 전송 예정 파일: ${directSubmissions.map(item => item.typeName).join(', ')}`);
-      }
     } catch (error) {
-      console.error('최종 등록 오류:', error);
       setRegistrationError(`등록 중 오류가 발생했습니다: ${error.message}`);
     } finally {
       setIsRegistering(false);
@@ -879,15 +798,12 @@ const MultiStepRegistration = () => {
                               
                               for (const path of possiblePaths) {
                                 try {
-                                  console.log('시도하는 경로:', path);
                                   response = await fetch(path);
                                   if (response.ok) {
-                                    console.log('성공한 경로:', path);
                                     break;
                                   }
                                 } catch (error) {
                                   lastError = error;
-                                  console.log('실패한 경로:', path, error);
                                 }
                               }
                               
@@ -911,7 +827,6 @@ const MultiStepRegistration = () => {
                               window.URL.revokeObjectURL(url);
                               
                             } catch (error) {
-                              console.error('파일 다운로드 중 오류 발생:', error);
                               alert(`파일 다운로드에 실패했습니다: ${error.message}\n네트워크 연결을 확인하고 다시 시도해주세요.`);
                             }
                           }}

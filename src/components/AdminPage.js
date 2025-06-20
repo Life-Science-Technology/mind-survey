@@ -58,14 +58,12 @@ const AdminPage = () => {
     try {
       // RLS를 위한 사용자 세션 확보
       const user = await ensureUserSession();
-      console.log('전체 파일 조회 세션:', user?.id || 'anonymous');
       
       // 모든 참가자의 파일 목록 조회
       const { data, error } = await supabase
         .rpc('get_all_participant_files_for_admin');
         
       if (error) {
-        console.error('전체 파일 목록 조회 오류:', error);
         throw error;
       }
       
@@ -90,7 +88,6 @@ const AdminPage = () => {
       setParticipantFiles(filesByParticipant);
       
     } catch (error) {
-      console.error('전체 파일 목록 로드 오류:', error);
     }
   }, []);
 
@@ -104,14 +101,12 @@ const AdminPage = () => {
       
       // RLS를 위한 사용자 세션 확보 (실패해도 계속 진행)
       const user = await ensureUserSession();
-      console.log('관리자 세션:', user?.id || 'anonymous');
       
       // 보안 함수를 통한 데이터 조회 (RLS 우회)
       const { data, error } = await supabase
         .rpc('get_participants_for_admin');
         
       if (error) {
-        console.error('관리자 데이터 조회 오류:', error);
         throw error;
       }
       
@@ -122,7 +117,6 @@ const AdminPage = () => {
       await loadAllParticipantFiles();
       
     } catch (error) {
-      console.error('Error loading participants:', error);
       setError('관리자 데이터 로드 실패: ' + error.message);
     } finally {
       setIsLoading(false);
@@ -136,14 +130,12 @@ const AdminPage = () => {
       
       // RLS를 위한 사용자 세션 확보 (실패해도 계속 진행)
       const user = await ensureUserSession();
-      console.log('파일 조회 세션:', user?.id || 'anonymous');
       
       // 보안 함수를 통한 파일 목록 조회
       const { data, error } = await supabase
         .rpc('get_participant_files_for_admin', { participant_id_param: participantId });
         
       if (error) {
-        console.error('파일 목록 조회 오류:', error);
         throw error;
       }
       
@@ -153,7 +145,6 @@ const AdminPage = () => {
       }));
       
     } catch (error) {
-      console.error('파일 목록 로드 오류:', error);
       setError('파일 목록 로드 실패: ' + error.message);
     } finally {
       setIsLoadingFiles(false);
@@ -211,9 +202,7 @@ const AdminPage = () => {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
 
-      console.log('파일 다운로드 완료:', fileName);
     } catch (error) {
-      console.error('파일 다운로드 오류:', error);
       alert(`파일 다운로드 실패: ${error.message}\n\n참고: 현재 Storage RLS 정책으로 인해 클라이언트에서 직접 다운로드가 제한될 수 있습니다.`);
     }
   };
@@ -240,7 +229,6 @@ const AdminPage = () => {
           .download(file.file_path)
           .then(({ data, error }) => {
             if (error) {
-              console.error(`파일 다운로드 실패: ${file.file_name}`, error);
               return null;
             }
             return { data, fileName: file.file_name };
@@ -282,14 +270,11 @@ const AdminPage = () => {
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
-
-      console.log(`ZIP 파일 다운로드 완료: ${zipFileName} (${successCount}/${files.length} 파일)`);
       
       if (successCount < files.length) {
         alert(`일부 파일 다운로드에 실패했습니다. (성공: ${successCount}/${files.length})`);
       }
     } catch (error) {
-      console.error('ZIP 다운로드 오류:', error);
       alert(`ZIP 다운로드 실패: ${error.message}`);
     }
   };
@@ -536,8 +521,6 @@ const AdminPage = () => {
       loadParticipants(true);
     } else {
       setPinError('잘못된 PIN 코드입니다.');
-      // 잘못된 인증 시도 로깅 (실제 서비스에서는 서버에 로깅하는 것이 좋음)
-      console.warn(`잘못된 인증 시도: ${new Date().toISOString()}`);
     }
   };
   

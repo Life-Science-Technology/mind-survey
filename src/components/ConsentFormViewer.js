@@ -17,11 +17,9 @@ const ConsentFormViewer = ({ isOpen, onClose }) => {
     setNumPages(numPages);
     setLoading(false);
     setError(null);
-    console.log('PDF 로딩 성공:', numPages, '페이지');
   };
 
   const onDocumentLoadError = (error) => {
-    console.error('PDF 로딩 오류:', error);
     setError('PDF 파일을 불러올 수 없습니다. 네트워크 연결을 확인해주세요.');
     setLoading(false);
   };
