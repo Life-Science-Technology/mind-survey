@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 
 // 상수 정의
 const SURVEY_ROUTE = '/survey';
-const REGISTRATION_ROUTE = '/registration';
+const EXPERIMENT_COMPLETE_ROUTE = '/experiment-complete';
 const ALERT_MESSAGE = '실증 실험 안내 페이지는 준비 중입니다.';
 
 const HomePage = () => {
@@ -35,7 +35,7 @@ const HomePage = () => {
   // 대기자 동의서 제출 클릭 핸들러
   const handleRegistrationClick = () => {
     try {
-      navigate(REGISTRATION_ROUTE);
+      navigate(EXPERIMENT_COMPLETE_ROUTE);
     } catch (error) {
       alert('페이지 이동 중 오류가 발생했습니다. 다시 시도해주세요.');
     }
@@ -120,21 +120,7 @@ const HomePage = () => {
               <h3 className="card-title">정신 건강 설문</h3>
             </div>
           </div>
-
-          <div 
-            className="action-card" 
-            onClick={handleRegistrationClick}
-            onKeyDown={(e) => handleKeyDown(e, handleRegistrationClick)}
-            role="button"
-            tabIndex={0}
-            aria-label="실증 실험 대기자 동의서 제출"
-          >
-            <div className="card-content">
-              <p className="card-subtitle">참여 대상자</p>
-              <h3 className="card-title">대기자 동의서 제출</h3>
-            </div>
-          </div>
-
+          
           <div 
             className="action-card" 
             onClick={handleGuideClick}
@@ -147,6 +133,21 @@ const HomePage = () => {
               <h3 className="card-title">실증 실험 안내</h3>
             </div>
           </div>
+
+          <div 
+            className="action-card" 
+            onClick={handleRegistrationClick}
+            onKeyDown={(e) => handleKeyDown(e, handleRegistrationClick)}
+            role="button"
+            tabIndex={0}
+            aria-label="실증 실험 대기자 동의서 제출"
+          >
+            <div className="card-content">
+              <h3 className="card-title">실험 종료 안내</h3>
+              <h3 className="card-title">(제출 서류)</h3>
+            </div>
+          </div>
+
         </div>
       </main>
     </div>

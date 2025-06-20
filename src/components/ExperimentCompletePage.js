@@ -1,0 +1,138 @@
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+
+const ExperimentCompletePage = () => {
+  const navigate = useNavigate();
+
+  // 삼성 헬스 데이터 안내 핸들러
+  const handleHealthDataGuide = () => {
+    alert('삼성 헬스 데이터 다운로드 및 전송 방법 안내 페이지는 준비 중입니다.');
+  };
+
+  // 주소 입력 핸들러
+  const handleAddressInput = () => {
+    alert('방문 택배를 위한 주소 입력 페이지는 준비 중입니다.');
+  };
+
+  // 동의서 및 사본 제출 핸들러
+  const handleDocumentSubmission = () => {
+    try {
+      navigate('/registration');
+    } catch (error) {
+      alert('페이지 이동 중 오류가 발생했습니다. 다시 시도해주세요.');
+    }
+  };
+
+  // 키보드 이벤트 핸들러
+  const handleKeyDown = (event, handler) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      handler();
+    }
+  };
+
+  return (
+    <div className="home-container">
+      <div className="logo-section">
+        <div className="logo-container">
+          <img 
+            src={`${process.env.PUBLIC_URL}/police_logo.png`}
+            alt="경찰청 로고" 
+            className="logo police-logo"
+            onError={(e) => {
+              e.target.style.display = 'none';
+            }}  
+          />
+          <img 
+            src={`${process.env.PUBLIC_URL}/kist_logo.png`}
+            alt="한국과학기술연구원 로고" 
+            className="logo kist-logo"
+            onError={(e) => {
+              e.target.style.display = 'none';
+            }}
+          />
+        </div>
+      </div>
+      
+      <header className="home-header">
+        <h1>[경찰 건강 스마트 관리 R&amp;D]</h1>
+      </header>
+      
+      <div className="home-title">
+        <h2>실험 종료 안내</h2>
+      </div>
+
+      <main className="home-content">
+        <div className="description">
+          <div className="description-box">
+            <p className="description-text">
+              실험에 참여해 주셔서 감사합니다.
+            </p>
+            <p className="description-text">
+            참여자 분이 측정한 데이터와 정보는 <strong>익명 처리 후 연구용</strong>으로만 사용됨을 다시 한번 말씀드립니다. 
+            </p>
+            <br/>
+            <p className="description-text">
+              연구 종료 후 <strong>사례비 지급</strong>을 위해 다음을 업로드 또는 전송해 주세요.
+            </p>
+            <br/>
+            <p className="description-text">
+              1. 핸드폰에 있는 <strong>삼성 헬스 데이터</strong>
+            </p>
+            <p className="description-text">
+              2. 갤럭시 워치 <strong>수거 방문이 가능한 주소</strong>
+            </p>
+            <p className="description-text">
+              3. <strong>동의서 및 통장, 신분증 사본</strong>
+            </p>
+          </div>
+        </div>
+
+        <div className="action-buttons">
+          <div 
+            className="action-card" 
+            onClick={handleHealthDataGuide}
+            onKeyDown={(e) => handleKeyDown(e, handleHealthDataGuide)}
+            role="button"
+            tabIndex={0}
+            aria-label="삼성 헬스 데이터 다운로드 및 전송 방법"
+          >
+            <div className="card-content">
+              <h3 className="card-title">삼성 헬스 데이터</h3>
+              <h3 className="card-title">다운로드 및 전송 방법</h3>
+            </div>
+          </div>
+          
+          <div 
+            className="action-card" 
+            onClick={handleAddressInput}
+            onKeyDown={(e) => handleKeyDown(e, handleAddressInput)}
+            role="button"
+            tabIndex={0}
+            aria-label="방문 택배를 위한 주소 입력"
+          >
+            <div className="card-content">
+              <h3 className="card-title">방문 택배를 위한</h3>
+              <h3 className="card-title">주소 입력</h3>
+            </div>
+          </div>
+
+          <div 
+            className="action-card" 
+            onClick={handleDocumentSubmission}
+            onKeyDown={(e) => handleKeyDown(e, handleDocumentSubmission)}
+            role="button"
+            tabIndex={0}
+            aria-label="동의서 및 사본 제출"
+          >
+            <div className="card-content">
+              <h3 className="card-title">동의서 및 사본 제출</h3>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+};
+
+export default ExperimentCompletePage; 

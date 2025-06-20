@@ -10,6 +10,7 @@ import Results from './components/Results';
 import DataCollectionGuide from './components/DataCollectionGuide';
 import MultiStepRegistration from './components/MultiStepRegistration';
 import AdminPage from './components/AdminPage';
+import ExperimentCompletePage from './components/ExperimentCompletePage';
 
 // 설문 앱 컴포넌트
 const SurveyApp = () => {
@@ -121,6 +122,7 @@ function App() {
         <Route path="/survey" element={<SurveyApp />} />
         <Route path="/data-collection-guide" element={<DataCollectionGuide />} />
         <Route path="/registration" element={<MultiStepRegistration />} />
+        <Route path="/experiment-complete" element={<ExperimentCompletePage />} />
         <Route path="/admin" element={<AdminPage />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>

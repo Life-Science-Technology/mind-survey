@@ -219,7 +219,7 @@ const DataCollectionGuide = () => {
           .select();
       }
 
-      const { data, error } = result;
+      const { error } = result;
 
       if (error) {
         // 중복 데이터 오류 처리
@@ -233,7 +233,6 @@ const DataCollectionGuide = () => {
 
       // 성공 시 상태 업데이트
       setRegistrationSuccess(true);
-      const isUpdate = existingData && !searchError;
 
     } catch (error) {
       setRegistrationError('시스템 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
@@ -395,6 +394,12 @@ const DataCollectionGuide = () => {
               </div>
 
               <div className="registration-button-container">
+                {registrationError && (
+                  <p className="error-message">{registrationError}</p>
+                )}
+                {registrationSuccess && (
+                  <p className="success-message">대기자 등록이 완료되었습니다. 연구실에서 연락드리겠습니다.</p>
+                )}
                 <button 
                   type="button" 
                   className={`btn register-btn ${isRegistering ? 'registering' : ''} ${registrationSuccess ? 'success' : ''}`}
