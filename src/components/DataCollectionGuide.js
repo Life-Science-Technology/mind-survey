@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import supabase from '../supabaseClient';
+import { REGISTRATION_STEPS } from '../config/registrationSteps';
 
 const DataCollectionGuide = () => {
   const navigate = useNavigate();
@@ -190,7 +191,7 @@ const DataCollectionGuide = () => {
         depressive: depressionScore,
         anxiety: anxietyScore,
         stress: stressScore,
-        registration_step: 0, // 대기자 상태
+        registration_step: REGISTRATION_STEPS.WAITLIST, // 대기자 상태
         experiment_consent: false,
         data_usage_consent: false,
         third_party_consent: false

@@ -17,7 +17,7 @@ const AdminPage = () => {
   const [pinCode, setPinCode] = useState('');
   const [pinError, setPinError] = useState('');
   const [groupFilter, setGroupFilter] = useState('all'); // 집단 필터 상태 추가
-  const [confirmationStatuses, setConfirmationStatuses] = useState({}); // 확정여부 상태 관리
+
   
   // 인증 토큰 유효성 검사
   const validateAuthToken = (token) => {
@@ -113,13 +113,6 @@ const AdminPage = () => {
       
       setParticipants(data || []);
       setError(null);
-      
-      // 참가자별 확정여부 상태 초기화
-      const statusObj = {};
-      (data || []).forEach(participant => {
-        statusObj[participant.id] = participant.confirmation_status || null;
-      });
-      setConfirmationStatuses(statusObj);
       
       // 참가자 데이터 로드 후 모든 파일 정보도 로드
       await loadAllParticipantFiles();
@@ -319,12 +312,6 @@ const AdminPage = () => {
   // 확정여부 변경 함수
   const handleConfirmationChange = async (participantId, status) => {
     try {
-      // 로컬 상태 즉시 업데이트
-      setConfirmationStatuses(prev => ({
-        ...prev,
-        [participantId]: status
-      }));
-
       // 데이터베이스 업데이트
       const { error } = await supabase
         .rpc('update_participant_confirmation', { 
@@ -333,13 +320,16 @@ const AdminPage = () => {
         });
 
       if (error) {
-        // 에러 발생 시 상태 롤백
-        setConfirmationStatuses(prev => ({
-          ...prev,
-          [participantId]: confirmationStatuses[participantId]
-        }));
         throw error;
       }
+
+      // 성공 시 참가자 데이터 다시 로드하여 UI 업데이트
+      await loadParticipants(false);
+      
+      // 성공 메시지 표시
+      const statusText = status === 'approved' ? '승인' : '거부';
+      console.log(`참가자 ${participantId} 확정여부가 ${statusText}로 업데이트되었습니다.`);
+      
     } catch (error) {
       alert(`확정여부 업데이트 실패: ${error.message}`);
     }
@@ -699,7 +689,7 @@ const AdminPage = () => {
                             type="radio"
                             name={`confirmation_${participant.id}`}
                             value="approved"
-                            checked={confirmationStatuses[participant.id] === 'approved'}
+                            checked={participant.confirmation_status === 'approved'}
                             onChange={() => handleConfirmationChange(participant.id, 'approved')}
                             className="confirmation-radio"
                           />
@@ -709,7 +699,7 @@ const AdminPage = () => {
                             type="radio"
                             name={`confirmation_${participant.id}`}
                             value="rejected"
-                            checked={confirmationStatuses[participant.id] === 'rejected'}
+                            checked={participant.confirmation_status === 'rejected'}
                             onChange={() => handleConfirmationChange(participant.id, 'rejected')}
                             className="confirmation-radio"
                           />

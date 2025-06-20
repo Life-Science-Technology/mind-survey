@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import supabase, { ensureUserSession } from '../supabaseClient';
 import { compressImage, formatFileSize, validateFileType, ALLOWED_IMAGE_TYPES, ALLOWED_DOCUMENT_TYPES, shouldCompress } from '../utils/fileCompression';
+import { REGISTRATION_STEPS, canRegister } from '../config/registrationSteps';
 
 const MultiStepRegistration = () => {
   const navigate = useNavigate();
@@ -303,12 +304,12 @@ const MultiStepRegistration = () => {
         const existingUser = existingUsers[0];
         
         // 등록 단계 확인
-        if (existingUser.registration_step >= 3) {
-          // 이미 등록이 완료된 사용자
+        if (!canRegister(existingUser.registration_step)) {
+          // 이미 등록이 완료된 사용자 (COMPLETED 이상)
           setRegistrationError('이미 등록이 완료된 사용자입니다. 등록을 다시 진행할 수 없습니다.');
           return;
         } else {
-          // 등록이 완료되지 않은 사용자 (registration_step = 0~2) - 다음 단계로 진행 허용
+          // 등록이 완료되지 않은 사용자 (WAITLIST, INITIAL, IN_PROGRESS) - 다음 단계로 진행 허용
           setExistingUserId(existingUser.id);
           setRegistrationError('');
           nextStep();
@@ -521,7 +522,7 @@ const MultiStepRegistration = () => {
         id_card_upload_method: userData.idCardUploadMethod,
         bank_account_upload_method: userData.bankAccountUploadMethod,
         consent_date: new Date().toISOString().split('T')[0],
-        registration_step: 3,
+        registration_step: REGISTRATION_STEPS.COMPLETED,
         experiment_consent: consentChecked.experimentParticipation === true,
         data_usage_consent: consentChecked.dataUsage === true,
         third_party_consent: consentChecked.thirdParty,
