@@ -17,6 +17,7 @@ const AdminPage = () => {
   const [pinCode, setPinCode] = useState('');
   const [pinError, setPinError] = useState('');
   const [groupFilter, setGroupFilter] = useState('all'); // 집단 필터 상태 추가
+  const [confirmationStatuses, setConfirmationStatuses] = useState({}); // 확정여부 상태 관리
   
   // 인증 토큰 유효성 검사
   const validateAuthToken = (token) => {
@@ -57,7 +58,7 @@ const AdminPage = () => {
   const loadAllParticipantFiles = useCallback(async () => {
     try {
       // RLS를 위한 사용자 세션 확보
-      const user = await ensureUserSession();
+      await ensureUserSession();
       
       // 모든 참가자의 파일 목록 조회
       const { data, error } = await supabase
@@ -100,7 +101,7 @@ const AdminPage = () => {
       }
       
       // RLS를 위한 사용자 세션 확보 (실패해도 계속 진행)
-      const user = await ensureUserSession();
+      await ensureUserSession();
       
       // 보안 함수를 통한 데이터 조회 (RLS 우회)
       const { data, error } = await supabase
@@ -112,6 +113,13 @@ const AdminPage = () => {
       
       setParticipants(data || []);
       setError(null);
+      
+      // 참가자별 확정여부 상태 초기화
+      const statusObj = {};
+      (data || []).forEach(participant => {
+        statusObj[participant.id] = participant.confirmation_status || null;
+      });
+      setConfirmationStatuses(statusObj);
       
       // 참가자 데이터 로드 후 모든 파일 정보도 로드
       await loadAllParticipantFiles();
@@ -129,7 +137,7 @@ const AdminPage = () => {
       setIsLoadingFiles(true);
       
       // RLS를 위한 사용자 세션 확보 (실패해도 계속 진행)
-      const user = await ensureUserSession();
+      await ensureUserSession();
       
       // 보안 함수를 통한 파일 목록 조회
       const { data, error } = await supabase
@@ -279,24 +287,6 @@ const AdminPage = () => {
     }
   };
 
-  // 파일 형식별 아이콘 반환
-  const getFileIcon = (fileType) => {
-    switch (fileType) {
-      case 'identity_card':
-      case 'idCard':
-        return '🆔';
-      case 'bank_account':
-      case 'bankAccount':
-        return '🏦';
-      case 'signature_image':
-      case 'signatureImage':
-        return '✍️';
-      case 'consent_form':
-        return '📋';
-      default:
-        return '📄';
-    }
-  };
 
   // 파일 형식별 이름 반환
   const getFileTypeName = (fileType) => {
@@ -324,6 +314,35 @@ const AdminPage = () => {
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  // 확정여부 변경 함수
+  const handleConfirmationChange = async (participantId, status) => {
+    try {
+      // 로컬 상태 즉시 업데이트
+      setConfirmationStatuses(prev => ({
+        ...prev,
+        [participantId]: status
+      }));
+
+      // 데이터베이스 업데이트
+      const { error } = await supabase
+        .rpc('update_participant_confirmation', { 
+          participant_id_param: participantId, 
+          confirmation_status_param: status 
+        });
+
+      if (error) {
+        // 에러 발생 시 상태 롤백
+        setConfirmationStatuses(prev => ({
+          ...prev,
+          [participantId]: confirmationStatuses[participantId]
+        }));
+        throw error;
+      }
+    } catch (error) {
+      alert(`확정여부 업데이트 실패: ${error.message}`);
+    }
   };
 
   // 컴포넌트가 마운트될 때 초기 설정
@@ -595,25 +614,30 @@ const AdminPage = () => {
             <table className="admin-table">
               <thead>
                 <tr>
-                  <th>No.</th>
-                  <th>이름</th>
-                  <th>이메일</th>
-                  <th>전화번호</th>
-                  <th onClick={() => handleSort('depressive')}>
+                  <th rowSpan="2">No.</th>
+                  <th rowSpan="2">이름</th>
+                  <th rowSpan="2">이메일</th>
+                  <th rowSpan="2">전화번호</th>
+                  <th rowSpan="2" onClick={() => handleSort('depressive')}>
                     우울점수{renderSortArrow('depressive')}
                   </th>
-                  <th onClick={() => handleSort('anxiety')}>
+                  <th rowSpan="2" onClick={() => handleSort('anxiety')}>
                     불안점수{renderSortArrow('anxiety')}
                   </th>
-                  <th onClick={() => handleSort('stress')}>
+                  <th rowSpan="2" onClick={() => handleSort('stress')}>
                     스트레스점수{renderSortArrow('stress')}
                   </th>
-                  <th onClick={() => handleSort('created_at')}>
+                  <th rowSpan="2" onClick={() => handleSort('created_at')}>
                     등록일{renderSortArrow('created_at')}
                   </th>
-                  <th>집단</th>
-                  <th>업로드 상태</th>
-                  <th>업로드된 파일</th>
+                  <th rowSpan="2">집단</th>
+                  <th rowSpan="2">업로드 상태</th>
+                  <th rowSpan="2">업로드된 파일</th>
+                  <th colSpan="2">확정여부</th>
+                </tr>
+                <tr>
+                  <th>가</th>
+                  <th>부</th>
                 </tr>
               </thead>
               <tbody>
@@ -669,6 +693,26 @@ const AdminPage = () => {
                           ) : (
                             <span className="no-files">파일 없음</span>
                           )}
+                        </td>
+                        <td className="confirmation-cell">
+                          <input
+                            type="radio"
+                            name={`confirmation_${participant.id}`}
+                            value="approved"
+                            checked={confirmationStatuses[participant.id] === 'approved'}
+                            onChange={() => handleConfirmationChange(participant.id, 'approved')}
+                            className="confirmation-radio"
+                          />
+                        </td>
+                        <td className="confirmation-cell">
+                          <input
+                            type="radio"
+                            name={`confirmation_${participant.id}`}
+                            value="rejected"
+                            checked={confirmationStatuses[participant.id] === 'rejected'}
+                            onChange={() => handleConfirmationChange(participant.id, 'rejected')}
+                            className="confirmation-radio"
+                          />
                         </td>
                       </tr>
                     );

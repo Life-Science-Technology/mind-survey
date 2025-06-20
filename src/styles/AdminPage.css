@@ -51,6 +51,31 @@
   background-color: #2f9e44;
 }
 
+/* 확정여부 컬럼 스타일 */
+.confirmation-cell {
+  text-align: center;
+  vertical-align: middle;
+  padding: 8px !important;
+  width: 50px;
+}
+
+.confirmation-radio {
+  transform: scale(1.5);
+  cursor: pointer;
+  accent-color: #4c6ef5;
+  margin: 0;
+}
+
+.confirmation-radio:focus {
+  outline: 2px solid #4c6ef5;
+  outline-offset: 2px;
+}
+
+.confirmation-radio:hover {
+  transform: scale(1.7);
+  transition: transform 0.2s ease;
+}
+
 .logout-btn {
   background-color: #fa5252;
   color: #fff;
