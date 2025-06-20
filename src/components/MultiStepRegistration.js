@@ -17,6 +17,8 @@ const MultiStepRegistration = () => {
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
   const [registrationError, setRegistrationError] = useState('');
   const [existingUserId, setExistingUserId] = useState(null); // 1단계에서 가져온 기존 사용자 ID
+  const [step1State, setStep1State] = useState('namePhone'); // 'namePhone', 'email', 'address'
+  const [foundUser, setFoundUser] = useState(null); // DB에서 찾은 사용자 정보
   const [consentChecked, setConsentChecked] = useState({
     personalInfo: false,
     experimentParticipation: null, // null: 선택 안함, true: 첫번째 선택, false: 두번째 선택
@@ -34,7 +36,7 @@ const MultiStepRegistration = () => {
     idCardUploadMethod: '', // 'upload' 또는 'direct'
     bankAccountUploadMethod: '' // 'upload' 또는 'direct'
   });
-  const [emailError, setEmailError] = useState('');
+  // const [emailError, setEmailError] = useState(''); // 이메일 기능 비활성화로 주석 처리
   const [phoneFormatted, setPhoneFormatted] = useState('');
   const [phoneError, setPhoneError] = useState('');
   
@@ -93,11 +95,11 @@ const MultiStepRegistration = () => {
     return true;
   };
   
-  // 이메일 형식 검증
-  const validateEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
+  // 이메일 형식 검증 (주석 처리)
+  // const validateEmail = (email) => {
+  //   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  //   return emailRegex.test(email);
+  // };
   
   // 전화번호 형식 검증
   const validatePhoneNumber = (phone) => {
@@ -133,17 +135,17 @@ const MultiStepRegistration = () => {
     }));
   };
   
-  // 이메일 입력 처리
-  const handleEmailChange = (e) => {
-    const { value } = e.target;
-    updateUserData({ email: value });
-    
-    if (value && !validateEmail(value)) {
-      setEmailError('유효한 이메일 주소를 입력해주세요.');
-    } else {
-      setEmailError('');
-    }
-  };
+  // 이메일 입력 처리 (주석 처리)
+  // const handleEmailChange = (e) => {
+  //   const { value } = e.target;
+  //   updateUserData({ email: value });
+  //   
+  //   if (value && !validateEmail(value)) {
+  //     setEmailError('유효한 이메일 주소를 입력해주세요.');
+  //   } else {
+  //     setEmailError('');
+  //   }
+  // };
   
   // 전화번호 입력 처리
   const handlePhoneChange = (e) => {
@@ -257,118 +259,141 @@ const MultiStepRegistration = () => {
     setCurrentStep(prev => Math.max(prev - 1, 1));
   };
 
-  // 1단계: 기본 정보 입력
+  // 1단계: 기본 정보 입력 (단계별 처리)
   const handleStep1Submit = async () => {
-    if (!userData.name || !userData.email || !userData.phone) {
-      setRegistrationError('모든 필수 정보를 입력해주세요.');
-      return;
-    }
-    
-    if (!validateEmail(userData.email)) {
-      setRegistrationError('유효한 이메일 주소를 입력해주세요.');
-      return;
-    }
-    
-    if (!validatePhoneNumber(userData.phone)) {
-      setRegistrationError('전화번호는 010으로 시작하는 11자리 번호여야 합니다.');
-      return;
-    }
-
-    // DB에서 기존 사용자 검증
-    try {
-      setRegistrationError('사용자 정보를 확인하는 중...');
+    if (step1State === 'namePhone') {
+      // 이름 + 전화번호 확인
+      if (!userData.name || !userData.phone) {
+        setRegistrationError('이름과 전화번호를 입력해주세요.');
+        return;
+      }
       
-      // 전화번호를 숫자만으로 정규화 (하이픈 제거)
-      const normalizedPhone = userData.phone.replace(/\D/g, '');
-      
-      // 먼저 테이블이 존재하는지 확인
-      // eslint-disable-next-line no-unused-vars
-      const { count, error: countError } = await supabase
-        .from('survey-person')
-        .select('*', { count: 'exact', head: true });
-      
-      const { data: existingUsers, error: searchError } = await supabase
-        .from('survey-person')
-        .select('id, name, email, phone, registration_step')
-        .eq('name', userData.name.trim())
-        .eq('email', userData.email.trim())
-        .eq('phone', normalizedPhone);
-
-      if (searchError) {
-        setRegistrationError('사용자 정보 확인 중 오류가 발생했습니다. 다시 시도해주세요.');
+      if (!validatePhoneNumber(userData.phone)) {
+        setRegistrationError('전화번호는 010으로 시작하는 11자리 번호여야 합니다.');
         return;
       }
 
-      // 동일한 이름, 이메일, 전화번호를 가진 사용자가 있는지 확인
-      if (existingUsers && existingUsers.length > 0) {
-        const existingUser = existingUsers[0];
+      // DB에서 이름+전화번호로 사용자 확인
+      try {
+        setRegistrationError('사용자 정보를 확인하는 중...');
         
-        // 등록 단계 확인
-        if (!canRegister(existingUser.registration_step)) {
-          // 이미 등록이 완료된 사용자 (COMPLETED 이상)
-          setRegistrationError('이미 등록이 완료된 사용자입니다. 등록을 다시 진행할 수 없습니다.');
-          return;
-        } else {
-          // 등록이 완료되지 않은 사용자 (WAITLIST, INITIAL, IN_PROGRESS) - 다음 단계로 진행 허용
-          setExistingUserId(existingUser.id);
-          setRegistrationError('');
-          nextStep();
-        }
-      } else {
-        // 정확한 매치 없음 - 개별 필드별 디버깅 검색
+        const normalizedPhone = userData.phone.replace(/\D/g, '');
         
-        // 이름으로만 검색
-        const { data: nameUsers } = await supabase
+        const { data: existingUsers, error: searchError } = await supabase
           .from('survey-person')
-          .select('id, name, email, phone, registration_step')
-          .eq('name', userData.name.trim());
-        
-        // 이메일로만 검색
-        const { data: emailUsers } = await supabase
-          .from('survey-person')
-          .select('id, name, email, phone, registration_step')
-          .eq('email', userData.email.trim());
-        
-        // 전화번호로만 검색
-        const { data: phoneUsers } = await supabase
-          .from('survey-person')
-          .select('id, name, email, phone, registration_step')
+          .select('id, name, email, phone, registration_step, confirmation_status')
+          .eq('name', userData.name.trim())
           .eq('phone', normalizedPhone);
-        
-        // 디버깅용: 전체 사용자 목록 조회 (최근 10개)
-        // eslint-disable-next-line no-unused-vars
-        const { data: allUsers, error: allUsersError } = await supabase
-          .from('survey-person')
-          .select('id, name, email, phone, registration_step, created_at')
-          .order('created_at', { ascending: false })
-          .limit(10);
-        
 
-        
-        // 부분 매치 분석
-        let errorMessage = '등록되지 않은 사용자입니다.';
-        const matchInfo = [];
-        
-        if (nameUsers && nameUsers.length > 0) {
-          matchInfo.push(`이름 일치: ${nameUsers.length}건`);
+        if (searchError) {
+          setRegistrationError('사용자 정보 확인 중 오류가 발생했습니다. 다시 시도해주세요.');
+          return;
         }
-        if (emailUsers && emailUsers.length > 0) {
-          matchInfo.push(`이메일 일치: ${emailUsers.length}건`);
+
+        if (existingUsers && existingUsers.length > 0) {
+          const existingUser = existingUsers[0];
+          setFoundUser(existingUser);
+          
+          // 등록 단계 확인
+          if (!canRegister(existingUser.registration_step)) {
+            setRegistrationError('이미 등록이 완료된 사용자입니다. 등록을 다시 진행할 수 없습니다.');
+            return;
+          }
+          
+          // 확정여부 확인
+          if (existingUser.confirmation_status === 'approved') {
+            // 승인된 사용자 - 갤럭시워치 배송 주소 입력 단계로 이동
+            setRegistrationError('');
+            setStep1State('address');
+          } else if (existingUser.confirmation_status === 'rejected') {
+            // 거부된 사용자
+            setRegistrationError('죄송합니다. 참여가 거부된 사용자입니다. 자세한 사항은 관리자에게 문의해주세요.');
+            return;
+          } else {
+            // 승인 대기 중인 사용자 (confirmation_status가 null)
+            setRegistrationError('현재 관리자 승인 대기 중입니다. 승인 완료 후 다시 시도해주세요.');
+            return;
+          }
+        } else {
+          setRegistrationError('등록되지 않은 사용자입니다. 먼저 대기자 등록을 완료해주세요.');
+          return;
         }
-        if (phoneUsers && phoneUsers.length > 0) {
-          matchInfo.push(`전화번호 일치: ${phoneUsers.length}건`);
-        }
         
-        
-        errorMessage = '등록되지 않은 사용자입니다. 먼저 대기자 등록을 완료해주세요.';
-        
-        
-        setRegistrationError(errorMessage);
+      } catch (error) {
+        setRegistrationError('시스템 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+      }
+    // } else if (step1State === 'email') {
+    //   // 이메일 확인 (주석 처리)
+    //   if (!userData.email) {
+    //     setRegistrationError('이메일을 입력해주세요.');
+    //     return;
+    //   }
+    //   
+    //   if (!validateEmail(userData.email)) {
+    //     setRegistrationError('유효한 이메일 주소를 입력해주세요.');
+    //     return;
+    //   }
+
+    //   // 이름 + 전화번호 + 이메일로 정확한 매치 확인
+    //   try {
+    //     setRegistrationError('사용자 정보를 확인하는 중...');
+    //     
+    //     const normalizedPhone = userData.phone.replace(/\D/g, '');
+    //     
+    //     const { data: existingUsers, error: searchError } = await supabase
+    //       .from('survey-person')
+    //       .select('id, name, email, phone, registration_step, confirmation_status')
+    //       .eq('name', userData.name.trim())
+    //       .eq('email', userData.email.trim())
+    //       .eq('phone', normalizedPhone);
+
+    //     if (searchError) {
+    //       setRegistrationError('사용자 정보 확인 중 오류가 발생했습니다. 다시 시도해주세요.');
+    //       return;
+    //     }
+
+    //     if (existingUsers && existingUsers.length > 0) {
+    //       const existingUser = existingUsers[0];
+    //       setFoundUser(existingUser);
+    //       
+    //       // 등록 단계 확인
+    //       if (!canRegister(existingUser.registration_step)) {
+    //         setRegistrationError('이미 등록이 완료된 사용자입니다. 등록을 다시 진행할 수 없습니다.');
+    //         return;
+    //       }
+    //       
+    //       // 확정여부 확인
+    //       if (existingUser.confirmation_status === 'approved') {
+    //         // 승인된 사용자 - 갤럭시워치 배송 주소 입력 단계로 이동
+    //         setRegistrationError('');
+    //         setStep1State('address');
+    //       } else {
+    //         // 승인되지 않은 사용자 - 바로 다음 단계로
+    //         setExistingUserId(existingUser.id);
+    //         setRegistrationError('');
+    //         nextStep();
+    //       }
+    //     } else {
+    //       setRegistrationError('입력하신 정보와 일치하는 사용자를 찾을 수 없습니다. 정보를 다시 확인해주세요.');
+    //       return;
+    //     }
+    //     
+    //   } catch (error) {
+    //     setRegistrationError('시스템 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+    //   }
+    } else if (step1State === 'address') {
+      // 갤럭시워치 배송 주소 확인
+      if (!userData.watchDeliveryAddress) {
+        setRegistrationError('갤럭시워치 배송 주소를 입력해주세요.');
         return;
       }
       
-    } catch (error) {
-      setRegistrationError('시스템 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+      // 다음 단계로 이동
+      if (foundUser) {
+        setExistingUserId(foundUser.id);
+      }
+      setRegistrationError('');
+      nextStep();
     }
   };
 
@@ -528,7 +553,8 @@ const MultiStepRegistration = () => {
         third_party_consent: consentChecked.thirdParty,
         depressive: depressionScore,
         anxiety: anxietyScore,
-        stress: stressScore
+        stress: stressScore,
+        watch_delivery_address: userData.watchDeliveryAddress || '' // 갤럭시워치 배송 주소 추가
       };
 
       // RPC 함수를 통한 업데이트 시도 (CORS 우회)
@@ -629,11 +655,12 @@ const MultiStepRegistration = () => {
               <div className={`step ${currentStep >= 3 ? 'active' : ''}`}>3. 서류제출</div>
             </div>
 
-            {/* 1단계: 기본 정보 입력 */}
+            {/* 1단계: 기본 정보 입력 (단계별 표시) */}
             {currentStep === 1 && (
               <div className="registration-step">
                 <h5>1단계: 기본 정보 입력</h5>
                 <div className="form-section">
+                  {/* 이름 + 전화번호 입력 */}
                   <div className="form-group">
                     <label htmlFor="name"><strong>이름</strong></label>
                     <input 
@@ -641,21 +668,9 @@ const MultiStepRegistration = () => {
                       id="name" 
                       value={userData.name || ''}
                       onChange={handleChange}
+                      disabled={step1State !== 'namePhone'}
                       required
                     />
-                  </div>
-                  
-                  <div className="form-group">
-                    <label htmlFor="email"><strong>이메일</strong></label>
-                    <input 
-                      type="email" 
-                      id="email" 
-                      value={userData.email || ''}
-                      onChange={handleEmailChange}
-                      required
-                      className={emailError ? 'input-error' : ''}
-                    />
-                    {emailError && <p className="error-message">{emailError}</p>}
                   </div>
                   
                   <div className="form-group">
@@ -666,6 +681,7 @@ const MultiStepRegistration = () => {
                       value={phoneFormatted}
                       onChange={handlePhoneChange}
                       placeholder="010-0000-0000"
+                      disabled={step1State !== 'namePhone'}
                       required
                       className={phoneError ? 'input-error' : ''}
                     />
@@ -675,6 +691,51 @@ const MultiStepRegistration = () => {
                       <p className="helper-text">형식: 010-0000-0000</p>
                     )}
                   </div>
+
+                  {/* 이메일 입력 (주석 처리) */}
+                  {/* {step1State !== 'namePhone' && (
+                    <div className="form-group">
+                      <label htmlFor="email"><strong>이메일</strong></label>
+                      <input 
+                        type="email" 
+                        id="email" 
+                        value={userData.email || ''}
+                        onChange={handleEmailChange}
+                        disabled={step1State === 'address'}
+                        required
+                        className={emailError ? 'input-error' : ''}
+                      />
+                      {emailError && <p className="error-message">{emailError}</p>}
+                      {step1State === 'email' && foundUser && foundUser.confirmation_status === 'approved' && (
+                        <p className="success-message" style={{color: 'green'}}>
+                          확정된 참여자입니다! 갤럭시워치 배송 주소를 입력해주세요.
+                        </p>
+                      )}
+                      {step1State === 'email' && foundUser && foundUser.confirmation_status !== 'approved' && (
+                        <p className="info-message" style={{color: 'blue'}}>
+                          연구진 확인 중인 참여자입니다.
+                        </p>
+                      )}
+                    </div>
+                  )} */}
+
+                  {/* 갤럭시워치 배송 주소 입력 (조건부 표시) */}
+                  {step1State === 'address' && (
+                    <div className="form-group" style={{backgroundColor: '#f8f9fa', padding: '15px', borderRadius: '8px', border: '2px solid #28a745'}}>
+                      <label htmlFor="watchDeliveryAddress"><strong>갤럭시워치 배송 주소</strong></label>
+                      <input 
+                        type="text" 
+                        id="watchDeliveryAddress" 
+                        value={userData.watchDeliveryAddress || ''}
+                        onChange={handleChange}
+                        placeholder="갤럭시워치를 받으실 주소를 입력해주세요"
+                        required
+                      />
+                      <p className="helper-text" style={{color: '#28a745'}}>
+                        갤럭시워치가 이 주소로 배송됩니다. 정확한 주소를 입력해주세요.
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 {registrationError && (
@@ -694,7 +755,8 @@ const MultiStepRegistration = () => {
                     className="btn next-btn"
                     onClick={handleStep1Submit}
                   >
-                    다음 단계
+                    {step1State === 'namePhone' ? '다음' : 
+                     '다음 단계'}
                   </button>
                 </div>
               </div>
