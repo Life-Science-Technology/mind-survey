@@ -234,6 +234,11 @@ const DataCollectionGuide = () => {
 
       // 성공 시 상태 업데이트
       setRegistrationSuccess(true);
+      
+      // 3초 후 자동으로 홈화면으로 이동
+      setTimeout(() => {
+        navigate('/');
+      }, 3000);
 
     } catch (error) {
       setRegistrationError('시스템 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
@@ -399,16 +404,31 @@ const DataCollectionGuide = () => {
                   <p className="error-message">{registrationError}</p>
                 )}
                 {registrationSuccess && (
-                  <p className="success-message">대기자 등록이 완료되었습니다. 연구실에서 연락드리겠습니다.</p>
+                  <div className="success-container">
+                    <p className="success-message">
+                      대기자 등록이 완료되었습니다. 연구실에서 연락드리겠습니다.<br/>
+                      <small style={{color: '#666'}}>3초 후 자동으로 홈화면으로 이동합니다.</small>
+                    </p>
+                    <button 
+                      type="button" 
+                      className="btn home-btn"
+                      onClick={() => navigate('/')}
+                      style={{ marginTop: '10px' }}
+                    >
+                      홈으로 돌아가기
+                    </button>
+                  </div>
                 )}
-                <button 
-                  type="button" 
-                  className={`btn register-btn ${isRegistering ? 'registering' : ''} ${registrationSuccess ? 'success' : ''}`}
-                  onClick={handleRegistrationClick}
-                  disabled={isRegistering || registrationSuccess}
-                >
-                  {isRegistering ? '등록 중...' : registrationSuccess ? '등록 완료' : '실증 실험 대기자 등록'}
-                </button>
+                {!registrationSuccess && (
+                  <button 
+                    type="button" 
+                    className={`btn register-btn ${isRegistering ? 'registering' : ''}`}
+                    onClick={handleRegistrationClick}
+                    disabled={isRegistering}
+                  >
+                    {isRegistering ? '등록 중...' : '실증 실험 대기자 등록'}
+                  </button>
+                )}
               </div>
             </div>
           </div>
