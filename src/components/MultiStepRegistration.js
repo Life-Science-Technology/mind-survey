@@ -281,6 +281,7 @@ const MultiStepRegistration = () => {
       const normalizedPhone = userData.phone.replace(/\D/g, '');
       
       // 먼저 테이블이 존재하는지 확인
+      // eslint-disable-next-line no-unused-vars
       const { count, error: countError } = await supabase
         .from('survey-person')
         .select('*', { count: 'exact', head: true });
@@ -334,6 +335,7 @@ const MultiStepRegistration = () => {
           .eq('phone', normalizedPhone);
         
         // 디버깅용: 전체 사용자 목록 조회 (최근 10개)
+        // eslint-disable-next-line no-unused-vars
         const { data: allUsers, error: allUsersError } = await supabase
           .from('survey-person')
           .select('id, name, email, phone, registration_step, created_at')
@@ -501,6 +503,7 @@ const MultiStepRegistration = () => {
       setRegistrationError('');
 
       // RLS를 위한 사용자 세션 확보 (실패해도 계속 진행)
+      // eslint-disable-next-line no-unused-vars
       const user = await ensureUserSession();
 
       // 기존 사용자 레코드 업데이트 방식 (단순화)
@@ -567,78 +570,18 @@ const MultiStepRegistration = () => {
       }
 
       // 파일 업로드 처리 (스토리지 업로드 + DB 저장)
+      // eslint-disable-next-line no-unused-vars
+      const { fileUploads, uploadErrors, directSubmissions } = await processFileUploads(participantId);
       
-      let uploadErrors = [];
-      let directSubmissions = [];
-      let fileUploads = [];
-      
-      // 업로드 방식별 파일 처리
-      
-      // 서명 이미지 업로드 (signatureImage 파일 체크)
-      if (userData.signatureUploadMethod === 'upload' && files.signatureImage) {
-        try {
-          const filePath = await uploadFileToStorage(files.signatureImage, `signature_${Date.now()}.${files.signatureImage.name.split('.').pop()}`, 'signatureImage');
-          
-          // 파일 정보 준비 (실제 participant_id 사용)
-          fileUploads.push({
-            participant_id: participantId,
-            file_type: 'signature_image',
-            file_name: files.signatureImage.name,
-            file_path: filePath,
-            file_size: files.signatureImage.size
-          });
-        } catch (error) {
-          uploadErrors.push({ fileType: 'signatureImage', error: error.message });
-        }
-      } else if (userData.signatureUploadMethod === 'direct') {
-        directSubmissions.push({ fileType: 'signature_image', typeName: '서명' });
-      }
-
-      // 신분증 업로드
-      if (userData.idCardUploadMethod === 'upload' && files.idCard) {
-        try {
-          const filePath = await uploadFileToStorage(files.idCard, `idcard_${Date.now()}.${files.idCard.name.split('.').pop()}`, 'idCard');
-          
-          fileUploads.push({
-            participant_id: participantId,
-            file_type: 'identity_card',
-            file_name: files.idCard.name,
-            file_path: filePath,
-            file_size: files.idCard.size
-          });
-        } catch (error) {
-          uploadErrors.push({ fileType: 'idCard', error: error.message });
-        }
-      } else if (userData.idCardUploadMethod === 'direct') {
-        directSubmissions.push({ fileType: 'identity_card', typeName: '신분증' });
-      }
-
-      // 통장사본 업로드
-      if (userData.bankAccountUploadMethod === 'upload' && files.bankAccount) {
-        try {
-          const filePath = await uploadFileToStorage(files.bankAccount, `bankaccount_${Date.now()}.${files.bankAccount.name.split('.').pop()}`, 'bankAccount');
-          
-          fileUploads.push({
-            participant_id: participantId,
-            file_type: 'bank_account',
-            file_name: files.bankAccount.name,
-            file_path: filePath,
-            file_size: files.bankAccount.size
-          });
-        } catch (error) {
-          uploadErrors.push({ fileType: 'bankAccount', error: error.message });
-        }
-      } else if (userData.bankAccountUploadMethod === 'direct') {
-        directSubmissions.push({ fileType: 'bank_account', typeName: '통장사본' });
-      }
-
       // 파일 정보 데이터베이스에 저장 (실제 업로드된 파일이 있는 경우만)
       if (fileUploads.length > 0) {
         try {
           const { error: fileError } = await supabase
             .from('uploaded_files')
             .insert(fileUploads);
-
+          
+          if (fileError) {
+          }
         } catch (error) {
         }
       }
@@ -657,7 +600,7 @@ const MultiStepRegistration = () => {
   return (
     <div className="data-collection-guide">
       <div className="guide-header">
-        <h1>실증 실험 참여 대기자 등록</h1>
+        <h1>실증 실험 참여자 서류 제출</h1>
       </div>
       
       <div className="guide-content">
@@ -793,8 +736,6 @@ const MultiStepRegistration = () => {
                               ];
                               
                               let response = null;
-                              // eslint-disable-next-line no-unused-vars
-                              let lastError = null;
                               
                               for (const path of possiblePaths) {
                                 try {
@@ -803,7 +744,6 @@ const MultiStepRegistration = () => {
                                     break;
                                   }
                                 } catch (error) {
-                                  lastError = error;
                                 }
                               }
                               
