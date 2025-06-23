@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
+import { validatePhoneNumber, usePhoneNumber } from '../utils/phoneNumberUtils';
 
 const InfoForm = ({ userData, updateUserData, nextPage }) => {
   // State for validation messages
   const [emailError, setEmailError] = useState('');
-  const [phoneFormatted, setPhoneFormatted] = useState('');
   const [isFormValid, setIsFormValid] = useState(false);
 
   // Validate email format
@@ -12,28 +12,12 @@ const InfoForm = ({ userData, updateUserData, nextPage }) => {
     return emailRegex.test(email);
   };
 
-  // Format phone number with hyphens (XXX-XXXX-XXXX for Korean numbers)
-  // useCallback을 사용하여 함수 재생성 방지
-  const formatPhoneNumber = useCallback((phone) => {
-    // Remove any non-digit characters
-    const digits = phone.replace(/\D/g, '');
-    
-    // Apply formatting based on the number of digits
-    if (digits.length <= 3) {
-      return digits;
-    } else if (digits.length <= 7) {
-      return `${digits.slice(0, 3)}-${digits.slice(3)}`;
-    } else {
-      return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7, 11)}`;
-    }
-  }, []);
-
-  // Initialize formatted phone state
-  useEffect(() => {
-    if (userData.phone) {
-      setPhoneFormatted(formatPhoneNumber(userData.phone));
-    }
-  }, [userData.phone, formatPhoneNumber]);
+  // 전화번호 관리 (커스텀 훅 사용)
+  const {
+    phoneFormatted,
+    phoneError,
+    handlePhoneChange
+  } = usePhoneNumber(userData.phone, (phone) => updateUserData({ phone }));
 
   // Handle form submission
   const handleSubmit = (e) => {
@@ -45,9 +29,8 @@ const InfoForm = ({ userData, updateUserData, nextPage }) => {
       return;
     }
     
-    // 전화번호 검증
+    // 전화번호 검증은 커스텀 훅에서 처리되므로 추가 검증 불필요
     if (!validatePhoneNumber(userData.phone)) {
-      setPhoneError('전화번호는 010으로 시작해야 합니다.');
       return;
     }
     
@@ -67,14 +50,7 @@ const InfoForm = ({ userData, updateUserData, nextPage }) => {
     }
   };
 
-  // 전화번호 유효성 검사
-  const [phoneError, setPhoneError] = useState('');
 
-  // 전화번호가 010으로 시작하는지 확인
-  const validatePhoneNumber = (phone) => {
-    const digits = phone.replace(/\D/g, '');
-    return digits.startsWith('010');
-  };
   
   // 폼 유효성 검사
   useEffect(() => {
@@ -91,26 +67,7 @@ const InfoForm = ({ userData, updateUserData, nextPage }) => {
     setIsFormValid(isValid);
   }, [userData.email, userData.name, userData.phone, emailError, phoneError]);
 
-  // Handle phone input changes
-  const handlePhoneChange = (e) => {
-    const { value } = e.target;
-    
-    // 숫자만 추출
-    const digits = value.replace(/\D/g, '');
-    
-    // 010으로 시작하는지 확인
-    if (digits.length >= 3 && !digits.startsWith('010')) {
-      setPhoneError('전화번호는 010으로 시작해야 합니다.');
-    } else {
-      setPhoneError('');
-    }
-    
-    const formatted = formatPhoneNumber(value);
-    setPhoneFormatted(formatted);
-    
-    // Store the digits only in userData
-    updateUserData({ phone: digits });
-  };
+
 
   // Handle regular input changes (for name)
   const handleChange = (e) => {

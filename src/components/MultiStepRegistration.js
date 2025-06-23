@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import supabase, { ensureUserSession } from '../supabaseClient';
 import { compressImage, formatFileSize, validateFileType, ALLOWED_IMAGE_TYPES, ALLOWED_DOCUMENT_TYPES, shouldCompress } from '../utils/fileCompression';
 import { REGISTRATION_STEPS, canRegister } from '../config/registrationSteps';
+import { validatePhoneNumber, usePhoneNumber } from '../utils/phoneNumberUtils';
 
 const MultiStepRegistration = () => {
   const navigate = useNavigate();
@@ -40,8 +41,13 @@ const MultiStepRegistration = () => {
     bankAccountUploadMethod: '' // 'upload' 또는 'direct'
   });
   // const [emailError, setEmailError] = useState(''); // 이메일 기능 비활성화로 주석 처리
-  const [phoneFormatted, setPhoneFormatted] = useState('');
-  const [phoneError, setPhoneError] = useState('');
+  
+  // 전화번호 관리 (커스텀 훅 사용)
+  const {
+    phoneFormatted,
+    phoneError,
+    handlePhoneChange: handlePhoneInputChange
+  } = usePhoneNumber(userData.phone, (phone) => updateUserData({ phone }));
   
   // 파일 업로드 관련 상태
   const [files, setFiles] = useState({
@@ -103,32 +109,6 @@ const MultiStepRegistration = () => {
   //   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   //   return emailRegex.test(email);
   // };
-  
-  // 전화번호 형식 검증
-  const validatePhoneNumber = (phone) => {
-    const digits = phone.replace(/\D/g, '');
-    return digits.startsWith('010') && digits.length === 11;
-  };
-  
-  // 전화번호 형식화 함수
-  const formatPhoneNumber = useCallback((phone) => {
-    const digits = phone.replace(/\D/g, '').slice(0, 11); // 11자리로 제한
-    
-    if (digits.length <= 3) {
-      return digits;
-    } else if (digits.length <= 7) {
-      return `${digits.slice(0, 3)}-${digits.slice(3)}`;
-    } else {
-      return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7, 11)}`;
-    }
-  }, []);
-  
-  // 전화번호 초기화
-  useEffect(() => {
-    if (userData.phone) {
-      setPhoneFormatted(formatPhoneNumber(userData.phone));
-    }
-  }, [userData.phone, formatPhoneNumber]);
 
   // 갤럭시워치 배송 주소 변경 시 주소 연동 업데이트
   useEffect(() => {
@@ -157,35 +137,26 @@ const MultiStepRegistration = () => {
   //   }
   // };
   
-  // 전화번호 입력 처리
-  const handlePhoneChange = (e) => {
-    const { value } = e.target;
-    const digits = value.replace(/\D/g, '');
-    
-    // 11자리를 초과하는 입력은 무시
-    if (digits.length > 11) {
-      return;
-    }
-    
-    // 전화번호 검증 및 에러 메시지 설정
-    if (digits.length === 0) {
-      setPhoneError('');
-    } else if (digits.length >= 3 && !digits.startsWith('010')) {
-      setPhoneError('전화번호는 010으로 시작해야 합니다.');
-    } else if (digits.length > 0 && digits.length < 11) {
-      setPhoneError('전화번호는 11자리여야 합니다.');
-    } else if (digits.length === 11) {
-      setPhoneError('');
-    }
-    
-    const formatted = formatPhoneNumber(value);
-    setPhoneFormatted(formatted);
-    updateUserData({ phone: digits });
-  };
+
   
   // 일반 입력 처리
   const handleChange = (e) => {
     const { id, value } = e.target;
+    
+    // 생년월일 검증
+    if (id === 'birthDate' && value) {
+      const inputDate = new Date(value);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0); // 시간을 00:00:00으로 설정하여 날짜만 비교
+      
+      if (inputDate > today) {
+        setRegistrationError('생년월일은 오늘 이후의 날짜를 입력할 수 없습니다.');
+        return; // 미래 날짜면 업데이트하지 않음
+      } else {
+        setRegistrationError(''); // 에러 메시지 초기화
+      }
+    }
+    
     updateUserData({ [id]: value });
   };
 
@@ -705,7 +676,7 @@ const MultiStepRegistration = () => {
                       type="tel" 
                       id="phone" 
                       value={phoneFormatted}
-                      onChange={handlePhoneChange}
+                      onChange={handlePhoneInputChange}
                       placeholder="010-0000-0000"
                       disabled={step1State !== 'namePhone'}
                       required
@@ -1008,6 +979,7 @@ const MultiStepRegistration = () => {
                       value={userData.birthDate || ''}
                       onChange={handleChange}
                       className="date-input"
+                      max={new Date().toISOString().split('T')[0]}
                       required
                     />
                   </div>

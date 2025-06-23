@@ -1,7 +1,8 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import supabase from '../supabaseClient';
 import { REGISTRATION_STEPS } from '../config/registrationSteps';
+import { validatePhoneNumber, usePhoneNumber } from '../utils/phoneNumberUtils';
 
 const DataCollectionGuide = () => {
   const navigate = useNavigate();
@@ -22,9 +23,22 @@ const DataCollectionGuide = () => {
 
   // 검증 에러 상태 관리
   const [emailError, setEmailError] = useState('');
-  const [phoneError, setPhoneError] = useState('');
-  const [phoneFormatted, setPhoneFormatted] = useState('');
   const [registrationError, setRegistrationError] = useState('');
+  
+  // 전화번호 관리 (커스텀 훅 사용)
+  const {
+    phoneFormatted,
+    phoneError,
+    handlePhoneChange: handlePhoneInputChange
+  } = usePhoneNumber(personalInfo.phoneNumber, (phone) => {
+    setPersonalInfo(prev => ({
+      ...prev,
+      phoneNumber: phone
+    }));
+    // 입력 시 등록 에러 메시지 초기화
+    setRegistrationError('');
+    setRegistrationSuccess(false);
+  });
 
   // 등록 진행 상태 관리
   const [isRegistering, setIsRegistering] = useState(false);
@@ -40,31 +54,7 @@ const DataCollectionGuide = () => {
     return emailRegex.test(email);
   };
   
-  // 전화번호 형식 검증
-  const validatePhoneNumber = (phone) => {
-    const digits = phone.replace(/\D/g, '');
-    return digits.startsWith('010') && digits.length === 11;
-  };
-  
-  // 전화번호 형식화 함수
-  const formatPhoneNumber = useCallback((phone) => {
-    const digits = phone.replace(/\D/g, '').slice(0, 11); // 11자리로 제한
-    
-    if (digits.length <= 3) {
-      return digits;
-    } else if (digits.length <= 7) {
-      return `${digits.slice(0, 3)}-${digits.slice(3)}`;
-    } else {
-      return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7, 11)}`;
-    }
-  }, []);
 
-  // 전화번호 초기화
-  useEffect(() => {
-    if (personalInfo.phoneNumber) {
-      setPhoneFormatted(formatPhoneNumber(personalInfo.phoneNumber));
-    }
-  }, [personalInfo.phoneNumber, formatPhoneNumber]);
 
   // 이메일 입력 처리
   const handleEmailChange = (e) => {
@@ -85,38 +75,7 @@ const DataCollectionGuide = () => {
     setRegistrationSuccess(false);
   };
   
-  // 전화번호 입력 처리
-  const handlePhoneChange = (e) => {
-    const { value } = e.target;
-    const digits = value.replace(/\D/g, '');
-    
-    // 11자리를 초과하는 입력은 무시
-    if (digits.length > 11) {
-      return;
-    }
-    
-    // 전화번호 검증 및 에러 메시지 설정
-    if (digits.length === 0) {
-      setPhoneError('');
-    } else if (digits.length >= 3 && !digits.startsWith('010')) {
-      setPhoneError('전화번호는 010으로 시작해야 합니다.');
-    } else if (digits.length > 0 && digits.length < 11) {
-      setPhoneError('전화번호는 11자리여야 합니다.');
-    } else if (digits.length === 11) {
-      setPhoneError('');
-    }
-    
-    const formatted = formatPhoneNumber(value);
-    setPhoneFormatted(formatted);
-    setPersonalInfo(prev => ({
-      ...prev,
-      phoneNumber: digits
-    }));
-    
-    // 입력 시 등록 에러 메시지 초기화
-    setRegistrationError('');
-    setRegistrationSuccess(false);
-  };
+
 
   // 일반 입력 처리 (이름)
   const handleInputChange = (e) => {
@@ -363,7 +322,7 @@ const DataCollectionGuide = () => {
                     id="phoneNumber"
                     name="phoneNumber"
                     value={phoneFormatted}
-                    onChange={handlePhoneChange}
+                    onChange={handlePhoneInputChange}
                     placeholder="010-0000-0000"
                     className={phoneError ? 'form-input input-error' : 'form-input'}
                     required
