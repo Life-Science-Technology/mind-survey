@@ -11,6 +11,7 @@ import DataCollectionGuide from './components/DataCollectionGuide';
 import MultiStepRegistration from './components/MultiStepRegistration';
 import AdminPage from './components/AdminPage';
 import ExperimentCompletePage from './components/ExperimentCompletePage';
+import ScrollToTop from './components/ScrollToTop';
 
 // 설문 앱 컴포넌트
 const SurveyApp = () => {
@@ -27,11 +28,13 @@ const SurveyApp = () => {
   // Function to move to the next page
   const nextPage = () => {
     setPage(prevPage => prevPage + 1);
+    window.scrollTo(0, 0);
   };
 
   // Function to move to the previous page
   const prevPage = () => {
     setPage(prevPage => prevPage - 1);
+    window.scrollTo(0, 0);
   };
 
   // Function to restart the survey
@@ -42,6 +45,7 @@ const SurveyApp = () => {
       anxietyScore: 0,
       stressScore: 0
     });
+    window.scrollTo(0, 0);
   };
 
   // Function to update user data
@@ -117,6 +121,7 @@ const SurveyApp = () => {
 function App() {
   return (
     <Router>
+      <ScrollToTop />
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/survey" element={<SurveyApp />} />

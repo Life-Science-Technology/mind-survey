@@ -71,11 +71,9 @@ const ExperimentCompletePage = () => {
             <p className="description-text">
             참여자 분이 측정한 데이터와 정보는 <strong>익명 처리 후 연구용</strong>으로만 사용됨을 다시 한번 말씀드립니다. 
             </p>
-            <br/>
             <p className="description-text">
               연구 종료 후 <strong>사례비 지급</strong>을 위해 다음을 업로드 또는 전송해 주세요.
             </p>
-            <br/>
             <p className="description-text">
               1. 핸드폰에 있는 <strong>삼성 헬스 데이터</strong>
             </p>
