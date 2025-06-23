@@ -26,6 +26,9 @@ const MultiStepRegistration = () => {
     thirdParty: false
   });
   
+  // 주소 연동 상태 관리
+  const [useWatchAddressForResidence, setUseWatchAddressForResidence] = useState(false);
+  
   // 개인정보 입력 관련 상태
   const [userData, setUserData] = useState({
     ...initialUserData,
@@ -126,6 +129,13 @@ const MultiStepRegistration = () => {
       setPhoneFormatted(formatPhoneNumber(userData.phone));
     }
   }, [userData.phone, formatPhoneNumber]);
+
+  // 갤럭시워치 배송 주소 변경 시 주소 연동 업데이트
+  useEffect(() => {
+    if (useWatchAddressForResidence && userData.watchDeliveryAddress) {
+      updateUserData({ address: userData.watchDeliveryAddress });
+    }
+  }, [userData.watchDeliveryAddress, useWatchAddressForResidence]);
   
   // 사용자 데이터 업데이트 함수
   const updateUserData = (newData) => {
@@ -177,6 +187,20 @@ const MultiStepRegistration = () => {
   const handleChange = (e) => {
     const { id, value } = e.target;
     updateUserData({ [id]: value });
+  };
+
+  // 주소 연동 체크박스 처리
+  const handleAddressSyncChange = (e) => {
+    const isChecked = e.target.checked;
+    setUseWatchAddressForResidence(isChecked);
+    
+    if (isChecked && userData.watchDeliveryAddress) {
+      // 갤럭시워치 배송 주소를 주소 필드에 복사
+      updateUserData({ address: userData.watchDeliveryAddress });
+    } else if (!isChecked) {
+      // 체크 해제 시 주소 필드 비우기
+      updateUserData({ address: '' });
+    }
   };
 
   // 파일 처리 함수
@@ -539,8 +563,10 @@ const MultiStepRegistration = () => {
       }
       
       // 기존 레코드 업데이트 데이터 준비
+      const finalAddress = useWatchAddressForResidence ? userData.watchDeliveryAddress : userData.address;
+      
       const updateData = {
-        address: userData.address,
+        address: finalAddress,
         gender: userData.gender,
         birth_date: userData.birthDate,
         signature_upload_method: userData.signatureUploadMethod,
@@ -910,15 +936,38 @@ const MultiStepRegistration = () => {
                   </div>
 
                   <div className="form-group">
-                    <label htmlFor="address"><strong>주소 (동까지만)</strong></label>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '10px' }}>
+                      <label htmlFor="address"><strong>주소 (동까지만)</strong></label>
+                      {userData.watchDeliveryAddress && (
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: 'normal', color: '#6c757d' }}>
+                          <input 
+                            type="checkbox" 
+                            checked={useWatchAddressForResidence}
+                            onChange={handleAddressSyncChange}
+                            style={{ transform: 'scale(1.1)' }}
+                          />
+                          갤럭시워치 배송 주소와 동일
+                        </label>
+                      )}
+                    </div>
                     <input 
                       type="text" 
                       id="address" 
                       value={userData.address || ''}
                       onChange={handleChange}
                       placeholder="예: 서울시 강남구 역삼동"
+                      disabled={useWatchAddressForResidence}
                       required
+                      style={{
+                        backgroundColor: useWatchAddressForResidence ? '#f8f9fa' : '#ffffff',
+                        color: useWatchAddressForResidence ? '#6c757d' : '#495057'
+                      }}
                     />
+                    {useWatchAddressForResidence && userData.watchDeliveryAddress && (
+                      <p className="helper-text" style={{ color: '#28a745', fontSize: '13px', marginTop: '5px' }}>
+                        갤럭시워치 배송 주소와 동일하게 설정되었습니다.
+                      </p>
+                    )}
                   </div>
                   
                   <div className="form-group">
