@@ -9,11 +9,6 @@ const ExperimentCompletePage = () => {
     alert('삼성 헬스 데이터 다운로드 및 전송 방법 안내 페이지는 준비 중입니다.');
   };
 
-  // 주소 입력 핸들러
-  const handleAddressInput = () => {
-    alert('방문 택배를 위한 주소 입력 페이지는 준비 중입니다.');
-  };
-
   // 동의서 및 사본 제출 핸들러
   const handleDocumentSubmission = () => {
     try {
@@ -78,10 +73,7 @@ const ExperimentCompletePage = () => {
               1. 핸드폰에 있는 <strong>삼성 헬스 데이터</strong>
             </p>
             <p className="description-text">
-              2. 갤럭시 워치 <strong>수거 방문이 가능한 주소</strong>
-            </p>
-            <p className="description-text">
-              3. <strong>동의서 및 통장, 신분증 사본</strong>
+              2. <strong>동의서 및 통장, 신분증 사본</strong>
             </p>
           </div>
         </div>
@@ -101,19 +93,7 @@ const ExperimentCompletePage = () => {
             </div>
           </div>
           
-          <div 
-            className="action-card" 
-            onClick={handleAddressInput}
-            onKeyDown={(e) => handleKeyDown(e, handleAddressInput)}
-            role="button"
-            tabIndex={0}
-            aria-label="방문 택배를 위한 주소 입력"
-          >
-            <div className="card-content">
-              <h3 className="card-title">방문 택배를 위한</h3>
-              <h3 className="card-title">주소 입력</h3>
-            </div>
-          </div>
+
 
           <div 
             className="action-card" 
