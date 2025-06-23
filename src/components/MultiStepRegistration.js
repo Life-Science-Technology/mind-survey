@@ -659,8 +659,8 @@ const MultiStepRegistration = () => {
       <div className="guide-content">
         {registrationSuccess ? (
           <div className="registration-success-box">
-            <h3>등록이 완료되었습니다!</h3>
-            <p>실증 실험 대기자로 등록되었습니다.</p>
+            <h3>서류 제출이 완료되었습니다!</h3>
+            <p>실험 참여가 확정되었습니다.</p>
             <p>담당자가 곧 연락드릴 예정입니다. 감사합니다.</p>
             <div className="step-actions">
               <button 
@@ -1500,7 +1500,7 @@ const MultiStepRegistration = () => {
                     onClick={handleFinalSubmit}
                     disabled={isRegistering || isUploading || !isFinalSubmitValid()}
                   >
-                    {isRegistering ? (isUploading ? '파일 업로드 중...' : '등록 중...') : '실증 실험 대기자 등록'}
+                    {isRegistering ? (isUploading ? '파일 업로드 중...' : '등록 중...') : '참여자 서류 제출'}
                   </button>
                 </div>
               </div>
