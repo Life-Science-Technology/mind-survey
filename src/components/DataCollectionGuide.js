@@ -156,9 +156,9 @@ const DataCollectionGuide = () => {
         third_party_consent: false
       };
 
-      // RPC 함수를 사용한 안전한 대기자 등록
+      // RPC 함수 사용 (CORS 문제 해결)
       const { data, error } = await supabase
-        .rpc('register_waitlist_participant', {
+        .rpc('register_waitlist_simple', {
           p_name: waitlistData.name,
           p_phone: waitlistData.phone,
           p_email: waitlistData.email,
@@ -168,18 +168,19 @@ const DataCollectionGuide = () => {
         });
 
       if (error) {
-        console.error('Registration RPC error:', error);
+        console.error('Registration error:', error);
         setRegistrationError('등록 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
         return;
       }
 
+      // RPC 함수 결과 확인
       if (data && data.length > 0) {
         const result = data[0];
         if (!result.success) {
           if (result.message.includes('already registered')) {
             setRegistrationError('이미 등록된 전화번호 또는 이메일입니다.');
           } else {
-            setRegistrationError(result.message);
+            setRegistrationError(result.message || '등록 중 오류가 발생했습니다.');
           }
           return;
         }
