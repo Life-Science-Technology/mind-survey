@@ -19,50 +19,57 @@ const AdminPage = () => {
   const [groupFilter, setGroupFilter] = useState('all'); // 집단 필터 상태 추가
 
   
-  // 인증 토큰 유효성 검사
-  const validateAuthToken = (token) => {
+  // 서버 기반 관리자 인증
+  const authenticateAdmin = async (pin) => {
     try {
-      // 토큰 형식: timestamp|hash
-      const [timestamp] = token.split('|');
-      const now = new Date().getTime();
+      const { data, error } = await supabase.rpc('authenticate_admin', { admin_pin: pin });
       
-      // 토큰 만료 시간 검사 (24시간)
-      if (now - parseInt(timestamp) > 24 * 60 * 60 * 1000) {
-        return false;
+      if (error) {
+        throw error;
       }
       
-      // 실제 서비스에서는 더 복잡한 유효성 검사가 필요합니다
-      return true;
-    } catch (e) {
+      if (data && data.length > 0) {
+        const result = data[0];
+        if (result.success) {
+          return { success: true, token: result.token };
+        } else {
+          return { success: false, message: result.message };
+        }
+      }
+      
+      return { success: false, message: 'Authentication failed' };
+    } catch (error) {
+      console.error('Authentication error:', error);
+      return { success: false, message: 'Authentication error' };
+    }
+  };
+  
+  // 토큰 유효성 검사 (서버 기반)
+  const validateAuthToken = async (token) => {
+    try {
+      const { data, error } = await supabase.rpc('validate_admin_token', { admin_token: token });
+      return !error && data === true;
+    } catch (error) {
+      console.error('Token validation error:', error);
       return false;
     }
   };
   
-  // 인증 토큰 생성
-  const generateAuthToken = () => {
-    const timestamp = new Date().getTime();
-    // 실제 서비스에서는 더 복잡한 해시 알고리즘 사용 필요
-    const hash = `${timestamp}_${Math.random().toString(36).substring(2, 15)}`;
-    return `${timestamp}|${hash}`;
-  };
-  
-  // 인증 관련 상태 - 함수 선언 후에 사용
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    // 세션 스토리지에서 인증 상태 가져오기 (브라우저 닫으면 사라짐)
-    const authToken = sessionStorage.getItem('adminAuthToken');
-    // 토큰이 있는지와 유효한지 확인
-    return !!authToken && validateAuthToken(authToken);
-  });
+  // 인증 관련 상태
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   // 모든 참가자의 파일 정보를 미리 로드하는 함수
   const loadAllParticipantFiles = useCallback(async () => {
     try {
-      // RLS를 위한 사용자 세션 확보
-      await ensureUserSession();
+      // 저장된 관리자 토큰 가져오기
+      const adminToken = sessionStorage.getItem('adminToken');
+      if (!adminToken) {
+        throw new Error('Admin token not found');
+      }
       
-      // 모든 참가자의 파일 목록 조회
+      // 토큰 기반 모든 파일 목록 조회
       const { data, error } = await supabase
-        .rpc('get_all_participant_files_for_admin');
+        .rpc('get_all_participant_files_for_admin', { admin_token: adminToken });
         
       if (error) {
         throw error;
@@ -100,12 +107,15 @@ const AdminPage = () => {
         setIsLoading(true);
       }
       
-      // RLS를 위한 사용자 세션 확보 (실패해도 계속 진행)
-      await ensureUserSession();
+      // 저장된 관리자 토큰 가져오기
+      const adminToken = sessionStorage.getItem('adminToken');
+      if (!adminToken) {
+        throw new Error('Admin token not found');
+      }
       
-      // 보안 함수를 통한 데이터 조회 (RLS 우회)
+      // 토큰 기반 데이터 조회
       const { data, error } = await supabase
-        .rpc('get_participants_for_admin');
+        .rpc('get_participants_for_admin', { admin_token: adminToken });
         
       if (error) {
         throw error;
@@ -124,17 +134,47 @@ const AdminPage = () => {
     }
   }, [loadAllParticipantFiles]); // loadAllParticipantFiles 의존성 추가
 
+  // 컴포넌트 마운트 시 인증 상태 확인
+  useEffect(() => {
+    const checkAuthStatus = async () => {
+      const adminToken = sessionStorage.getItem('adminToken');
+      const authToken = sessionStorage.getItem('adminAuthToken');
+      
+      if (adminToken && authToken) {
+        const isValid = await validateAuthToken(adminToken);
+        setIsAuthenticated(isValid);
+        
+        if (isValid) {
+          // 인증 상태가 유효하면 데이터 로드
+          loadParticipants(true);
+        } else {
+          // 토큰이 무효하면 세션 클리어
+          sessionStorage.removeItem('adminToken');
+          sessionStorage.removeItem('adminAuthToken');
+        }
+      }
+    };
+    
+    checkAuthStatus();
+  }, [loadParticipants]);
+
   // 참가자 파일 목록 조회 함수
   const loadParticipantFiles = useCallback(async (participantId) => {
     try {
       setIsLoadingFiles(true);
       
-      // RLS를 위한 사용자 세션 확보 (실패해도 계속 진행)
-      await ensureUserSession();
+      // 저장된 관리자 토큰 가져오기
+      const adminToken = sessionStorage.getItem('adminToken');
+      if (!adminToken) {
+        throw new Error('Admin token not found');
+      }
       
-      // 보안 함수를 통한 파일 목록 조회
+      // 토큰 기반 파일 목록 조회
       const { data, error } = await supabase
-        .rpc('get_participant_files_for_admin', { participant_id_param: participantId });
+        .rpc('get_participant_files_for_admin', { 
+          admin_token: adminToken, 
+          participant_id_param: participantId 
+        });
         
       if (error) {
         throw error;
@@ -312,9 +352,16 @@ const AdminPage = () => {
   // 확정여부 변경 함수
   const handleConfirmationChange = async (participantId, status) => {
     try {
-      // 데이터베이스 업데이트
+      // 저장된 관리자 토큰 가져오기
+      const adminToken = sessionStorage.getItem('adminToken');
+      if (!adminToken) {
+        throw new Error('Admin token not found');
+      }
+      
+      // 토큰 기반 데이터베이스 업데이트
       const { error } = await supabase
         .rpc('update_participant_confirmation', { 
+          admin_token: adminToken,
           participant_id_param: participantId, 
           confirmation_status_param: status 
         });
@@ -509,27 +556,27 @@ const AdminPage = () => {
   };
 
   // PIN 코드 인증 함수
-  const handlePinSubmit = (e) => {
+  const handlePinSubmit = async (e) => {
     e.preventDefault();
-    // .env 파일에서 관리자 PIN 코드 가져오기
-    const adminPin = process.env.REACT_APP_ADMIN_PIN;
     
-    // 환경변수가 설정되지 않은 경우 오류 메시지 표시
-    if (!adminPin) {
-      setPinError('관리자 PIN 코드가 설정되지 않았습니다. 관리자에게 문의하세요.');
-      return;
-    }
-    
-    if (pinCode === adminPin) {
-      // 인증 성공 시 세션 스토리지에 토큰 저장
-      const authToken = generateAuthToken();
-      sessionStorage.setItem('adminAuthToken', authToken);
-      setIsAuthenticated(true);
-      setPinError('');
-      // 인증 성공 후 데이터 로드
-      loadParticipants(true);
-    } else {
-      setPinError('잘못된 PIN 코드입니다.');
+    try {
+      // 서버 기반 인증
+      const result = await authenticateAdmin(pinCode);
+      
+      if (result.success) {
+        // 인증 성공 시 토큰 저장
+        sessionStorage.setItem('adminToken', result.token);
+        sessionStorage.setItem('adminAuthToken', 'authenticated'); // 기존 로직 호환성
+        setIsAuthenticated(true);
+        setPinError('');
+        // 인증 성공 후 데이터 로드
+        loadParticipants(true);
+      } else {
+        setPinError(result.message || '잘못된 PIN 코드입니다.');
+      }
+    } catch (error) {
+      console.error('Authentication error:', error);
+      setPinError('인증 중 오류가 발생했습니다. 다시 시도해주세요.');
     }
   };
   

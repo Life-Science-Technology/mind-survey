@@ -274,11 +274,12 @@ const MultiStepRegistration = () => {
         
         const normalizedPhone = userData.phone.replace(/\D/g, '');
         
+        // RPC 함수를 사용한 기존 사용자 검색
         const { data: existingUsers, error: searchError } = await supabase
-          .from('survey-person')
-          .select('id, name, email, phone, registration_step, confirmation_status')
-          .eq('name', userData.name.trim())
-          .eq('phone', normalizedPhone);
+          .rpc('find_participant_by_name_phone', {
+            p_name: userData.name.trim(),
+            p_phone: normalizedPhone
+          });
 
         if (searchError) {
           setRegistrationError('사용자 정보 확인 중 오류가 발생했습니다. 다시 시도해주세요.');
@@ -600,13 +601,19 @@ const MultiStepRegistration = () => {
       // 파일 정보 데이터베이스에 저장 (실제 업로드된 파일이 있는 경우만)
       if (fileUploads.length > 0) {
         try {
-          const { error: fileError } = await supabase
-            .from('uploaded_files')
-            .insert(fileUploads);
+          const { data: fileResult, error: fileError } = await supabase
+            .rpc('save_participant_files', {
+              participant_id_param: existingUserId,
+              file_uploads: JSON.stringify(fileUploads)
+            });
           
           if (fileError) {
+            console.warn('파일 정보 저장 실패:', fileError);
+          } else if (fileResult && fileResult.length > 0 && !fileResult[0].success) {
+            console.warn('파일 정보 저장 실패:', fileResult[0].message);
           }
         } catch (error) {
+          console.warn('파일 정보 저장 중 오류:', error);
         }
       }
 

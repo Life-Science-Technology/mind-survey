@@ -156,39 +156,33 @@ const DataCollectionGuide = () => {
         third_party_consent: false
       };
 
-      // 먼저 기존 데이터가 있는지 확인 (이메일 또는 전화번호 기준)
-      const { data: existingData, error: searchError } = await supabase
-        .from('survey-person')
-        .select('*')
-        .or(`email.eq.${waitlistData.email},phone.eq.${waitlistData.phone}`)
-        .single();
-
-      let result;
-      if (existingData && !searchError) {
-        // 기존 데이터가 있으면 업데이트
-        result = await supabase
-          .from('survey-person')
-          .update(waitlistData)
-          .eq('id', existingData.id)
-          .select();
-      } else {
-        // 기존 데이터가 없으면 새로 삽입
-        result = await supabase
-          .from('survey-person')
-          .insert([waitlistData])
-          .select();
-      }
-
-      const { error } = result;
+      // RPC 함수를 사용한 안전한 대기자 등록
+      const { data, error } = await supabase
+        .rpc('register_waitlist_participant', {
+          p_name: waitlistData.name,
+          p_phone: waitlistData.phone,
+          p_email: waitlistData.email,
+          p_depressive: waitlistData.depressive,
+          p_anxiety: waitlistData.anxiety,
+          p_stress: waitlistData.stress
+        });
 
       if (error) {
-        // 중복 데이터 오류 처리
-        if (error.code === '23505') { // unique constraint violation
-          setRegistrationError('이미 등록된 전화번호 또는 이메일입니다.');
-        } else {
-          setRegistrationError('등록 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
-        }
+        console.error('Registration RPC error:', error);
+        setRegistrationError('등록 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
         return;
+      }
+
+      if (data && data.length > 0) {
+        const result = data[0];
+        if (!result.success) {
+          if (result.message.includes('already registered')) {
+            setRegistrationError('이미 등록된 전화번호 또는 이메일입니다.');
+          } else {
+            setRegistrationError(result.message);
+          }
+          return;
+        }
       }
 
       // 성공 시 상태 업데이트
