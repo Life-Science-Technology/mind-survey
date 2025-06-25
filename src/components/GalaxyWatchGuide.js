@@ -4,8 +4,15 @@ import Select from 'react-select';
 
 const watchImageStyle = {
   maxWidth: '100%',
-  width: '400px',
+  width: '300px',
   height: 'auto',
+  borderRadius: '8px'
+};
+
+const squareImageStyle = {
+  maxWidth: '100%',
+  aspectRatio: '1 / 1',
+  objectFit: 'contain',
   borderRadius: '8px'
 };
 
@@ -134,9 +141,218 @@ const GalaxyWatchGuide = () => {
         {activeMainTab === 'pairing' && (
           <div className="guide-section">
             <h2>■ 갤럭시 워치와 스마트폰 페어링 하는 법</h2>
-            <p style={{ fontSize: '24px', textAlign: 'center', margin: '50px 0' }}>
-              Hello World
-            </p>
+            
+            <div className="guide-subsection">
+              <h3>1. 상단 메뉴 혹은 설정에서 Bluetooth 켠 후 앱 목록에서 Galaxy Wearable 찾아 실행</h3>
+              <div style={{ textAlign: 'center', margin: '20px 0' }}>
+                <img 
+                  src="galaxy_pair/galaxy_pair-1.png" 
+                  alt="삼성 스마트폰 홈화면에서 Galaxy Wearable 찾기" 
+                  style={{
+                    ...watchImageStyle,
+                    width: window.innerWidth > 768 ? '300px' : '80%'
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="guide-subsection">
+              <h3>2. 자동 연결 혹은 기기 선택에서 스마트워치 선택</h3>
+              <div style={{ textAlign: 'center', margin: '20px 0' }}>
+                <img 
+                  src="galaxy_pair/galaxy_pair_2.png" 
+                  alt="Watch6 워치에 연결중 화면" 
+                  style={{
+                    ...watchImageStyle,
+                    width: window.innerWidth > 768 ? '300px' : '80%'
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="guide-subsection">
+              <h3>3. 확인 클릭</h3>
+              <div style={{ textAlign: 'center', margin: '20px 0' }}>
+                <img 
+                  src="galaxy_pair/galaxy_pair-3.png" 
+                  alt="워치에 표시된 숫자가 일치하는지 확인하세요" 
+                  style={{
+                    ...watchImageStyle,
+                    width: window.innerWidth > 768 ? '300px' : '65%',
+                    display: 'inline-block',
+                    marginRight: '5px',
+                    verticalAlign: 'middle'
+                  }}
+                />
+                <img 
+                  src="galaxy_pair/galaxy_pair_number.png" 
+                  alt="워치 화면에서 시작중..." 
+                  style={{
+                    ...squareImageStyle,
+                    width: window.innerWidth > 768 ? '200px' : '45%',
+                    display: 'inline-block',
+                    marginLeft: '5px',
+                    verticalAlign: 'middle'
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="guide-subsection">
+              <h3>4. 모두 동의 클릭 후 계속</h3>
+              <div style={{ textAlign: 'center', margin: '20px 0' }}>
+                <img 
+                  src="galaxy_pair/galaxy_pair-4.png" 
+                  alt="아래 항목에 동의하고 계속 진행" 
+                  style={{
+                    ...watchImageStyle,
+                    width: window.innerWidth > 768 ? '300px' : '80%'
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="guide-subsection">
+              <h3>5. Google 계정 로그인(위와 같은 화면이 뜰 경우 다시 시도 클릭)</h3>
+              <div style={{ textAlign: 'center', margin: '20px 0' }}>
+                <img 
+                  src="galaxy_pair/galaxy_pair_2-1.png" 
+                  alt="Google 계정을 복사할 수 없습니다" 
+                  style={{
+                    ...watchImageStyle,
+                    width: window.innerWidth > 768 ? '300px' : '80%'
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="guide-subsection">
+              <h3>6. 동의 클릭</h3>
+              <div style={{ textAlign: 'center', margin: '20px 0' }}>
+                <img 
+                  src="galaxy_pair/galaxy_pair_2-2.png" 
+                  alt="서비스 약관 동의" 
+                  style={{
+                    ...watchImageStyle,
+                    width: window.innerWidth > 768 ? '300px' : '80%'
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="guide-subsection">
+              <h3>7. 다음 클릭</h3>
+              <div style={{ textAlign: 'center', margin: '20px 0' }}>
+                <img 
+                  src="galaxy_pair/galaxy_pair_2-3.png" 
+                  alt="워치 데이터 자동 백업" 
+                  style={{
+                    ...watchImageStyle,
+                    width: window.innerWidth > 768 ? '300px' : '80%'
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="guide-subsection">
+              <h3>8. 모두 허용 클릭</h3>
+              <div style={{ 
+                display: 'grid',
+                gridTemplateColumns: window.innerWidth > 768 ? 'repeat(4, 1fr)' : window.innerWidth > 480 ? 'repeat(2, 1fr)' : '1fr',
+                gap: '15px',
+                margin: '20px 0',
+                justifyItems: 'center'
+              }}>
+                <img 
+                  src="galaxy_pair/galaxy_pair_2-4.png" 
+                  alt="삼성 Smart Switch - 데이터 전송하기" 
+                  style={{
+                    ...watchImageStyle,
+                    width: window.innerWidth > 768 ? '200px' : '80%'
+                  }}
+                />
+                <img 
+                  src="galaxy_pair/galaxy_pair_2-5.png" 
+                  alt="삼성 Smart Switch의 필요한 사용을 위한 접근 권한 안내" 
+                  style={{
+                    ...watchImageStyle,
+                    width: window.innerWidth > 768 ? '200px' : '80%'
+                  }}
+                />
+                <img 
+                  src="galaxy_pair/galaxy_pair_2-6.png" 
+                  alt="백터리 사용량 최적화 동의" 
+                  style={{
+                    ...watchImageStyle,
+                    width: window.innerWidth > 768 ? '200px' : '80%'
+                  }}
+                />
+                <img 
+                  src="galaxy_pair/galaxy_pair_2-7.png" 
+                  alt="워치의 Smart Switch 사용 권한" 
+                  style={{
+                    ...watchImageStyle,
+                    width: window.innerWidth > 768 ? '200px' : '80%'
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="guide-subsection">
+              <h3>9. 허용 클릭</h3>
+              <div style={{ textAlign: 'center', margin: '20px 0' }}>
+                <img 
+                  src="galaxy_pair/galaxy_pair_3-1.png" 
+                  alt="워치의 Smart Switch 사용 권한" 
+                  style={{
+                    ...watchImageStyle,
+                    width: window.innerWidth > 768 ? '300px' : '80%'
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="guide-subsection">
+              <h3>10. 개인 설정 후 다음 클릭</h3>
+              <div style={{ textAlign: 'center', margin: '20px 0' }}>
+                <img 
+                  src="galaxy_pair/galaxy_pair_3-2.png" 
+                  alt="워치를 착용할 손목 설정" 
+                  style={{
+                    ...watchImageStyle,
+                    width: window.innerWidth > 768 ? '300px' : '80%'
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="guide-subsection">
+              <h3>11. 동의 클릭</h3>
+              <div style={{ textAlign: 'center', margin: '20px 0' }}>
+                <img 
+                  src="galaxy_pair/galaxy_pair_3-3.png" 
+                  alt="사전 설치된 워치 앱에서 필요한 권한" 
+                  style={{
+                    ...watchImageStyle,
+                    width: window.innerWidth > 768 ? '300px' : '80%'
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="guide-subsection">
+              <h3>12. 페어링 완료!</h3>
+              <div style={{ textAlign: 'center', margin: '20px 0' }}>
+                <img 
+                  src="galaxy_pair/galaxy_pair_3-4.png" 
+                  alt="완료 중... 페어링 완료" 
+                  style={{
+                    ...watchImageStyle,
+                    width: window.innerWidth > 768 ? '300px' : '80%'
+                  }}
+                />
+              </div>
+            </div>
           </div>
         )}
 
