@@ -18,7 +18,7 @@ const squareImageStyle = {
 
 const GalaxyWatchGuide = () => {
   const navigate = useNavigate();
-  const [activeMainTab, setActiveMainTab] = useState('basic-usage');
+  const [activeMainTab, setActiveMainTab] = useState('web-registration');
   const [activeSubTab, setActiveSubTab] = useState('power');
   const [activeMonitoringSubTab, setActiveMonitoringSubTab] = useState('basic-settings');
   
@@ -55,10 +55,11 @@ const GalaxyWatchGuide = () => {
   };
 
   const mainTabOptions = [
-    { value: 'basic-usage', label: '갤럭시워치 기본 사용법' },
-    { value: 'pairing', label: '갤럭시 워치와 스마트폰 페어링 하는 법' },
+    { value: 'web-registration', label: 'KIST 통합관제시스템 회원가입 및 근무일정 설명' },
     { value: 'app-install', label: '갤럭시 워치 KIST 어플 설치하는 법' },
-    { value: 'monitoring-usage', label: 'KIST 건강 모니터링 어플 사용법' }
+    { value: 'monitoring-usage', label: 'KIST 건강 모니터링 어플 사용법' },
+    { value: 'basic-usage', label: '갤럭시워치 기본 사용법' },
+    { value: 'pairing', label: '갤럭시 워치와 스마트폰 페어링 하는 법' }
   ];
 
   const subTabs = [
@@ -181,6 +182,132 @@ const GalaxyWatchGuide = () => {
       </div>
       
       <div className="guide-content">
+        {/* 웹 회원가입 및 근무일정 탭 */}
+        {activeMainTab === 'web-registration' && (
+          <div className="guide-section">
+            <h2>■ KIST 통합관제시스템 회원가입 및 근무일정 설명</h2>
+            
+            <div className="guide-subsection">
+
+              <h3>
+                1. 
+                <a 
+                      href="https://health-user.lstgrp.com/#/login" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      style={{ color: 'red', fontWeight: 'bold', textDecoration: 'underline' }}
+                    >
+                      KIST 통합관제시스템 링크
+                    </a>
+                     접속 후 회원가입 클릭</h3>
+              <div style={{ 
+                display: 'grid',
+                gridTemplateColumns: window.innerWidth > 768 ? 'repeat(2, 1fr)' : '1fr',
+                gap: '20px',
+                margin: '20px 0',
+                justifyItems: 'center'
+              }}>
+                <div style={{ textAlign: 'center' }}>
+                  <img 
+                    src="metahealth_web/metahealth_web-6.png" 
+                    alt="KIST 통합관제시스템 로그인 페이지" 
+                    style={{
+                      maxWidth: '100%',
+                      width: window.innerWidth > 768 ? '400px' : '90%',
+                      height: 'auto',
+                      borderRadius: '8px',
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="guide-subsection">
+              <h3>2. 회원가입 하기</h3>
+              <div style={{ textAlign: 'center', margin: '20px 0' }}>
+                <img 
+                  src="metahealth_web/metahealth_web-1.png" 
+                  alt="간편 회원가입 페이지" 
+                  style={{
+                    maxWidth: '100%',
+                    width: window.innerWidth > 768 ? '400px' : '90%',
+                    height: 'auto'
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="guide-subsection">
+              <h3>3. 로그인 후 왼쪽상단 <img src="metahealth_web/metahealth_web-7.png" alt="0" style={{height: '30px', display: 'inline', verticalAlign: 'middle', margin: '0 2px'}} />  아이콘 클릭</h3>
+              <div style={{ 
+                display: 'grid',
+                gridTemplateColumns: window.innerWidth > 768 ? 'repeat(2, 1fr)' : '1fr',
+                gap: '20px',
+                margin: '20px 0',
+                justifyItems: 'center'
+              }}>
+                <div style={{ textAlign: 'center' }}>
+                  <img 
+                    src="metahealth_web/metahealth_web-5.png" 
+                    alt="로그인 후 메인 페이지에서 메뉴 클릭" 
+                    style={{
+                      maxWidth: '100%',
+                      width: window.innerWidth > 768 ? '400px' : '90%',
+                      height: 'auto',
+                      borderRadius: '8px'
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="guide-subsection">
+              <h3>4. 마이페이지 클릭</h3>
+              <div style={{ textAlign: 'center', margin: '20px 0' }}>
+                <img 
+                  src="metahealth_web/metahealth_web-2.png" 
+                  alt="마이페이지 메뉴" 
+                  style={{
+                    maxWidth: '100%',
+                    width: window.innerWidth > 768 ? '400px' : '90%',
+                    height: 'auto',
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="guide-subsection">
+              <h3>5. 근무일정 클릭</h3>
+              <div style={{ textAlign: 'center', margin: '20px 0' }}>
+                <img 
+                  src="metahealth_web/metahealth_web-3.png" 
+                  alt="근무일정 메뉴 선택" 
+                  style={{
+                    maxWidth: '100%',
+                    width: window.innerWidth > 768 ? '400px' : '90%',
+                    height: 'auto'
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="guide-subsection">
+              <h3>6. 해당 근무일정 입력</h3>
+              <div style={{ textAlign: 'center', margin: '20px 0' }}>
+                <img 
+                  src="metahealth_web/metahealth_web-4.png" 
+                  alt="근무일정 입력 페이지" 
+                  style={{
+                    maxWidth: '100%',
+                    width: window.innerWidth > 768 ? '400px' : '90%',
+                    height: 'auto'
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* 앱 설치 탭 */}
         {activeMainTab === 'app-install' && (
           <div className="guide-section">
