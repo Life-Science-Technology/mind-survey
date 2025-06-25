@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Select from 'react-select';
 
+// 이미지 경로 헬퍼 함수
+const getImageUrl = (imagePath) => `${process.env.PUBLIC_URL}/${imagePath}`;
+
 const watchImageStyle = {
   maxWidth: '100%',
   width: '300px',
@@ -18,7 +21,7 @@ const squareImageStyle = {
 
 const GalaxyWatchGuide = () => {
   const navigate = useNavigate();
-  const [activeMainTab, setActiveMainTab] = useState('web-registration');
+  const [activeMainTab, setActiveMainTab] = useState('basic-usage');
   const [activeSubTab, setActiveSubTab] = useState('power');
   const [activeMonitoringSubTab, setActiveMonitoringSubTab] = useState('basic-settings');
   
@@ -55,11 +58,11 @@ const GalaxyWatchGuide = () => {
   };
 
   const mainTabOptions = [
-    { value: 'web-registration', label: 'KIST 통합관제시스템 회원가입 및 근무일정 설명' },
+    { value: 'basic-usage', label: '갤럭시워치 기본 사용법' },
+    { value: 'pairing', label: '갤럭시 워치와 스마트폰 페어링 하는 법' },
     { value: 'app-install', label: '갤럭시 워치 KIST 어플 설치하는 법' },
     { value: 'monitoring-usage', label: 'KIST 건강 모니터링 어플 사용법' },
-    { value: 'basic-usage', label: '갤럭시워치 기본 사용법' },
-    { value: 'pairing', label: '갤럭시 워치와 스마트폰 페어링 하는 법' }
+    { value: 'web-registration', label: 'KIST 통합관제시스템 회원가입 및 근무일정 설명' },
   ];
 
   const subTabs = [
@@ -201,63 +204,68 @@ const GalaxyWatchGuide = () => {
                     </a>
                      접속 후 회원가입 클릭</h3>
               <div style={{ 
-                display: 'grid',
-                gridTemplateColumns: window.innerWidth > 768 ? 'repeat(2, 1fr)' : '1fr',
-                gap: '20px',
-                margin: '20px 0',
-                justifyItems: 'center'
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                margin: '20px 0'
               }}>
-                <div style={{ textAlign: 'center' }}>
-                  <img 
-                    src="metahealth_web/metahealth_web-6.png" 
-                    alt="KIST 통합관제시스템 로그인 페이지" 
-                    style={{
-                      maxWidth: '100%',
-                      width: window.innerWidth > 768 ? '400px' : '90%',
-                      height: 'auto',
-                      borderRadius: '8px',
-                    }}
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="guide-subsection">
-              <h3>2. 회원가입 하기</h3>
-              <div style={{ textAlign: 'center', margin: '20px 0' }}>
                 <img 
-                  src="metahealth_web/metahealth_web-1.png" 
-                  alt="간편 회원가입 페이지" 
+                  src={getImageUrl('metahealth_web/metahealth_web-6.png')}
+                  alt="KIST 통합관제시스템 로그인 페이지" 
                   style={{
                     maxWidth: '100%',
                     width: window.innerWidth > 768 ? '400px' : '90%',
-                    height: 'auto'
+                    height: 'auto',
+                    borderRadius: '8px',
+                    display: 'block',
+                    margin: '0 auto'
                   }}
                 />
               </div>
             </div>
 
             <div className="guide-subsection">
-              <h3>3. 로그인 후 왼쪽상단 <img src="metahealth_web/metahealth_web-7.png" alt="0" style={{height: '30px', display: 'inline', verticalAlign: 'middle', margin: '0 2px'}} />  아이콘 클릭</h3>
+              <h3>2. 회원가입 하기</h3>
               <div style={{ 
-                display: 'grid',
-                gridTemplateColumns: window.innerWidth > 768 ? 'repeat(2, 1fr)' : '1fr',
-                gap: '20px',
-                margin: '20px 0',
-                justifyItems: 'center'
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                margin: '20px 0'
               }}>
-                <div style={{ textAlign: 'center' }}>
-                  <img 
-                    src="metahealth_web/metahealth_web-5.png" 
-                    alt="로그인 후 메인 페이지에서 메뉴 클릭" 
-                    style={{
-                      maxWidth: '100%',
-                      width: window.innerWidth > 768 ? '400px' : '90%',
-                      height: 'auto',
-                      borderRadius: '8px'
-                    }}
-                  />
-                </div>
+                <img 
+                  src={getImageUrl('metahealth_web/metahealth_web-1.png')} 
+                  alt="간편 회원가입 페이지" 
+                  style={{
+                    maxWidth: '100%',
+                    width: window.innerWidth > 768 ? '400px' : '90%',
+                    height: 'auto',
+                    display: 'block',
+                    margin: '0 auto'
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="guide-subsection">
+              <h3>3. 로그인 후 왼쪽상단 <img src={getImageUrl('metahealth_web/metahealth_web-7.png')} alt="0" style={{height: '30px', display: 'inline', verticalAlign: 'middle', margin: '0 2px'}} />  아이콘 클릭</h3>
+              <div style={{ 
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                margin: '20px 0'
+              }}>
+                <img 
+                  src={getImageUrl('metahealth_web/metahealth_web-5.png')}
+                  alt="로그인 후 메인 페이지에서 메뉴 클릭" 
+                  style={{
+                    maxWidth: '100%',
+                    width: window.innerWidth > 768 ? '400px' : '90%',
+                    height: 'auto',
+                    borderRadius: '8px',
+                    display: 'block',
+                    margin: '0 auto'
+                  }}
+                />
               </div>
             </div>
 
@@ -265,7 +273,7 @@ const GalaxyWatchGuide = () => {
               <h3>4. 마이페이지 클릭</h3>
               <div style={{ textAlign: 'center', margin: '20px 0' }}>
                 <img 
-                  src="metahealth_web/metahealth_web-2.png" 
+                  src={getImageUrl('metahealth_web/metahealth_web-2.png')}
                   alt="마이페이지 메뉴" 
                   style={{
                     maxWidth: '100%',
@@ -280,7 +288,7 @@ const GalaxyWatchGuide = () => {
               <h3>5. 근무일정 클릭</h3>
               <div style={{ textAlign: 'center', margin: '20px 0' }}>
                 <img 
-                  src="metahealth_web/metahealth_web-3.png" 
+                  src={getImageUrl('metahealth_web/metahealth_web-3.png')} 
                   alt="근무일정 메뉴 선택" 
                   style={{
                     maxWidth: '100%',
@@ -295,7 +303,7 @@ const GalaxyWatchGuide = () => {
               <h3>6. 해당 근무일정 입력</h3>
               <div style={{ textAlign: 'center', margin: '20px 0' }}>
                 <img 
-                  src="metahealth_web/metahealth_web-4.png" 
+                  src={getImageUrl('metahealth_web/metahealth_web-4.png')} 
                   alt="근무일정 입력 페이지" 
                   style={{
                     maxWidth: '100%',
@@ -317,7 +325,7 @@ const GalaxyWatchGuide = () => {
               <h3>1. Play 스토어 클릭</h3>
               <div style={{ textAlign: 'center', margin: '20px 0' }}>
                 <img 
-                  src="playstore_app_download/playstore_app_download-1.png" 
+                  src={getImageUrl('playstore_app_download/playstore_app_download-1.png')} 
                   alt="갤럭시 워치 앱 메뉴에서 Play 스토어 찾기" 
                   style={{
                     ...squareImageStyle,
@@ -331,7 +339,7 @@ const GalaxyWatchGuide = () => {
               <h3>2. 돋보기(검색) 클릭</h3>
               <div style={{ textAlign: 'center', margin: '20px 0' }}>
                 <img 
-                  src="playstore_app_download/playstore_app_download-2.png" 
+                  src={getImageUrl('playstore_app_download/playstore_app_download-2.png')} 
                   alt="Play 스토어에서 검색 버튼 클릭" 
                   style={{
                     ...squareImageStyle,
@@ -345,7 +353,7 @@ const GalaxyWatchGuide = () => {
               <h3>3. KIST 검색</h3>
               <div style={{ textAlign: 'center', margin: '20px 0' }}>
                 <img 
-                  src="playstore_app_download/playstore_app_download-3.png" 
+                  src={getImageUrl('playstore_app_download/playstore_app_download-3.png')} 
                   alt="검색창에 KIST 입력" 
                   style={{
                     ...squareImageStyle,
@@ -359,7 +367,7 @@ const GalaxyWatchGuide = () => {
               <h3>4. 설치 클릭</h3>
               <div style={{ textAlign: 'center', margin: '20px 0' }}>
                 <img 
-                  src="playstore_app_download/playstore_app_download-4.png" 
+                  src={getImageUrl('playstore_app_download/playstore_app_download-4.png')} 
                   alt="KIST 건강 모니터링 앱 설치" 
                   style={{
                     ...squareImageStyle,
@@ -389,7 +397,7 @@ const GalaxyWatchGuide = () => {
               }}>
                 <div style={{ textAlign: 'center' }}>
                   <img 
-                    src="playstore_app_download/playstore_app_download-5.png" 
+                    src={getImageUrl('playstore_app_download/playstore_app_download-5.png')} 
                     alt="어플 목록 하단 KIST 아이콘 생성" 
                     style={{
                       ...squareImageStyle,
@@ -402,7 +410,7 @@ const GalaxyWatchGuide = () => {
                 </div>
                 <div style={{ textAlign: 'center' }}>
                   <img 
-                    src="playstore_app_download/playstore_app_download-6.png" 
+                    src={getImageUrl('playstore_app_download/playstore_app_download-6.png')} 
                     alt="KIST 아이콘 길게 클릭" 
                     style={{
                       ...squareImageStyle,
@@ -415,7 +423,7 @@ const GalaxyWatchGuide = () => {
                 </div>
                 <div style={{ textAlign: 'center' }}>
                   <img 
-                    src="playstore_app_download/playstore_app_download-7.png" 
+                    src={getImageUrl('playstore_app_download/playstore_app_download-7.png')} 
                     alt="상단으로 끌어 올리기" 
                     style={{
                       ...squareImageStyle,
@@ -442,7 +450,7 @@ const GalaxyWatchGuide = () => {
                   <h3>1. 허용 클릭</h3>
                   <div style={{ textAlign: 'center', margin: '20px 0' }}>
                     <img 
-                      src="galaxy_monitoring_basic_set/galaxy_monitoring_basic_set-1.png" 
+                      src={getImageUrl('galaxy_monitoring_basic_set/galaxy_monitoring_basic_set-1.png')} 
                       alt="LST App에서 내 신체 활동 정보에 액세스하도록 허용하시겠습니까?" 
                       style={{
                         ...squareImageStyle,
@@ -456,7 +464,7 @@ const GalaxyWatchGuide = () => {
                   <h3>2. 전화 번호 클릭</h3>
                   <div style={{ textAlign: 'center', margin: '20px 0' }}>
                     <img 
-                      src="galaxy_monitoring_basic_set/galaxy_monitoring_basic_set-2.png" 
+                      src={getImageUrl('galaxy_monitoring_basic_set/galaxy_monitoring_basic_set-2.png')} 
                       alt="전화 번호 입력 화면" 
                       style={{
                         ...squareImageStyle,
@@ -470,7 +478,7 @@ const GalaxyWatchGuide = () => {
                   <h3>3. 전화 번호 입력 후 저장하기 클릭</h3>
                   <div style={{ textAlign: 'center', margin: '20px 0' }}>
                     <img 
-                      src="galaxy_monitoring_basic_set/galaxy_monitoring_basic_set-3.png" 
+                      src={getImageUrl('galaxy_monitoring_basic_set/galaxy_monitoring_basic_set-3.png')} 
                       alt="전화 번호 입력 후 저장하기" 
                       style={{
                         ...squareImageStyle,
@@ -484,7 +492,7 @@ const GalaxyWatchGuide = () => {
                   <h3>4. 연두색 아이콘이 되면 성공!</h3>
                   <div style={{ textAlign: 'center', margin: '20px 0' }}>
                     <img 
-                      src="galaxy_monitoring_basic_set/galaxy_monitoring_basic_set-4.png" 
+                      src={getImageUrl('galaxy_monitoring_basic_set/galaxy_monitoring_basic_set-4.png')} 
                       alt="연두색 아이콘으로 변경 성공" 
                       style={{
                         ...squareImageStyle,
@@ -498,7 +506,7 @@ const GalaxyWatchGuide = () => {
                   <h3>5. 오토측정시작 클릭</h3>
                   <div style={{ textAlign: 'center', margin: '20px 0' }}>
                     <img 
-                      src="galaxy_monitoring_basic_set/galaxy_monitoring_basic_set-5.png" 
+                      src={getImageUrl('galaxy_monitoring_basic_set/galaxy_monitoring_basic_set-5.png')} 
                       alt="오토측정시작 버튼 클릭" 
                       style={{
                         ...squareImageStyle,
@@ -512,7 +520,7 @@ const GalaxyWatchGuide = () => {
                   <h3>6. 빨간색 아이콘이 되면 성공!</h3>
                   <div style={{ textAlign: 'center', margin: '20px 0' }}>
                     <img 
-                      src="galaxy_monitoring_basic_set/galaxy_monitoring_basic_set-6.png" 
+                      src={getImageUrl('galaxy_monitoring_basic_set/galaxy_monitoring_basic_set-6.png')} 
                       alt="빨간색 아이콘으로 변경 성공" 
                       style={{
                         ...squareImageStyle,
@@ -529,7 +537,7 @@ const GalaxyWatchGuide = () => {
                     marginTop: '20px'
                   }}>
                     <img 
-                      src="galaxy_monitoring_basic_set/red_icon.png" 
+                      src={getImageUrl('galaxy_monitoring_basic_set/red_icon.png')} 
                       alt="빨간색 원형 아이콘" 
                       style={{
                         width: '60px',
@@ -563,7 +571,7 @@ const GalaxyWatchGuide = () => {
                   }}>
                     <div style={{ textAlign: 'center', flex: '1', maxWidth: '100%' }}>
                       <img 
-                        src="galaxy_monitoring_basic_set/galaxy_monitoring_basic_back.png" 
+                        src={getImageUrl('galaxy_monitoring_basic_set/galaxy_monitoring_basic_back.png')} 
                         alt="갤럭시 워치 뒤로가기 버튼" 
                         style={{
                           maxWidth: '100%',
@@ -575,7 +583,7 @@ const GalaxyWatchGuide = () => {
                     </div>
                     <div style={{ textAlign: 'center', flex: '1', maxWidth: '100%' }}>
                       <img 
-                        src="galaxy_monitoring_basic_set/galaxy_monitoring_basic_swipe.png" 
+                        src={getImageUrl('galaxy_monitoring_basic_set/galaxy_monitoring_basic_swipe.png')} 
                         alt="화면을 왼쪽에서 오른쪽으로 밀면 이전 화면으로 돌아감" 
                         style={{
                           maxWidth: '100%',
@@ -614,7 +622,7 @@ const GalaxyWatchGuide = () => {
                 }}>
                   <div style={{ textAlign: 'center' }}>
                     <img 
-                      src="auto_measure/auto_measure-1.png" 
+                      src={getImageUrl('auto_measure/auto_measure-1.png')} 
                       alt="센서 데이터 수집 중" 
                       style={{
                         maxWidth: '100%',
@@ -626,7 +634,7 @@ const GalaxyWatchGuide = () => {
                   </div>
                   <div style={{ textAlign: 'center' }}>
                     <img 
-                      src="auto_measure/auto_measure-2.png" 
+                      src={getImageUrl('auto_measure/auto_measure-2.png')} 
                       alt="측정 중" 
                       style={{
                         maxWidth: '100%',
@@ -638,7 +646,7 @@ const GalaxyWatchGuide = () => {
                   </div>
                   <div style={{ textAlign: 'center' }}>
                     <img 
-                      src="auto_measure/auto_measure-3.png" 
+                      src={getImageUrl('auto_measure/auto_measure-3.png')} 
                       alt="피드백 요청됨" 
                       style={{
                         maxWidth: '100%',
@@ -650,7 +658,7 @@ const GalaxyWatchGuide = () => {
                   </div>
                   <div style={{ textAlign: 'center' }}>
                     <img 
-                      src="auto_measure/auto_measure-4.png" 
+                      src={getImageUrl('auto_measure/auto_measure-4.png')} 
                       alt="스트레스 측정 결과 (스트레스)" 
                       style={{
                         maxWidth: '100%',
@@ -662,7 +670,7 @@ const GalaxyWatchGuide = () => {
                   </div>
                   <div style={{ textAlign: 'center' }}>
                     <img 
-                      src="auto_measure/auto_measure-5.png" 
+                      src={getImageUrl('auto_measure/auto_measure-5.png')} 
                       alt="스트레스 측정 결과 (스트레스)" 
                       style={{
                         maxWidth: '100%',
@@ -679,7 +687,7 @@ const GalaxyWatchGuide = () => {
                   <ul style={{ fontSize: '16px', lineHeight: '1.8', color: '#333' }}>
                     <li>오토측정은 하루 6회, 2시간 간격으로 자동 측정되며, 각 측정은 1분 동안 진행됩니다.</li>
                     <li>측정이 끝나면 스트레스 알림이 표시되며(→4번 사진 참고), 알림을 클릭하여 스트레스 점수를 선택해주세요.</li>
-                    <li>스트레스가 있는 상태면 <img src="auto_measure/auto_measure-7.png" alt="스트레스" style={{width: '20px', height: '20px', display: 'inline', verticalAlign: 'middle', margin: '0 2px'}} /> 스트레스가 없는 상태면 <img src="auto_measure/auto_measure-8.png" alt="스트레스" style={{width: '20px', height: '20px', display: 'inline', verticalAlign: 'middle', margin: '0 2px'}} /> (→4번 사진 참고)으로 표시됩니다. 정오를 판단하기 위해 이어지는 화면에서 자신이 실제 느끼는 스트레스 강도를 숫자로 선택해주세요.</li>
+                    <li>스트레스가 있는 상태면 <img src={getImageUrl('auto_measure/auto_measure-7.png')} alt="스트레스" style={{width: '20px', height: '20px', display: 'inline', verticalAlign: 'middle', margin: '0 2px'}} /> 스트레스가 없는 상태면 <img src={getImageUrl('auto_measure/auto_measure-8.png')} alt="스트레스" style={{width: '20px', height: '20px', display: 'inline', verticalAlign: 'middle', margin: '0 2px'}} /> (→4번 사진 참고)으로 표시됩니다. 정오를 판단하기 위해 이어지는 화면에서 자신이 실제 느끼는 스트레스 강도를 숫자로 선택해주세요.</li>
                     <li>스트레스 점수를 선택하지 않을 시 진동이 울립니다.</li>
                   </ul>
                 </div>
@@ -687,13 +695,13 @@ const GalaxyWatchGuide = () => {
                 <div className="guide-subsection">
                   <h3 style={{ fontSize: '18px' }}>🔎 오토측정 횟수 확인 방법</h3>
                   <ul style={{ fontSize: '16px', lineHeight: '1.8', color: '#333' }}>
-                    <li>[오토측정중] 버튼 옆의 빨간색 숫자는 <img src="auto_measure/auto_measure-9.png" alt="0" style={{width: '30px', height: '30px', display: 'inline', verticalAlign: 'middle', margin: '0 2px'}} /> 오늘 완료된 오토측정 횟수를 의미합니다.</li>
+                    <li>[오토측정중] 버튼 옆의 빨간색 숫자는 <img src={getImageUrl('auto_measure/auto_measure-9.png')} alt="0" style={{width: '30px', height: '30px', display: 'inline', verticalAlign: 'middle', margin: '0 2px'}} /> 오늘 완료된 오토측정 횟수를 의미합니다.</li>
                     <li>숫자가 6 미만이면 1시간 정도의 간격을 두고 [맥파측정] 버튼을 눌러 수동으로 측정해주세요.</li>
                   </ul>
                   
                   <div style={{ textAlign: 'center', margin: '20px 0' }}>
                     <img 
-                      src="auto_measure/auto_measure-6.png" 
+                      src={getImageUrl('auto_measure/auto_measure-6.png')} 
                       alt="오토측정 상태 확인" 
                       style={{
                         ...squareImageStyle,
@@ -726,7 +734,7 @@ const GalaxyWatchGuide = () => {
                 }}>
                   <div style={{ textAlign: 'center' }}>
                     <img 
-                      src="manual_measure/manual_measure-1.png" 
+                      src={getImageUrl('manual_measure/manual_measure-1.png')} 
                       alt="맥파측정 메뉴 선택" 
                       style={{
                         maxWidth: '100%',
@@ -738,7 +746,7 @@ const GalaxyWatchGuide = () => {
                   </div>
                   <div style={{ textAlign: 'center' }}>
                     <img 
-                      src="manual_measure/manual_measure-2.png" 
+                      src={getImageUrl('manual_measure/manual_measure-2.png')} 
                       alt="측정 중" 
                       style={{
                         maxWidth: '100%',
@@ -750,7 +758,7 @@ const GalaxyWatchGuide = () => {
                   </div>
                   <div style={{ textAlign: 'center' }}>
                     <img 
-                      src="manual_measure/manual_measure-3.png" 
+                      src={getImageUrl('manual_measure/manual_measure-3.png')} 
                       alt="스트레스 측정 결과 (스트레스)" 
                       style={{
                         maxWidth: '100%',
@@ -762,7 +770,7 @@ const GalaxyWatchGuide = () => {
                   </div>
                   <div style={{ textAlign: 'center' }}>
                     <img 
-                      src="manual_measure/manual_measure-4.png" 
+                      src={getImageUrl('manual_measure/manual_measure-4.png')} 
                       alt="스트레스 측정 결과 (스트레스)" 
                       style={{
                         maxWidth: '100%',
@@ -779,7 +787,7 @@ const GalaxyWatchGuide = () => {
                   <ul style={{ fontSize: '16px', lineHeight: '1.8', color: '#333' }}>
                     <li>맥파측정은 오토측정을 놓쳤을 경우 수동으로 진행되며, 1분 동안 진행됩니다.</li>
                     <li>측정이 끝나면 스트레스 점수를 반드시 선택해야 합니다.(→3번 사진 참고).</li>
-                    <li>스트레스가 있는 상태면 <img src="manual_measure/manual_measure-5.png" alt="스트레스" style={{width: '20px', height: '20px', display: 'inline', verticalAlign: 'middle', margin: '0 2px'}} /> 스트레스가 없는 상태면 <img src="manual_measure/manual_measure-6.png" alt="스트레스" style={{width: '20px', height: '20px', display: 'inline', verticalAlign: 'middle', margin: '0 2px'}} /> (→3번 사진 참고)으로 표시됩니다. 정오를 판단하기 위해 이어지는 화면에서 자신이 실제 느끼는 스트레스 강도를 숫자로 선택해주세요.</li>
+                    <li>스트레스가 있는 상태면 <img src={getImageUrl('manual_measure/manual_measure-5.png')} alt="스트레스" style={{width: '20px', height: '20px', display: 'inline', verticalAlign: 'middle', margin: '0 2px'}} /> 스트레스가 없는 상태면 <img src={getImageUrl('manual_measure/manual_measure-6.png')} alt="스트레스" style={{width: '20px', height: '20px', display: 'inline', verticalAlign: 'middle', margin: '0 2px'}} /> (→3번 사진 참고)으로 표시됩니다. 정오를 판단하기 위해 이어지는 화면에서 자신이 실제 느끼는 스트레스 강도를 숫자로 선택해주세요.</li>
                   </ul>
                 </div>
 
@@ -807,7 +815,7 @@ const GalaxyWatchGuide = () => {
                 }}>
                   <div style={{ textAlign: 'center', flex: '1', maxWidth: '100%' }}>
                     <img 
-                      src="walk_measure/walk_measure.png-1.png" 
+                      src={getImageUrl('walk_measure/walk_measure.png-1.png')} 
                       alt="걷기측정 메뉴 선택" 
                       style={{
                         maxWidth: '100%',
@@ -819,7 +827,7 @@ const GalaxyWatchGuide = () => {
                   </div>
                   <div style={{ textAlign: 'center', flex: '1', maxWidth: '100%' }}>
                     <img 
-                      src="walk_measure/walk_measure.png-2.png" 
+                      src={getImageUrl('walk_measure/walk_measure.png-2.png')} 
                       alt="걷기측정 중" 
                       style={{
                         maxWidth: '100%',
@@ -852,7 +860,7 @@ const GalaxyWatchGuide = () => {
               <h3>1. 상단 메뉴 혹은 설정에서 Bluetooth 켠 후 앱 목록에서 Galaxy Wearable 찾아 실행</h3>
               <div style={{ textAlign: 'center', margin: '20px 0' }}>
                 <img 
-                  src="galaxy_pair/galaxy_pair-1.png" 
+                  src={getImageUrl('galaxy_pair/galaxy_pair-1.png')} 
                   alt="삼성 스마트폰 홈화면에서 Galaxy Wearable 찾기" 
                   style={{
                     ...watchImageStyle,
@@ -866,7 +874,7 @@ const GalaxyWatchGuide = () => {
               <h3>2. 자동 연결 혹은 기기 선택에서 스마트워치 선택</h3>
               <div style={{ textAlign: 'center', margin: '20px 0' }}>
                 <img 
-                  src="galaxy_pair/galaxy_pair_2.png" 
+                  src={getImageUrl('galaxy_pair/galaxy_pair_2.png')} 
                   alt="Watch6 워치에 연결중 화면" 
                   style={{
                     ...watchImageStyle,
@@ -880,7 +888,7 @@ const GalaxyWatchGuide = () => {
               <h3>3. 확인 클릭</h3>
               <div style={{ textAlign: 'center', margin: '20px 0' }}>
                 <img 
-                  src="galaxy_pair/galaxy_pair-3.png" 
+                  src={getImageUrl('galaxy_pair/galaxy_pair-3.png')} 
                   alt="워치에 표시된 숫자가 일치하는지 확인하세요" 
                   style={{
                     ...watchImageStyle,
@@ -891,7 +899,7 @@ const GalaxyWatchGuide = () => {
                   }}
                 />
                 <img 
-                  src="galaxy_pair/galaxy_pair_number.png" 
+                  src={getImageUrl('galaxy_pair/galaxy_pair_number.png')} 
                   alt="워치 화면에서 시작중..." 
                   style={{
                     ...squareImageStyle,
@@ -908,7 +916,7 @@ const GalaxyWatchGuide = () => {
               <h3>4. 모두 동의 클릭 후 계속</h3>
               <div style={{ textAlign: 'center', margin: '20px 0' }}>
                 <img 
-                  src="galaxy_pair/galaxy_pair-4.png" 
+                  src={getImageUrl('galaxy_pair/galaxy_pair-4.png')} 
                   alt="아래 항목에 동의하고 계속 진행" 
                   style={{
                     ...watchImageStyle,
@@ -922,7 +930,7 @@ const GalaxyWatchGuide = () => {
               <h3>5. Google 계정 로그인(위와 같은 화면이 뜰 경우 다시 시도 클릭)</h3>
               <div style={{ textAlign: 'center', margin: '20px 0' }}>
                 <img 
-                  src="galaxy_pair/galaxy_pair_2-1.png" 
+                  src={getImageUrl('galaxy_pair/galaxy_pair_2-1.png')} 
                   alt="Google 계정을 복사할 수 없습니다" 
                   style={{
                     ...watchImageStyle,
@@ -936,7 +944,7 @@ const GalaxyWatchGuide = () => {
               <h3>6. 동의 클릭</h3>
               <div style={{ textAlign: 'center', margin: '20px 0' }}>
                 <img 
-                  src="galaxy_pair/galaxy_pair_2-2.png" 
+                  src={getImageUrl('galaxy_pair/galaxy_pair_2-2.png')} 
                   alt="서비스 약관 동의" 
                   style={{
                     ...watchImageStyle,
@@ -950,7 +958,7 @@ const GalaxyWatchGuide = () => {
               <h3>7. 다음 클릭</h3>
               <div style={{ textAlign: 'center', margin: '20px 0' }}>
                 <img 
-                  src="galaxy_pair/galaxy_pair_2-3.png" 
+                  src={getImageUrl('galaxy_pair/galaxy_pair_2-3.png')} 
                   alt="워치 데이터 자동 백업" 
                   style={{
                     ...watchImageStyle,
@@ -970,7 +978,7 @@ const GalaxyWatchGuide = () => {
                 justifyItems: 'center'
               }}>
                 <img 
-                  src="galaxy_pair/galaxy_pair_2-4.png" 
+                  src={getImageUrl('galaxy_pair/galaxy_pair_2-4.png')} 
                   alt="삼성 Smart Switch - 데이터 전송하기" 
                   style={{
                     ...watchImageStyle,
@@ -978,7 +986,7 @@ const GalaxyWatchGuide = () => {
                   }}
                 />
                 <img 
-                  src="galaxy_pair/galaxy_pair_2-5.png" 
+                  src={getImageUrl('galaxy_pair/galaxy_pair_2-5.png')} 
                   alt="삼성 Smart Switch의 필요한 사용을 위한 접근 권한 안내" 
                   style={{
                     ...watchImageStyle,
@@ -986,7 +994,7 @@ const GalaxyWatchGuide = () => {
                   }}
                 />
                 <img 
-                  src="galaxy_pair/galaxy_pair_2-6.png" 
+                  src={getImageUrl('galaxy_pair/galaxy_pair_2-6.png')} 
                   alt="백터리 사용량 최적화 동의" 
                   style={{
                     ...watchImageStyle,
@@ -994,7 +1002,7 @@ const GalaxyWatchGuide = () => {
                   }}
                 />
                 <img 
-                  src="galaxy_pair/galaxy_pair_2-7.png" 
+                  src={getImageUrl('galaxy_pair/galaxy_pair_2-7.png')} 
                   alt="워치의 Smart Switch 사용 권한" 
                   style={{
                     ...watchImageStyle,
@@ -1008,7 +1016,7 @@ const GalaxyWatchGuide = () => {
               <h3>9. 허용 클릭</h3>
               <div style={{ textAlign: 'center', margin: '20px 0' }}>
                 <img 
-                  src="galaxy_pair/galaxy_pair_3-1.png" 
+                  src={getImageUrl('galaxy_pair/galaxy_pair_3-1.png')} 
                   alt="워치의 Smart Switch 사용 권한" 
                   style={{
                     ...watchImageStyle,
@@ -1022,7 +1030,7 @@ const GalaxyWatchGuide = () => {
               <h3>10. 개인 설정 후 다음 클릭</h3>
               <div style={{ textAlign: 'center', margin: '20px 0' }}>
                 <img 
-                  src="galaxy_pair/galaxy_pair_3-2.png" 
+                  src={getImageUrl('galaxy_pair/galaxy_pair_3-2.png')} 
                   alt="워치를 착용할 손목 설정" 
                   style={{
                     ...watchImageStyle,
@@ -1036,7 +1044,7 @@ const GalaxyWatchGuide = () => {
               <h3>11. 동의 클릭</h3>
               <div style={{ textAlign: 'center', margin: '20px 0' }}>
                 <img 
-                  src="galaxy_pair/galaxy_pair_3-3.png" 
+                  src={getImageUrl('galaxy_pair/galaxy_pair_3-3.png')} 
                   alt="사전 설치된 워치 앱에서 필요한 권한" 
                   style={{
                     ...watchImageStyle,
@@ -1050,7 +1058,7 @@ const GalaxyWatchGuide = () => {
               <h3>12. 페어링 완료!</h3>
               <div style={{ textAlign: 'center', margin: '20px 0' }}>
                 <img 
-                  src="galaxy_pair/galaxy_pair_3-4.png" 
+                  src={getImageUrl('galaxy_pair/galaxy_pair_3-4.png')} 
                   alt="완료 중... 페어링 완료" 
                   style={{
                     ...watchImageStyle,
@@ -1072,7 +1080,7 @@ const GalaxyWatchGuide = () => {
                   <h2>■ 전원 켜고 끄는 법</h2>
                   <div style={{ textAlign: 'center', margin: '20px 0' }}>
                     <img 
-                      src="galaxy_watch_power/galaxy_watch_power_1.png" 
+                      src={getImageUrl('galaxy_watch_power/galaxy_watch_power_1.png')} 
                       alt="갤럭시 워치 전원 켜기" 
                       style={watchImageStyle}
                     />
@@ -1087,7 +1095,7 @@ const GalaxyWatchGuide = () => {
                   <ul>
                     <li>홈 버튼과 뒤로가기 버튼을 동시에 길게 눌러 
                       <img 
-                        src="galaxy_watch_power/galaxy_watch_power_button.png" 
+                        src={getImageUrl('galaxy_watch_power/galaxy_watch_power_button.png')} 
                         alt="전원 버튼" 
                         style={{ width: '30px', height: '30px', margin: '0 0px', verticalAlign: 'middle' }}
                       /> 
@@ -1100,7 +1108,7 @@ const GalaxyWatchGuide = () => {
                   <h2>■ 화면 켜고 끄는 법</h2>
                   <div style={{ textAlign: 'center', margin: '20px 0' }}>
                     <img 
-                      src="galaxy_watch_power/galaxy_watch_power_2.png" 
+                      src={getImageUrl('galaxy_watch_power/galaxy_watch_power_2.png')} 
                       alt="갤럭시 워치 화면 제어" 
                       style={watchImageStyle}
                     />
@@ -1131,7 +1139,7 @@ const GalaxyWatchGuide = () => {
                     <h3>1. 화면을 왼쪽으로 밀면</h3>
                     <div style={{ textAlign: 'center', margin: '20px 0' }}>
                       <img 
-                        src="galaxy_watch_basic/galaxywatch_basic_1.png" 
+                        src={getImageUrl('galaxy_watch_basic/galaxywatch_basic_1.png')} 
                         alt="갤럭시 워치 활동 링" 
                         style={watchImageStyle}
                       />
@@ -1145,7 +1153,7 @@ const GalaxyWatchGuide = () => {
                     <h3>2. 화면을 오른쪽으로 밀면</h3>
                     <div style={{ textAlign: 'center', margin: '20px 0' }}>
                       <img 
-                        src="galaxy_watch_basic/galaxywatch_basic_2.png" 
+                        src={getImageUrl('galaxy_watch_basic/galaxywatch_basic_2.png')} 
                         alt="갤럭시 워치 알림" 
                         style={watchImageStyle}
                       />
@@ -1160,7 +1168,7 @@ const GalaxyWatchGuide = () => {
                     <h3>3. 화면을 아래로 밀면</h3>
                     <div style={{ textAlign: 'center', margin: '20px 0' }}>
                       <img 
-                        src="galaxy_watch_basic/galaxywatch_basic_3.png" 
+                        src={getImageUrl('galaxy_watch_basic/galaxywatch_basic_3.png')} 
                         alt="갤럭시 워치 빠른 설정" 
                         style={watchImageStyle}
                       />
@@ -1174,7 +1182,7 @@ const GalaxyWatchGuide = () => {
                     <h3>4. 화면을 위로 밀면</h3>
                     <div style={{ textAlign: 'center', margin: '20px 0' }}>
                       <img 
-                        src="galaxy_watch_basic/galaxywatch_basic_4.png" 
+                        src={getImageUrl('galaxy_watch_basic/galaxywatch_basic_4.png')} 
                         alt="갤럭시 워치 앱 메뉴" 
                         style={watchImageStyle}
                       />
