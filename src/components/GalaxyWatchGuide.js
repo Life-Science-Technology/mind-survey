@@ -67,7 +67,8 @@ const GalaxyWatchGuide = () => {
   ];
 
   const monitoringSubTabs = [
-    { id: 'basic-settings', label: '기본 설정' }
+    { id: 'basic-settings', label: '기본 설정' },
+    { id: 'auto-measure', label: '오토측정시작' }
   ];
   
   return (
@@ -465,6 +466,118 @@ const GalaxyWatchGuide = () => {
                   }}>
                     뒤로가기 버튼을 누르거나 화면을 왼쪽에서 오른쪽으로 밀면 이전 화면으로 돌아갈 수 있습니다.
                   </p>
+                </div>
+              </div>
+            )}
+
+            {activeMonitoringSubTab === 'auto-measure' && (
+              <div className="guide-section">
+                <h2>■ 오토측정시작</h2>
+                
+                <div style={{ 
+                  display: 'grid',
+                  gridTemplateColumns: window.innerWidth > 768 ? 'repeat(5, 1fr)' : window.innerWidth > 480 ? 'repeat(2, 1fr)' : '1fr',
+                  gap: '20px',
+                  margin: '30px 0',
+                  justifyItems: 'center'
+                }}>
+                  <div style={{ textAlign: 'center' }}>
+                    <img 
+                      src="auto_measure/auto_measure-1.png" 
+                      alt="센서 데이터 수집 중" 
+                      style={{
+                        maxWidth: '100%',
+                        width: window.innerWidth > 768 ? '200px' : window.innerWidth > 480 ? '180px' : '200px',
+                        height: 'auto',
+                        borderRadius: '8px'
+                      }}
+                    />
+                  </div>
+                  <div style={{ textAlign: 'center' }}>
+                    <img 
+                      src="auto_measure/auto_measure-2.png" 
+                      alt="측정 중" 
+                      style={{
+                        maxWidth: '100%',
+                        width: window.innerWidth > 768 ? '200px' : window.innerWidth > 480 ? '180px' : '200px',
+                        height: 'auto',
+                        borderRadius: '8px'
+                      }}
+                    />
+                  </div>
+                  <div style={{ textAlign: 'center' }}>
+                    <img 
+                      src="auto_measure/auto_measure-3.png" 
+                      alt="피드백 요청됨" 
+                      style={{
+                        maxWidth: '100%',
+                        width: window.innerWidth > 768 ? '200px' : window.innerWidth > 480 ? '180px' : '200px',
+                        height: 'auto',
+                        borderRadius: '8px'
+                      }}
+                    />
+                  </div>
+                  <div style={{ textAlign: 'center' }}>
+                    <img 
+                      src="auto_measure/auto_measure-4.png" 
+                      alt="스트레스 측정 결과 (스트레스)" 
+                      style={{
+                        maxWidth: '100%',
+                        width: window.innerWidth > 768 ? '200px' : window.innerWidth > 480 ? '180px' : '200px',
+                        height: 'auto',
+                        borderRadius: '8px'
+                      }}
+                    />
+                  </div>
+                  <div style={{ textAlign: 'center' }}>
+                    <img 
+                      src="auto_measure/auto_measure-5.png" 
+                      alt="스트레스 측정 결과 (스트레스)" 
+                      style={{
+                        maxWidth: '100%',
+                        width: window.innerWidth > 768 ? '200px' : window.innerWidth > 480 ? '180px' : '200px',
+                        height: 'auto',
+                        borderRadius: '8px'
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div className="guide-subsection">
+                  <h3 style={{ fontSize: '18px' }}>오토측정 안내</h3>
+                  <ul style={{ fontSize: '16px', lineHeight: '1.8', color: '#333' }}>
+                    <li>오토측정은 하루 6회, 2시간 간격으로 자동 측정되며, 각 측정은 1분 동안 진행됩니다.</li>
+                    <li>측정이 끝나면 스트레스 알림이 표시되며(→4번 사진 참고), 알림을 클릭하여 스트레스 점수를 선택해주세요.</li>
+                    <li>스트레스가 있는 상태면 <img src="auto_measure/auto_measure-7.png" alt="스트레스" style={{width: '20px', height: '20px', display: 'inline', verticalAlign: 'middle', margin: '0 2px'}} /> 스트레스가 없는 상태면 <img src="auto_measure/auto_measure-8.png" alt="스트레스" style={{width: '20px', height: '20px', display: 'inline', verticalAlign: 'middle', margin: '0 2px'}} /> (→4번 사진 참고)으로 표시됩니다. 정오를 판단하기 위해 이어지는 화면에서 자신이 실제 느끼는 스트레스 강도를 숫자로 선택해주세요.</li>
+                    <li>스트레스 점수를 선택하지 않을 시 진동이 울립니다.</li>
+                  </ul>
+                </div>
+
+                <div className="guide-subsection">
+                  <h3 style={{ fontSize: '18px' }}>오토측정 횟수 확인 방법</h3>
+                  <ul style={{ fontSize: '16px', lineHeight: '1.8', color: '#333' }}>
+                    <li>[오토측정중] 버튼 옆의 빨간색 숫자는 <img src="auto_measure/auto_measure-9.png" alt="0" style={{width: '30px', height: '30px', display: 'inline', verticalAlign: 'middle', margin: '0 2px'}} /> 오늘 완료된 오토측정 횟수를 의미합니다.</li>
+                    <li>숫자가 6 미만이면 1시간 정도의 간격을 두고 [<span style={{color: 'red', fontWeight: 'bold'}}>백파측정</span>] 버튼을 눌러 수동으로 측정해주세요.</li>
+                  </ul>
+                  
+                  <div style={{ textAlign: 'center', margin: '20px 0' }}>
+                    <img 
+                      src="auto_measure/auto_measure-6.png" 
+                      alt="오토측정 상태 확인" 
+                      style={{
+                        ...squareImageStyle,
+                        width: window.innerWidth > 768 ? '300px' : '80%'
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div className="guide-subsection">
+                  <h3 style={{ fontSize: '18px' }}>⚠️ 측정 시 주의사항</h3>
+                  <ul style={{ fontSize: '16px', lineHeight: '1.8', color: '#333' }}>
+                    <li>측정 중에는 최대한 움직이지 말아주세요.</li>
+                    <li>책상 위에 손목을 올려 놓은 상태에서 측정하시는 것을 권장드립니다.</li>
+                  </ul>
                 </div>
               </div>
             )}
