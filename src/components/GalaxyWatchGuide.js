@@ -69,7 +69,8 @@ const GalaxyWatchGuide = () => {
   const monitoringSubTabs = [
     { id: 'basic-settings', label: '기본 설정' },
     { id: 'auto-measure', label: '오토측정시작' },
-    { id: 'manual-measure', label: '맥파측정(수동측정)' }
+    { id: 'manual-measure', label: '맥파측정(수동측정)' },
+    { id: 'walk-measure', label: '걷기측정' }
   ];
   
   return (
@@ -152,22 +153,24 @@ const GalaxyWatchGuide = () => {
 
         {/* 모니터링 서브 탭 네비게이션 (KIST 건강 모니터링 어플 사용법 선택 시에만 표시) */}
         {activeMainTab === 'monitoring-usage' && (
-          <div className="sub-tab-navigation" style={{ marginTop: '15px' }}>
+          <div className="sub-tab-navigation" style={{ marginTop: '15px', marginBottom: '20px' }}>
             {monitoringSubTabs.map(tab => (
               <button
                 key={tab.id}
                 className={`tab-button ${activeMonitoringSubTab === tab.id ? 'active' : ''}`}
                 onClick={() => handleMonitoringSubTabChange(tab.id)}
                 style={{
-                  padding: '8px 16px',
-                  margin: '0 3px',
+                  padding: '10px 18px',
+                  margin: '0 5px 8px 0',
                   border: 'none',
-                  borderRadius: '3px',
+                  borderRadius: '5px',
                   backgroundColor: activeMonitoringSubTab === tab.id ? '#007bff' : '#e9ecef',
                   color: activeMonitoringSubTab === tab.id ? 'white' : '#666',
                   cursor: 'pointer',
                   fontSize: '14px',
-                  fontWeight: activeMonitoringSubTab === tab.id ? 'bold' : 'normal'
+                  fontWeight: activeMonitoringSubTab === tab.id ? 'bold' : 'normal',
+                  display: 'inline-block',
+                  whiteSpace: 'nowrap'
                 }}
               >
                 {tab.label}
@@ -558,7 +561,7 @@ const GalaxyWatchGuide = () => {
                   <h3 style={{ fontSize: '18px' }}>🔎 오토측정 횟수 확인 방법</h3>
                   <ul style={{ fontSize: '16px', lineHeight: '1.8', color: '#333' }}>
                     <li>[오토측정중] 버튼 옆의 빨간색 숫자는 <img src="auto_measure/auto_measure-9.png" alt="0" style={{width: '30px', height: '30px', display: 'inline', verticalAlign: 'middle', margin: '0 2px'}} /> 오늘 완료된 오토측정 횟수를 의미합니다.</li>
-                    <li>숫자가 6 미만이면 1시간 정도의 간격을 두고 [<span style={{color: 'red', fontWeight: 'bold'}}>백파측정</span>] 버튼을 눌러 수동으로 측정해주세요.</li>
+                    <li>숫자가 6 미만이면 1시간 정도의 간격을 두고 [맥파측정] 버튼을 눌러 수동으로 측정해주세요.</li>
                   </ul>
                   
                   <div style={{ textAlign: 'center', margin: '20px 0' }}>
@@ -658,6 +661,54 @@ const GalaxyWatchGuide = () => {
                   <ul style={{ fontSize: '16px', lineHeight: '1.8', color: '#333' }}>
                     <li>측정 중에는 최대한 움직이지 말아주세요.</li>
                     <li>책상 위에 손목을 올려 놓은 상태에서 측정하시는 것을 권장드립니다.</li>
+                  </ul>
+                </div>
+              </div>
+            )}
+
+            {activeMonitoringSubTab === 'walk-measure' && (
+              <div className="guide-section">
+                <h2>■ 걷기측정</h2>
+                
+                <div style={{ 
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexDirection: window.innerWidth <= 768 ? 'column' : 'row',
+                  gap: window.innerWidth <= 768 ? '20px' : '40px',
+                  margin: '30px 0'
+                }}>
+                  <div style={{ textAlign: 'center', flex: '1', maxWidth: '100%' }}>
+                    <img 
+                      src="walk_measure/walk_measure.png-1.png" 
+                      alt="걷기측정 메뉴 선택" 
+                      style={{
+                        maxWidth: '100%',
+                        width: window.innerWidth > 768 ? '300px' : '250px',
+                        height: 'auto',
+                        borderRadius: '8px'
+                      }}
+                    />
+                  </div>
+                  <div style={{ textAlign: 'center', flex: '1', maxWidth: '100%' }}>
+                    <img 
+                      src="walk_measure/walk_measure.png-2.png" 
+                      alt="걷기측정 중" 
+                      style={{
+                        maxWidth: '100%',
+                        width: window.innerWidth > 768 ? '300px' : '250px',
+                        height: 'auto',
+                        borderRadius: '8px'
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div className="guide-subsection">
+                  <h3 style={{ fontSize: '18px' }}>📈 걷기측정 안내</h3>
+                  <ul style={{ fontSize: '16px', lineHeight: '1.8', color: '#333' }}>
+                    <li>걷기측정은 하루 1회, 매일 저녁 8시(20시)에 수동으로 측정해주세요.</li>
+                    <li>걷기측정을 누르고 1분 이상 걸으면 자동 종료됩니다.</li>
                   </ul>
                 </div>
               </div>
