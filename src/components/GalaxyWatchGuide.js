@@ -18,7 +18,7 @@ const squareImageStyle = {
 
 const GalaxyWatchGuide = () => {
   const navigate = useNavigate();
-  const [activeMainTab, setActiveMainTab] = useState('app-install');
+  const [activeMainTab, setActiveMainTab] = useState('basic-usage');
   const [activeSubTab, setActiveSubTab] = useState('power');
   const [activeMonitoringSubTab, setActiveMonitoringSubTab] = useState('basic-settings');
   
@@ -68,7 +68,8 @@ const GalaxyWatchGuide = () => {
 
   const monitoringSubTabs = [
     { id: 'basic-settings', label: '기본 설정' },
-    { id: 'auto-measure', label: '오토측정시작' }
+    { id: 'auto-measure', label: '오토측정시작' },
+    { id: 'manual-measure', label: '맥파측정(수동측정)' }
   ];
   
   return (
@@ -544,7 +545,7 @@ const GalaxyWatchGuide = () => {
                 </div>
 
                 <div className="guide-subsection">
-                  <h3 style={{ fontSize: '18px' }}>오토측정 안내</h3>
+                  <h3 style={{ fontSize: '18px' }}>📈 오토측정 안내</h3>
                   <ul style={{ fontSize: '16px', lineHeight: '1.8', color: '#333' }}>
                     <li>오토측정은 하루 6회, 2시간 간격으로 자동 측정되며, 각 측정은 1분 동안 진행됩니다.</li>
                     <li>측정이 끝나면 스트레스 알림이 표시되며(→4번 사진 참고), 알림을 클릭하여 스트레스 점수를 선택해주세요.</li>
@@ -554,7 +555,7 @@ const GalaxyWatchGuide = () => {
                 </div>
 
                 <div className="guide-subsection">
-                  <h3 style={{ fontSize: '18px' }}>오토측정 횟수 확인 방법</h3>
+                  <h3 style={{ fontSize: '18px' }}>🔎 오토측정 횟수 확인 방법</h3>
                   <ul style={{ fontSize: '16px', lineHeight: '1.8', color: '#333' }}>
                     <li>[오토측정중] 버튼 옆의 빨간색 숫자는 <img src="auto_measure/auto_measure-9.png" alt="0" style={{width: '30px', height: '30px', display: 'inline', verticalAlign: 'middle', margin: '0 2px'}} /> 오늘 완료된 오토측정 횟수를 의미합니다.</li>
                     <li>숫자가 6 미만이면 1시간 정도의 간격을 두고 [<span style={{color: 'red', fontWeight: 'bold'}}>백파측정</span>] 버튼을 눌러 수동으로 측정해주세요.</li>
@@ -570,6 +571,86 @@ const GalaxyWatchGuide = () => {
                       }}
                     />
                   </div>
+                </div>
+
+                <div className="guide-subsection">
+                  <h3 style={{ fontSize: '18px' }}>⚠️ 측정 시 주의사항</h3>
+                  <ul style={{ fontSize: '16px', lineHeight: '1.8', color: '#333' }}>
+                    <li>측정 중에는 최대한 움직이지 말아주세요.</li>
+                    <li>책상 위에 손목을 올려 놓은 상태에서 측정하시는 것을 권장드립니다.</li>
+                  </ul>
+                </div>
+              </div>
+            )}
+
+            {activeMonitoringSubTab === 'manual-measure' && (
+              <div className="guide-section">
+                <h2>■ 맥파측정(수동측정)</h2>
+                
+                <div style={{ 
+                  display: 'grid',
+                  gridTemplateColumns: window.innerWidth > 768 ? 'repeat(4, 1fr)' : window.innerWidth > 480 ? 'repeat(2, 1fr)' : '1fr',
+                  gap: '20px',
+                  margin: '30px 0',
+                  justifyItems: 'center'
+                }}>
+                  <div style={{ textAlign: 'center' }}>
+                    <img 
+                      src="manual_measure/manual_measure-1.png" 
+                      alt="맥파측정 메뉴 선택" 
+                      style={{
+                        maxWidth: '100%',
+                        width: window.innerWidth > 768 ? '200px' : window.innerWidth > 480 ? '180px' : '200px',
+                        height: 'auto',
+                        borderRadius: '8px'
+                      }}
+                    />
+                  </div>
+                  <div style={{ textAlign: 'center' }}>
+                    <img 
+                      src="manual_measure/manual_measure-2.png" 
+                      alt="측정 중" 
+                      style={{
+                        maxWidth: '100%',
+                        width: window.innerWidth > 768 ? '200px' : window.innerWidth > 480 ? '180px' : '200px',
+                        height: 'auto',
+                        borderRadius: '8px'
+                      }}
+                    />
+                  </div>
+                  <div style={{ textAlign: 'center' }}>
+                    <img 
+                      src="manual_measure/manual_measure-3.png" 
+                      alt="스트레스 측정 결과 (스트레스)" 
+                      style={{
+                        maxWidth: '100%',
+                        width: window.innerWidth > 768 ? '200px' : window.innerWidth > 480 ? '180px' : '200px',
+                        height: 'auto',
+                        borderRadius: '8px'
+                      }}
+                    />
+                  </div>
+                  <div style={{ textAlign: 'center' }}>
+                    <img 
+                      src="manual_measure/manual_measure-4.png" 
+                      alt="스트레스 측정 결과 (스트레스)" 
+                      style={{
+                        maxWidth: '100%',
+                        width: window.innerWidth > 768 ? '200px' : window.innerWidth > 480 ? '180px' : '200px',
+                        height: 'auto',
+                        borderRadius: '8px'
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div className="guide-subsection">
+                  <h3 style={{ fontSize: '18px' }}>📈 맥파측정 안내</h3>
+                  <ul style={{ fontSize: '16px', lineHeight: '1.8', color: '#333' }}>
+                    <li>맥파측정은 오토측정을 놓쳤을 경우 수동으로 진행되며, 1분 동안 진행됩니다.</li>
+                    <li>측정이 끝나면 스트레스 점수를 반드시 선택해야 합니다.(→3번 사진 참고).</li>
+                    <li>스트레스가 있는 상태면 <img src="manual_measure/manual_measure-5.png" alt="스트레스" style={{width: '20px', height: '20px', display: 'inline', verticalAlign: 'middle', margin: '0 2px'}} /> 스트레스가 없는 상태면 <img src="manual_measure/manual_measure-6.png" alt="스트레스" style={{width: '20px', height: '20px', display: 'inline', verticalAlign: 'middle', margin: '0 2px'}} /> (→3번 사진 참고)으로 표시됩니다. 정오를 판단하기 위해 이어지는 화면에서 자신이 실제 느끼는 스트레스 강도를 숫자로 선택해주세요.</li>
+                  </ul>
                 </div>
 
                 <div className="guide-subsection">
