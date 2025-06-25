@@ -20,6 +20,7 @@ const GalaxyWatchGuide = () => {
   const navigate = useNavigate();
   const [activeMainTab, setActiveMainTab] = useState('app-install');
   const [activeSubTab, setActiveSubTab] = useState('power');
+  const [activeMonitoringSubTab, setActiveMonitoringSubTab] = useState('basic-settings');
   
   const handleBackClick = () => {
     navigate(-1);
@@ -47,15 +48,26 @@ const GalaxyWatchGuide = () => {
     window.scrollTo(0, 0);
   };
 
+  const handleMonitoringSubTabChange = (tabId) => {
+    setActiveMonitoringSubTab(tabId);
+    // 탭 변경 시 페이지 최상단으로 스크롤
+    window.scrollTo(0, 0);
+  };
+
   const mainTabOptions = [
     { value: 'basic-usage', label: '갤럭시워치 기본 사용법' },
     { value: 'pairing', label: '갤럭시 워치와 스마트폰 페어링 하는 법' },
-    { value: 'app-install', label: '갤럭시 워치 KIST 어플 설치하는 법' }
+    { value: 'app-install', label: '갤럭시 워치 KIST 어플 설치하는 법' },
+    { value: 'monitoring-usage', label: 'KIST 건강 모니터링 어플 사용법' }
   ];
 
   const subTabs = [
     { id: 'power', label: '전원 켜고 끄는 법' },
     { id: 'basic', label: '화면 좌우상하 의미' }
+  ];
+
+  const monitoringSubTabs = [
+    { id: 'basic-settings', label: '기본 설정' }
   ];
   
   return (
@@ -128,6 +140,32 @@ const GalaxyWatchGuide = () => {
                   cursor: 'pointer',
                   fontSize: '14px',
                   fontWeight: activeSubTab === tab.id ? 'bold' : 'normal'
+                }}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* 모니터링 서브 탭 네비게이션 (KIST 건강 모니터링 어플 사용법 선택 시에만 표시) */}
+        {activeMainTab === 'monitoring-usage' && (
+          <div className="sub-tab-navigation" style={{ marginTop: '15px' }}>
+            {monitoringSubTabs.map(tab => (
+              <button
+                key={tab.id}
+                className={`tab-button ${activeMonitoringSubTab === tab.id ? 'active' : ''}`}
+                onClick={() => handleMonitoringSubTabChange(tab.id)}
+                style={{
+                  padding: '8px 16px',
+                  margin: '0 3px',
+                  border: 'none',
+                  borderRadius: '3px',
+                  backgroundColor: activeMonitoringSubTab === tab.id ? '#007bff' : '#e9ecef',
+                  color: activeMonitoringSubTab === tab.id ? 'white' : '#666',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: activeMonitoringSubTab === tab.id ? 'bold' : 'normal'
                 }}
               >
                 {tab.label}
@@ -259,6 +297,178 @@ const GalaxyWatchGuide = () => {
               </div>
             </div>
           </div>
+        )}
+
+        {/* KIST 건강 모니터링 어플 사용법 탭 */}
+        {activeMainTab === 'monitoring-usage' && (
+          <>
+            {activeMonitoringSubTab === 'basic-settings' && (
+              <div className="guide-section">
+                <h2>■ 기본 설정</h2>
+                
+                <div className="guide-subsection">
+                  <h3>1. 허용 클릭</h3>
+                  <div style={{ textAlign: 'center', margin: '20px 0' }}>
+                    <img 
+                      src="galaxy_monitoring_basic_set/galaxy_monitoring_basic_set-1.png" 
+                      alt="LST App에서 내 신체 활동 정보에 액세스하도록 허용하시겠습니까?" 
+                      style={{
+                        ...squareImageStyle,
+                        width: window.innerWidth > 768 ? '250px' : '70%'
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div className="guide-subsection">
+                  <h3>2. 전화 번호 클릭</h3>
+                  <div style={{ textAlign: 'center', margin: '20px 0' }}>
+                    <img 
+                      src="galaxy_monitoring_basic_set/galaxy_monitoring_basic_set-2.png" 
+                      alt="전화 번호 입력 화면" 
+                      style={{
+                        ...squareImageStyle,
+                        width: window.innerWidth > 768 ? '250px' : '70%'
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div className="guide-subsection">
+                  <h3>3. 전화 번호 입력 후 저장하기 클릭</h3>
+                  <div style={{ textAlign: 'center', margin: '20px 0' }}>
+                    <img 
+                      src="galaxy_monitoring_basic_set/galaxy_monitoring_basic_set-3.png" 
+                      alt="전화 번호 입력 후 저장하기" 
+                      style={{
+                        ...squareImageStyle,
+                        width: window.innerWidth > 768 ? '250px' : '70%'
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div className="guide-subsection">
+                  <h3>4. 연두색 아이콘이 되면 성공!</h3>
+                  <div style={{ textAlign: 'center', margin: '20px 0' }}>
+                    <img 
+                      src="galaxy_monitoring_basic_set/galaxy_monitoring_basic_set-4.png" 
+                      alt="연두색 아이콘으로 변경 성공" 
+                      style={{
+                        ...squareImageStyle,
+                        width: window.innerWidth > 768 ? '250px' : '70%'
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div className="guide-subsection">
+                  <h3>5. 오토측정시작 클릭</h3>
+                  <div style={{ textAlign: 'center', margin: '20px 0' }}>
+                    <img 
+                      src="galaxy_monitoring_basic_set/galaxy_monitoring_basic_set-5.png" 
+                      alt="오토측정시작 버튼 클릭" 
+                      style={{
+                        ...squareImageStyle,
+                        width: window.innerWidth > 768 ? '250px' : '70%'
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div className="guide-subsection">
+                  <h3>6. 빨간색 아이콘이 되면 성공!</h3>
+                  <div style={{ textAlign: 'center', margin: '20px 0' }}>
+                    <img 
+                      src="galaxy_monitoring_basic_set/galaxy_monitoring_basic_set-6.png" 
+                      alt="빨간색 아이콘으로 변경 성공" 
+                      style={{
+                        ...squareImageStyle,
+                        width: window.innerWidth > 768 ? '250px' : '70%'
+                      }}
+                    />
+                  </div>
+                  <div style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    gap: '10px',
+                    flexDirection: window.innerWidth <= 480 ? 'column' : 'row',
+                    marginTop: '20px'
+                  }}>
+                    <img 
+                      src="galaxy_monitoring_basic_set/red_icon.png" 
+                      alt="빨간색 원형 아이콘" 
+                      style={{
+                        width: '60px',
+                        height: '60px',
+                        borderRadius: '50%'
+                      }}
+                    />
+                    <p style={{ 
+                      color: '#333', 
+                      fontSize: '16px', 
+                      fontWeight: 'bold',
+                      margin: 0,
+                      textAlign: window.innerWidth <= 480 ? 'center' : 'left'
+                    }}>
+                      와 같이 빨간색 아이콘으로 표시되어 있어야<br/>
+                      오토측정이 정상적으로 진행됩니다!
+                    </p>
+                  </div>
+                </div>
+
+                <div className="guide-subsection" style={{ marginTop: '40px', borderTop: '2px solid #e9ecef', paddingTop: '30px' }}>
+                  <h2 style={{ color: '#333', marginBottom: '20px' }}>측정을 잘못 선택했거나 다시 진행하고 싶은 경우</h2>
+                  
+                  <div style={{ 
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexDirection: window.innerWidth <= 768 ? 'column' : 'row',
+                    gap: window.innerWidth <= 768 ? '20px' : '40px',
+                    margin: '30px 0'
+                  }}>
+                    <div style={{ textAlign: 'center', flex: '1', maxWidth: '100%' }}>
+                      <img 
+                        src="galaxy_monitoring_basic_set/galaxy_monitoring_basic_back.png" 
+                        alt="갤럭시 워치 뒤로가기 버튼" 
+                        style={{
+                          maxWidth: '100%',
+                          width: window.innerWidth > 768 ? '250px' : '90%',
+                          height: 'auto',
+                          borderRadius: '8px'
+                        }}
+                      />
+                    </div>
+                    <div style={{ textAlign: 'center', flex: '1', maxWidth: '100%' }}>
+                      <img 
+                        src="galaxy_monitoring_basic_set/galaxy_monitoring_basic_swipe.png" 
+                        alt="화면을 왼쪽에서 오른쪽으로 밀면 이전 화면으로 돌아감" 
+                        style={{
+                          maxWidth: '100%',
+                          width: window.innerWidth > 768 ? '250px' : '90%',
+                          height: 'auto',
+                          borderRadius: '8px'
+                        }}
+                      />
+                    </div>
+                  </div>
+                  
+                  <p style={{ 
+                    color: '#333', 
+                    fontSize: '18px', 
+                    fontWeight: 'bold',
+                    textAlign: 'center',
+                    margin: '20px 0',
+                    lineHeight: '1.6'
+                  }}>
+                    뒤로가기 버튼을 누르거나 화면을 왼쪽에서 오른쪽으로 밀면 이전 화면으로 돌아갈 수 있습니다.
+                  </p>
+                </div>
+              </div>
+            )}
+          </>
         )}
 
         {/* 페어링 탭 */}
