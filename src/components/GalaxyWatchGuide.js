@@ -18,7 +18,7 @@ const squareImageStyle = {
 
 const GalaxyWatchGuide = () => {
   const navigate = useNavigate();
-  const [activeMainTab, setActiveMainTab] = useState('basic-usage');
+  const [activeMainTab, setActiveMainTab] = useState('app-install');
   const [activeSubTab, setActiveSubTab] = useState('power');
   
   const handleBackClick = () => {
@@ -49,7 +49,8 @@ const GalaxyWatchGuide = () => {
 
   const mainTabOptions = [
     { value: 'basic-usage', label: '갤럭시워치 기본 사용법' },
-    { value: 'pairing', label: '갤럭시 워치와 스마트폰 페어링 하는 법' }
+    { value: 'pairing', label: '갤럭시 워치와 스마트폰 페어링 하는 법' },
+    { value: 'app-install', label: '갤럭시 워치 KIST 어플 설치하는 법' }
   ];
 
   const subTabs = [
@@ -137,6 +138,129 @@ const GalaxyWatchGuide = () => {
       </div>
       
       <div className="guide-content">
+        {/* 앱 설치 탭 */}
+        {activeMainTab === 'app-install' && (
+          <div className="guide-section">
+            <h2>■ 갤럭시 워치 KIST 어플 설치하는 법</h2>
+            
+            <div className="guide-subsection">
+              <h3>1. Play 스토어 클릭</h3>
+              <div style={{ textAlign: 'center', margin: '20px 0' }}>
+                <img 
+                  src="playstore_app_download/playstore_app_download-1.png" 
+                  alt="갤럭시 워치 앱 메뉴에서 Play 스토어 찾기" 
+                  style={{
+                    ...squareImageStyle,
+                    width: window.innerWidth > 768 ? '250px' : '70%'
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="guide-subsection">
+              <h3>2. 돋보기(검색) 클릭</h3>
+              <div style={{ textAlign: 'center', margin: '20px 0' }}>
+                <img 
+                  src="playstore_app_download/playstore_app_download-2.png" 
+                  alt="Play 스토어에서 검색 버튼 클릭" 
+                  style={{
+                    ...squareImageStyle,
+                    width: window.innerWidth > 768 ? '250px' : '70%'
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="guide-subsection">
+              <h3>3. KIST 검색</h3>
+              <div style={{ textAlign: 'center', margin: '20px 0' }}>
+                <img 
+                  src="playstore_app_download/playstore_app_download-3.png" 
+                  alt="검색창에 KIST 입력" 
+                  style={{
+                    ...squareImageStyle,
+                    width: window.innerWidth > 768 ? '250px' : '70%'
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="guide-subsection">
+              <h3>4. 설치 클릭</h3>
+              <div style={{ textAlign: 'center', margin: '20px 0' }}>
+                <img 
+                  src="playstore_app_download/playstore_app_download-4.png" 
+                  alt="KIST 건강 모니터링 앱 설치" 
+                  style={{
+                    ...squareImageStyle,
+                    width: window.innerWidth > 768 ? '250px' : '70%'
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="guide-subsection">
+              <h3 style={{ marginTop: '40px', color: '#333' }}>
+                잠깐! 편의를 위해
+              </h3>
+              <p style={{ color: '#666', fontSize: '14px', marginBottom: '20px' }}>
+                <strong>설치가 완료되면 어플 목록 하단에 KIST 아이콘이 생성됩니다.</strong>
+              </p>
+              <p style={{ color: '#666', fontSize: '14px', marginBottom: '20px' }}>
+                매번 스크롤을 내리는 번거로움을 줄이기 위해 해당 아이콘을 상단으로 이동해두시길 권장드립니다.
+              </p>
+              
+              <div style={{ 
+                display: 'grid',
+                gridTemplateColumns: window.innerWidth > 768 ? 'repeat(3, 1fr)' : window.innerWidth > 480 ? 'repeat(2, 1fr)' : '1fr',
+                gap: '15px',
+                margin: '20px 0',
+                justifyItems: 'center'
+              }}>
+                <div style={{ textAlign: 'center' }}>
+                  <img 
+                    src="playstore_app_download/playstore_app_download-5.png" 
+                    alt="어플 목록 하단 KIST 아이콘 생성" 
+                    style={{
+                      ...squareImageStyle,
+                      width: window.innerWidth > 768 ? '200px' : '80%'
+                    }}
+                  />
+                  <p style={{ fontSize: '14px', color: '#666', marginTop: '10px' }}>
+                    <span style={{ color: 'red', fontWeight: 'bold' }}>어플 목록 하단 KIST<br/>아이콘 생성</span>
+                  </p>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <img 
+                    src="playstore_app_download/playstore_app_download-6.png" 
+                    alt="KIST 아이콘 길게 클릭" 
+                    style={{
+                      ...squareImageStyle,
+                      width: window.innerWidth > 768 ? '200px' : '80%'
+                    }}
+                  />
+                  <p style={{ fontSize: '14px', color: '#666', marginTop: '10px' }}>
+                    <span style={{ color: 'red', fontWeight: 'bold' }}>KIST 아이콘 길게 클릭</span>
+                  </p>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <img 
+                    src="playstore_app_download/playstore_app_download-7.png" 
+                    alt="상단으로 끌어 올리기" 
+                    style={{
+                      ...squareImageStyle,
+                      width: window.innerWidth > 768 ? '200px' : '80%'
+                    }}
+                  />
+                  <p style={{ fontSize: '14px', color: '#666', marginTop: '10px' }}>
+                    <span style={{ color: 'red', fontWeight: 'bold' }}>상단으로 끌어 올리기</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* 페어링 탭 */}
         {activeMainTab === 'pairing' && (
           <div className="guide-section">
