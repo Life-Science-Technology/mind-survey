@@ -4,7 +4,6 @@ import { useNavigate, useLocation } from 'react-router-dom';
 // 상수 정의
 const SURVEY_ROUTE = '/survey';
 const EXPERIMENT_COMPLETE_ROUTE = '/experiment-complete';
-const ALERT_MESSAGE = '실증 실험 안내 페이지는 준비 중입니다.';
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -43,7 +42,11 @@ const HomePage = () => {
 
   // 실증 실험 안내 클릭 핸들러
   const handleGuideClick = () => {
-    alert(ALERT_MESSAGE);
+    try {
+      navigate('/galaxy-watch-guide');
+    } catch (error) {
+      alert('페이지 이동 중 오류가 발생했습니다. 다시 시도해주세요.');
+    }
   };
 
   // 키보드 이벤트 핸들러
@@ -127,7 +130,7 @@ const HomePage = () => {
             onKeyDown={(e) => handleKeyDown(e, handleGuideClick)}
             role="button"
             tabIndex={0}
-            aria-label="실증 실험 안내 페이지 (준비 중)"
+            aria-label="실증 실험 안내 페이지"
           >
             <div className="card-content">
               <h3 className="card-title">실증 실험 안내</h3>

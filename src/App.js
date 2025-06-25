@@ -12,6 +12,7 @@ import MultiStepRegistration from './components/MultiStepRegistration';
 import AdminPage from './components/AdminPage';
 import ExperimentCompletePage from './components/ExperimentCompletePage';
 import ScrollToTop from './components/ScrollToTop';
+import GalaxyWatchGuide from './components/GalaxyWatchGuide';
 
 // 설문 앱 컴포넌트
 const SurveyApp = () => {
@@ -128,6 +129,7 @@ function App() {
         <Route path="/data-collection-guide" element={<DataCollectionGuide />} />
         <Route path="/registration" element={<MultiStepRegistration />} />
         <Route path="/experiment-complete" element={<ExperimentCompletePage />} />
+        <Route path="/galaxy-watch-guide" element={<GalaxyWatchGuide />} />
         <Route path="/admin" element={<AdminPage />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
