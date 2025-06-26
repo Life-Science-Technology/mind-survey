@@ -105,13 +105,17 @@ const FieldStudyGuide = () => {
               control: (provided) => ({
                 ...provided,
                 minHeight: '45px',
-                border: '2px solid #e9ecef',
+                border: '2px solid #007bff',
                 borderRadius: '8px',
                 fontSize: '16px',
                 boxShadow: 'none',
                 '&:hover': {
                   border: '2px solid #007bff'
                 }
+              }),
+              dropdownIndicator: (provided) => ({
+                ...provided,
+                color: '#007bff'
               }),
               option: (provided, state) => ({
                 ...provided,
