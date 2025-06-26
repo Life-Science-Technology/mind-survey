@@ -156,16 +156,10 @@ const DataCollectionGuide = () => {
         third_party_consent: false
       };
 
-      // RPC 함수 사용 (CORS 문제 해결)
+      // survey-person 테이블에 직접 insert
       const { data, error } = await supabase
-        .rpc('register_waitlist_simple', {
-          p_name: waitlistData.name,
-          p_phone: waitlistData.phone,
-          p_email: waitlistData.email,
-          p_depressive: waitlistData.depressive,
-          p_anxiety: waitlistData.anxiety,
-          p_stress: waitlistData.stress
-        });
+        .from('survey-person')
+        .insert([waitlistData]);
 
       if (error) {
         console.error('Registration error:', error);

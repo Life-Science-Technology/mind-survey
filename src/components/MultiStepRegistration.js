@@ -289,23 +289,29 @@ const MultiStepRegistration = () => {
           const existingUser = existingUsers[0];
           setFoundUser(existingUser);
           
-          // 등록 단계 확인
-          if (!canRegister(existingUser.registration_step)) {
-            setRegistrationError('이미 등록이 완료된 사용자입니다. 등록을 다시 진행할 수 없습니다.');
-            return;
-          }
-          
-          // 확정여부 확인
-          if (existingUser.confirmation_status === 'approved') {
-            // 승인된 사용자 - 갤럭시워치 배송 주소 입력 단계로 이동
-            setRegistrationError('');
-            setStep1State('address');
-          } else if (existingUser.confirmation_status === 'rejected') {
-            // 거부된 사용자
+          // 등록 단계별 처리
+          const { confirmation_status, registration_step } = existingUser;
+
+          // 1. 거부된 사용자인지 확인
+          if (confirmation_status === 'rejected') {
             setRegistrationError('죄송합니다. 참여가 거부된 사용자입니다. 자세한 사항은 관리자에게 문의해주세요.');
             return;
+          }
+
+          // 2. 이미 등록을 완료했는지 확인
+          if (registration_step >= REGISTRATION_STEPS.CONSENT_SUBMITTED) { // 3단계 이상
+            setRegistrationError('이미 서류 제출이 완료된 사용자입니다.');
+            return;
+          }
+
+          // 3. 관리자 승인 여부 확인
+          if (confirmation_status === 'approved') {
+            // 승인된 사용자 (정상 상태: registration_step === 2)
+            // 다음 단계(주소 입력)로 진행
+            setRegistrationError('');
+            setStep1State('address');
           } else {
-            // 승인 대기 중인 사용자 (confirmation_status가 null)
+            // 미승인 사용자 (승인 대기 중, 정상 상태: registration_step === 1)
             setRegistrationError('현재 관리자 승인 대기 중입니다. 승인 완료 후 다시 시도해주세요.');
             return;
           }
