@@ -3,6 +3,12 @@ import supabase, { ensureUserSession } from '../supabaseClient';
 import JSZip from 'jszip';
 import '../styles/AdminPage.css';
 
+const RECRUITMENT_GOALS = {
+  depression: 50,
+  stress: 25,
+  normal: 25,
+};
+
 const AdminPage = () => {
   const [participants, setParticipants] = useState([]);
   const [participantFiles, setParticipantFiles] = useState({});
@@ -413,6 +419,26 @@ const AdminPage = () => {
     }
   };
 
+  // 확정자 수 계산 함수
+  const getConfirmedCounts = () => {
+    const counts = {
+      depression: 0,
+      stress: 0,
+      normal: 0,
+    };
+
+    participants.forEach(p => {
+      if (p.confirmation_status === 'approved') {
+        const group = getGroupType(p).type;
+        if (counts.hasOwnProperty(group)) {
+          counts[group]++;
+        }
+      }
+    });
+
+    return counts;
+  };
+
   // 필터링 및 정렬된 참가자 목록을 계산하는 함수
   const getFilteredAndSortedParticipants = () => {
     if (!participants || participants.length === 0) return [];
@@ -628,6 +654,24 @@ const AdminPage = () => {
         <p>등록된 참가자가 없습니다.</p>
       ) : (
         <>
+          <div className="summary-container">
+            <h3>확정자 현황 (충원 목표)</h3>
+            <div className="summary-grid">
+              <div className="summary-item">
+                <span className="summary-label">우울 집단</span>
+                <span className="summary-value">{getConfirmedCounts().depression} / {RECRUITMENT_GOALS.depression}명</span>
+              </div>
+              <div className="summary-item">
+                <span className="summary-label">스트레스 고위험 집단</span>
+                <span className="summary-value">{getConfirmedCounts().stress} / {RECRUITMENT_GOALS.stress}명</span>
+              </div>
+              <div className="summary-item">
+                <span className="summary-label">정상 집단</span>
+                <span className="summary-value">{getConfirmedCounts().normal} / {RECRUITMENT_GOALS.normal}명</span>
+              </div>
+            </div>
+          </div>
+
           <div className="admin-controls">
             <select 
               value={groupFilter} 

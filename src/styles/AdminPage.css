@@ -601,3 +601,60 @@
 .download-all-btn:hover {
   background-color: #0056b3;
 }
+
+/* 확정자 현황 요약 컨테이너 */
+.summary-container {
+  background-color: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 25px;
+  border: 1px solid #e9ecef;
+}
+
+.summary-container h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #343a40;
+  font-size: 18px;
+  text-align: center;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  text-align: center;
+}
+
+.summary-item {
+  background-color: #ffffff;
+  padding: 15px;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  border: 1px solid #dee2e6;
+}
+
+.summary-label {
+  display: block;
+  font-size: 14px;
+  color: #6c757d;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.summary-value {
+  display: block;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+/* 각 그룹별 색상 적용 */
+.summary-item:nth-child(1) .summary-value {
+  color: #dc3545; /* 우울 집단 */
+}
+.summary-item:nth-child(2) .summary-value {
+  color: #fd7e14; /* 스트레스 고위험 집단 */
+}
+.summary-item:nth-child(3) .summary-value {
+  color: #28a745; /* 정상 집단 */
+}
