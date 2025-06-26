@@ -19,7 +19,7 @@ const squareImageStyle = {
   borderRadius: '8px'
 };
 
-const GalaxyWatchGuide = () => {
+const FieldStudyGuide = () => {
   const navigate = useNavigate();
   const [activeMainTab, setActiveMainTab] = useState('basic-usage');
   const [activeSubTab, setActiveSubTab] = useState('power');
@@ -1210,4 +1210,4 @@ const GalaxyWatchGuide = () => {
   );
 };
 
-export default GalaxyWatchGuide;
+export default FieldStudyGuide;

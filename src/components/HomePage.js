@@ -43,7 +43,7 @@ const HomePage = () => {
   // 실증 실험 안내 클릭 핸들러
   const handleGuideClick = () => {
     try {
-      navigate('/galaxy-watch-guide');
+      navigate('/field-study-guide');
     } catch (error) {
       alert('페이지 이동 중 오류가 발생했습니다. 다시 시도해주세요.');
     }
