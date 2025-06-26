@@ -150,7 +150,7 @@ const DataCollectionGuide = () => {
         depressive: depressionScore,
         anxiety: anxietyScore,
         stress: stressScore,
-        registration_step: REGISTRATION_STEPS.WAITLIST, // 대기자 상태
+        registration_step: REGISTRATION_STEPS.SURVEY_COMPLETED, // 설문조사 완료
         experiment_consent: false,
         data_usage_consent: false,
         third_party_consent: false

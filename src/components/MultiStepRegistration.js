@@ -544,7 +544,7 @@ const MultiStepRegistration = () => {
         id_card_upload_method: userData.idCardUploadMethod,
         bank_account_upload_method: userData.bankAccountUploadMethod,
         consent_date: new Date().toISOString().split('T')[0],
-        registration_step: REGISTRATION_STEPS.COMPLETED,
+        registration_step: REGISTRATION_STEPS.CONSENT_SUBMITTED,
         experiment_consent: consentChecked.experimentParticipation === true,
         data_usage_consent: consentChecked.dataUsage === true,
         third_party_consent: consentChecked.thirdParty,

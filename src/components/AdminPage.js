@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import supabase, { ensureUserSession } from '../supabaseClient';
 import JSZip from 'jszip';
+import { STEP_DESCRIPTIONS } from '../config/registrationSteps';
 import '../styles/AdminPage.css';
 
 const RECRUITMENT_GOALS = {
@@ -14,6 +15,7 @@ const AdminPage = () => {
   const [participantFiles, setParticipantFiles] = useState({});
   const [selectedParticipant, setSelectedParticipant] = useState(null);
   const [showFiles, setShowFiles] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingFiles, setIsLoadingFiles] = useState(false);
   const [error, setError] = useState(null);
@@ -199,6 +201,7 @@ const AdminPage = () => {
         throw error;
       }
       
+      console.log('Loaded participants data:', data); // 디버깅용 로그
       setParticipants(data || []);
       setError(null);
       
@@ -585,6 +588,18 @@ const AdminPage = () => {
       minute: '2-digit'
     });
   };
+
+  // 등록 단계 포맷팅 함수
+  const formatRegistrationStep = (step, confirmationStatus) => {
+    // "부" 선택 시 "참여 거부"로 표시
+    if (confirmationStatus === 'rejected') {
+      return '참여 거부';
+    }
+    
+    if (step === null || step === undefined) return '-';
+    const description = STEP_DESCRIPTIONS[step] || '알 수 없음';
+    return `${step}: ${description}`;
+  };
   
   // CSV 파일 다운로드 함수
   const downloadCSV = () => {
@@ -602,6 +617,7 @@ const AdminPage = () => {
       '불안점수',
       '스트레스점수',
       '등록일',
+      '등록단계',
       '집단'
     ];
     
@@ -618,6 +634,7 @@ const AdminPage = () => {
         person.anxiety,
         person.stress !== null ? person.stress : '-',
         formatDate(person.created_at),
+        formatRegistrationStep(person.registration_step, person.confirmation_status),
         getGroupType(person).label
       ];
       
@@ -683,6 +700,136 @@ const AdminPage = () => {
   const handlePinChange = (e) => {
     setPinCode(e.target.value);
     if (pinError) setPinError('');
+  };
+
+  // 상세 정보 모달 렌더링
+  const renderDetailsModal = () => {
+    if (!selectedParticipant) return null;
+    
+    const formatBoolean = (value) => value ? '동의' : '미동의';
+    const formatNullableDate = (dateString) => {
+      if (!dateString) return '-';
+      return new Date(dateString).toLocaleDateString('ko-KR');
+    };
+    
+    return (
+      <div className="file-modal-overlay" onClick={() => setShowDetails(false)}>
+        <div className="file-modal details-modal" onClick={(e) => e.stopPropagation()}>
+          <div className="file-modal-header">
+            <h3>{selectedParticipant.name}님의 상세 정보</h3>
+            <button 
+              className="modal-close-btn"
+              onClick={() => setShowDetails(false)}
+            >
+              ✕
+            </button>
+          </div>
+          
+          <div className="file-modal-content">
+            <div className="details-content">
+              <div className="detail-item">
+                <span className="detail-label">이름:</span>
+                <span className="detail-value">{selectedParticipant.name || '-'}</span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">이메일:</span>
+                <span className="detail-value">{selectedParticipant.email || '-'}</span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">전화번호:</span>
+                <span className="detail-value">{selectedParticipant.phone || '-'}</span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">성별:</span>
+                <span className="detail-value">{selectedParticipant.gender || '-'}</span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">생년월일:</span>
+                <span className="detail-value">{formatNullableDate(selectedParticipant.birth_date)}</span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">주소:</span>
+                <span className="detail-value">{selectedParticipant.address || '-'}</span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">워치 배송 주소:</span>
+                <span className="detail-value">{selectedParticipant.watch_delivery_address || '-'}</span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">우울 점수:</span>
+                <span className={`detail-value ${selectedParticipant.depressive >= 10 ? 'highlight-score' : ''}`}>
+                  {selectedParticipant.depressive || 0}
+                </span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">불안 점수:</span>
+                <span className={`detail-value ${selectedParticipant.anxiety >= 10 ? 'highlight-score' : ''}`}>
+                  {selectedParticipant.anxiety || 0}
+                </span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">스트레스 점수:</span>
+                <span className={`detail-value ${selectedParticipant.stress !== null && selectedParticipant.stress >= 17 ? 'highlight-score' : ''}`}>
+                  {selectedParticipant.stress !== null ? selectedParticipant.stress : '-'}
+                </span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">집단 분류:</span>
+                <span className={`detail-value group-${getGroupType(selectedParticipant).type}`}>
+                  {getGroupType(selectedParticipant).label}
+                </span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">실험 참여 동의:</span>
+                <span className={`detail-value ${selectedParticipant.experiment_consent ? 'consent-yes' : 'consent-no'}`}>
+                  {formatBoolean(selectedParticipant.experiment_consent)}
+                </span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">데이터 사용 동의:</span>
+                <span className={`detail-value ${selectedParticipant.data_usage_consent ? 'consent-yes' : 'consent-no'}`}>
+                  {formatBoolean(selectedParticipant.data_usage_consent)}
+                </span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">제3자 제공 동의:</span>
+                <span className={`detail-value ${selectedParticipant.third_party_consent ? 'consent-yes' : 'consent-no'}`}>
+                  {formatBoolean(selectedParticipant.third_party_consent)}
+                </span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">동의 날짜:</span>
+                <span className="detail-value">{formatNullableDate(selectedParticipant.consent_date)}</span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">등록 날짜:</span>
+                <span className="detail-value">{formatDate(selectedParticipant.created_at)}</span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">등록 단계:</span>
+                <span className="detail-value">{formatRegistrationStep(selectedParticipant.registration_step, selectedParticipant.confirmation_status)}</span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">확정 상태:</span>
+                <span className={`detail-value confirmation-${selectedParticipant.confirmation_status || 'pending'}`}>
+                  {selectedParticipant.confirmation_status === 'approved' ? '승인' : 
+                   selectedParticipant.confirmation_status === 'rejected' ? '거부' : '대기 중'}
+                </span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="file-modal-footer">
+            <button 
+              className="modal-close-btn secondary"
+              onClick={() => setShowDetails(false)}
+            >
+              닫기
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   // 인증 화면 렌더링
@@ -804,9 +951,13 @@ const AdminPage = () => {
                   <th rowSpan="2" onClick={() => handleSort('created_at')}>
                     등록일{renderSortArrow('created_at')}
                   </th>
+                  <th rowSpan="2" onClick={() => handleSort('registration_step')}>
+                    등록단계{renderSortArrow('registration_step')}
+                  </th>
                   <th rowSpan="2">집단</th>
                   <th rowSpan="2">업로드 상태</th>
                   <th rowSpan="2">업로드된 파일</th>
+                  <th rowSpan="2">상세 정보</th>
                   <th colSpan="2">확정여부</th>
                 </tr>
                 <tr>
@@ -836,6 +987,9 @@ const AdminPage = () => {
                           {participant.stress !== null ? participant.stress : '-'}
                         </td>
                         <td>{formatDate(participant.created_at)}</td>
+                        <td className={`registration-step-${participant.confirmation_status === 'rejected' ? 'rejected' : (participant.registration_step || 0)}`}>
+                          {formatRegistrationStep(participant.registration_step, participant.confirmation_status)}
+                        </td>
                         <td className={`group-${getGroupType(participant).type}`}>
                           {getGroupType(participant).label}
                         </td>
@@ -867,6 +1021,17 @@ const AdminPage = () => {
                           ) : (
                             <span className="no-files">파일 없음</span>
                           )}
+                        </td>
+                        <td>
+                          <button 
+                            className="details-view-btn"
+                            onClick={() => {
+                              setSelectedParticipant(participant);
+                              setShowDetails(true);
+                            }}
+                          >
+                            📋 상세보기
+                          </button>
                         </td>
                         <td className="confirmation-cell">
                           <input
@@ -966,6 +1131,9 @@ const AdminPage = () => {
           </div>
         </div>
       )}
+
+      {/* 상세 정보 모달 */}
+      {showDetails && selectedParticipant && renderDetailsModal()}
     </div>
   );
 };

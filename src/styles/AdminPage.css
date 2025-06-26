@@ -261,6 +261,24 @@
   background-color: #343a40;
 }
 
+/* 상세보기 버튼 */
+.details-view-btn {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+  white-space: nowrap;
+}
+
+.details-view-btn:hover {
+  background-color: #218838;
+}
+
 /* 파일 모달 스타일 */
 .file-modal-overlay {
   position: fixed;
@@ -431,6 +449,72 @@
 
 .modal-close-btn.secondary:hover {
   background-color: #5a6268;
+}
+
+/* 상세보기 모달 스타일 */
+.details-modal {
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.details-content {
+  padding: 20px;
+}
+
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.detail-item:last-child {
+  border-bottom: none;
+}
+
+.detail-label {
+  font-weight: 500;
+  color: #495057;
+  min-width: 120px;
+  text-align: left;
+}
+
+.detail-value {
+  color: #212529;
+  text-align: right;
+  word-break: break-word;
+}
+
+.highlight-score {
+  color: #dc3545;
+  font-weight: 700;
+}
+
+.consent-yes {
+  color: #28a745;
+  font-weight: 600;
+}
+
+.consent-no {
+  color: #dc3545;
+  font-weight: 600;
+}
+
+.confirmation-approved {
+  color: #28a745;
+  font-weight: 600;
+}
+
+.confirmation-rejected {
+  color: #dc3545;
+  font-weight: 600;
+}
+
+.confirmation-pending {
+  color: #ffc107;
+  font-weight: 600;
 }
 
 /* 그룹 필터 드롭다운 */
@@ -778,4 +862,39 @@ input:checked + .slider {
 
 input:checked + .slider:before {
   transform: translateX(26px);
+}
+
+/* 등록 단계별 색상 */
+.registration-step-1 {
+  color: #17a2b8; /* 설문조사 완료 - 청록색 */
+  font-weight: 600;
+}
+
+.registration-step-2 {
+  color: #ffc107; /* 참여자 확정 - 노란색 */
+  font-weight: 600;
+}
+
+.registration-step-3 {
+  color: #28a745; /* 동의서 제출 - 초록색 */
+  font-weight: 600;
+}
+
+.registration-step-4 {
+  color: #dc3545; /* 임상실험 대기 - 빨간색 */
+  font-weight: 600;
+}
+
+/* 기타 단계 (0, 5+ 등) */
+.registration-step-0,
+.registration-step-null {
+  color: #6c757d; /* 미분류 - 회색 */
+  font-weight: 600;
+}
+
+/* 참여 거부 상태 */
+.registration-step-rejected {
+  color: #dc3545; /* 참여 거부 - 빨간색 */
+  font-weight: 600;
+  font-style: italic;
 }
