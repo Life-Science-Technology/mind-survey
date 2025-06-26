@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import supabase from '../supabaseClient';
 
 // 상수 정의
 const SURVEY_ROUTE = '/survey';
@@ -22,9 +23,35 @@ const HomePage = () => {
     }
   }, [location.state]);
 
-  // 설문조사 페이지 이동 핸들러
-  const handleSurveyClick = () => {
+  // 모집 상태 확인 함수
+  const checkRecruitmentStatus = async () => {
     try {
+      const { data, error } = await supabase
+        .rpc('get_recruitment_status');
+        
+      if (error) {
+        console.error('Failed to check recruitment status:', error);
+        return true; // 오류 시 기본적으로 모집 중으로 처리
+      }
+      
+      return data;
+    } catch (error) {
+      console.error('Failed to check recruitment status:', error);
+      return true; // 오류 시 기본적으로 모집 중으로 처리
+    }
+  };
+
+  // 설문조사 페이지 이동 핸들러
+  const handleSurveyClick = async () => {
+    try {
+      // 모집 상태 확인
+      const isRecruiting = await checkRecruitmentStatus();
+      
+      if (!isRecruiting) {
+        alert('모집이 완료되었습니다.');
+        return;
+      }
+      
       navigate(SURVEY_ROUTE);
     } catch (error) {
       alert('페이지 이동 중 오류가 발생했습니다. 다시 시도해주세요.');

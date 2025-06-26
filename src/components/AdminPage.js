@@ -23,6 +23,11 @@ const AdminPage = () => {
   const [pinCode, setPinCode] = useState('');
   const [pinError, setPinError] = useState('');
   const [groupFilter, setGroupFilter] = useState('all'); // 집단 필터 상태 추가
+  const [recruitmentStatus, setRecruitmentStatus] = useState({
+    isRecruiting: true,
+    lastUpdated: null,
+    notes: null
+  }); // 모집 상태 관리
 
   
   // 서버 기반 관리자 인증
@@ -63,6 +68,73 @@ const AdminPage = () => {
   
   // 인증 관련 상태
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  // 모집 상태 로드 함수
+  const loadRecruitmentStatus = useCallback(async () => {
+    try {
+      const adminToken = sessionStorage.getItem('adminToken');
+      if (!adminToken) {
+        throw new Error('Admin token not found');
+      }
+      
+      const { data, error } = await supabase
+        .rpc('get_recruitment_status_for_admin', { admin_token: adminToken });
+        
+      if (error) {
+        throw error;
+      }
+      
+      if (data && data.length > 0) {
+        const status = data[0];
+        setRecruitmentStatus({
+          isRecruiting: status.is_recruiting,
+          lastUpdated: status.last_updated,
+          notes: status.notes
+        });
+      }
+    } catch (error) {
+      console.error('Failed to load recruitment status:', error);
+    }
+  }, []);
+
+  // 모집 상태 업데이트 함수
+  const updateRecruitmentStatus = async (newStatus) => {
+    const statusText = newStatus ? '시작' : '종료';
+    const confirmMessage = `정말로 참여자 모집을 ${statusText}하시겠습니까?\n\n${newStatus ? '모집이 시작되면 새로운 참여자들이 등록할 수 있습니다.' : '모집이 종료되면 더 이상 새로운 참여자가 등록할 수 없습니다.'}`;
+    
+    // eslint-disable-next-line no-restricted-globals
+    if (!confirm(confirmMessage)) {
+      return;
+    }
+    
+    try {
+      const adminToken = sessionStorage.getItem('adminToken');
+      if (!adminToken) {
+        throw new Error('Admin token not found');
+      }
+      
+      const { error } = await supabase
+        .rpc('update_recruitment_status', { 
+          admin_token: adminToken,
+          new_status: newStatus,
+          admin_notes: `Status changed to ${newStatus ? 'recruiting' : 'closed'} by admin`
+        });
+        
+      if (error) {
+        throw error;
+      }
+      
+      // 상태 업데이트 후 다시 로드
+      await loadRecruitmentStatus();
+      
+      // 성공 메시지
+      alert(`참여자 모집이 성공적으로 ${statusText}되었습니다.`);
+      
+    } catch (error) {
+      console.error('Failed to update recruitment status:', error);
+      alert(`모집 상태 업데이트 실패: ${error.message}`);
+    }
+  };
 
   // 모든 참가자의 파일 정보를 미리 로드하는 함수
   const loadAllParticipantFiles = useCallback(async () => {
@@ -130,15 +202,16 @@ const AdminPage = () => {
       setParticipants(data || []);
       setError(null);
       
-      // 참가자 데이터 로드 후 모든 파일 정보도 로드
+      // 참가자 데이터 로드 후 모든 파일 정보와 모집 상태도 로드
       await loadAllParticipantFiles();
+      await loadRecruitmentStatus();
       
     } catch (error) {
       setError('관리자 데이터 로드 실패: ' + error.message);
     } finally {
       setIsLoading(false);
     }
-  }, [loadAllParticipantFiles]); // loadAllParticipantFiles 의존성 추가
+  }, [loadAllParticipantFiles, loadRecruitmentStatus]); // 의존성 추가
 
   // 컴포넌트 마운트 시 인증 상태 확인
   useEffect(() => {
@@ -655,7 +728,14 @@ const AdminPage = () => {
       ) : (
         <>
           <div className="summary-container">
-            <h3>확정자 현황 (충원 목표)</h3>
+            <div className="summary-header">
+              <h3>확정자 현황 (충원 목표)</h3>
+              <div className="recruitment-status-display">
+                <span className={`status-badge ${recruitmentStatus.isRecruiting ? 'recruiting' : 'closed'}`}>
+                  {recruitmentStatus.isRecruiting ? '충원중' : '충원 완료'}
+                </span>
+              </div>
+            </div>
             <div className="summary-grid">
               <div className="summary-item">
                 <span className="summary-label">우울 집단</span>
@@ -669,6 +749,19 @@ const AdminPage = () => {
                 <span className="summary-label">정상 집단</span>
                 <span className="summary-value">{getConfirmedCounts().normal} / {RECRUITMENT_GOALS.normal}명</span>
               </div>
+            </div>
+            <div className="recruitment-controls">
+              <button 
+                className={`recruitment-toggle-btn ${recruitmentStatus.isRecruiting ? 'stop' : 'start'}`}
+                onClick={() => updateRecruitmentStatus(!recruitmentStatus.isRecruiting)}
+              >
+                {recruitmentStatus.isRecruiting ? '참여자 모집 종료' : '참여자 모집 시작'}
+              </button>
+              {recruitmentStatus.lastUpdated && (
+                <div className="last-updated">
+                  마지막 업데이트: {formatDate(recruitmentStatus.lastUpdated)}
+                </div>
+              )}
             </div>
           </div>
 
