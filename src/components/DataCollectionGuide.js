@@ -226,7 +226,7 @@ const DataCollectionGuide = () => {
         <div className="guide-section">
           <h2>■ 모집 개요</h2>
           <ul>
-            <li>모집 기간: <strong>25.6.23 (월) – 충원시까지</strong></li>
+            <li>모집 기간: <strong>25.6.30 (월) – 충원시까지</strong></li>
             <li>모집 인원: <strong>우울군 50명, 스트레스 고위험군 25명, 건강인 25명</strong></li>
             <li>실험 기간: <strong>25.7.14 – 25.9.28 (워치 측정 시작한 날로부터 3주간)</strong></li>
           </ul>
@@ -264,7 +264,7 @@ const DataCollectionGuide = () => {
           <p>본 실험 과정에 대한 문의는 오픈 카카오톡으로 하실 수 있습니다
             (<a href="https://open.kakao.com/o/gTH3TfCg" target="_blank" rel="noopener noreferrer">
                 https://open.kakao.com/o/gTH3TfCg
-            </a>, 'Police stress monitoring'으로 검색)</p>
+            </a>, <strong>'2025경찰실증'</strong>으로 검색)</p>
         </div>
 
         {/* 실증 참여 섹션 - 항상 표시 */}
