@@ -35,15 +35,9 @@ const supabase = createClient(supabaseUrl, supabaseKey, {
 
 // RLS를 위한 헬퍼 함수들 (RPC 기반 시스템에서는 실제 인증 불필요)
 export const ensureUserSession = async () => {
-  try {
-    // RPC 함수 기반 시스템에서는 인증 세션이 불필요
-    // 익명 사용자로 처리하여 RLS 정책 우회
-    return { id: 'anonymous-user', email: null };
-  } catch (error) {
-    // 오류가 발생해도 계속 진행할 수 있도록 기본 사용자 반환
-    console.warn('User session error:', error.message);
-    return { id: 'fallback-user', email: null };
-  }
+  // RPC 함수 기반 시스템에서는 인증 세션이 불필요
+  // 익명 사용자로 처리하여 RLS 정책 우회
+  return { id: 'anonymous-user', email: null };
 };
 
 export const getCurrentUserId = async () => {
