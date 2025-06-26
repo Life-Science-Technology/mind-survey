@@ -6,7 +6,11 @@ const ExperimentCompletePage = () => {
 
   // 삼성 헬스 데이터 안내 핸들러
   const handleHealthDataGuide = () => {
-    alert('삼성 헬스 데이터 다운로드 및 전송 방법 안내 페이지는 준비 중입니다.');
+    try {
+      navigate('/samsung-health-download-guide');
+    } catch (error) {
+      alert('페이지 이동 중 오류가 발생했습니다. 다시 시도해주세요.');
+    }
   };
 
   // 동의서 및 사본 제출 핸들러
