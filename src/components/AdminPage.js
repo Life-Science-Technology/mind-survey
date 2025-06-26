@@ -201,7 +201,6 @@ const AdminPage = () => {
         throw error;
       }
       
-      console.log('Loaded participants data:', data); // 디버깅용 로그
       setParticipants(data || []);
       setError(null);
       
