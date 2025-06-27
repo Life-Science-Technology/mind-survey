@@ -600,6 +600,25 @@ const AdminPage = () => {
     return `${step}: ${description}`;
   };
   
+  // 값 변환 함수들
+  const formatUploadMethod = (method) => {
+    if (!method) return '-';
+    switch(method) {
+      case 'upload': return '업로드';
+      case 'direct': return '직접 전달';
+      default: return method;
+    }
+  };
+
+  const formatConfirmationStatus = (status) => {
+    if (!status) return '-';
+    switch(status) {
+      case 'approved': return '승인';
+      case 'rejected': return '거부';
+      default: return status;
+    }
+  };
+
   // CSV 파일 다운로드 함수
   const downloadCSV = () => {
     if (!participants || participants.length === 0) {
@@ -607,16 +626,29 @@ const AdminPage = () => {
       return;
     }
     
-    // CSV 헤더
+    // CSV 헤더 (모든 필드 포함)
     const headers = [
+      'ID',
       '이름', 
       '이메일', 
-      '전화번호', 
+      '전화번호',
+      '주소',
+      '성별',
+      '생년월일',
       '우울점수', 
       '불안점수',
       '스트레스점수',
       '등록일',
+      '동의날짜',
       '등록단계',
+      '실험참여동의',
+      '데이터사용동의',
+      '제3자제공동의',
+      '서명업로드방법',
+      '신분증업로드방법',
+      '통장업로드방법',
+      '확정상태',
+      '워치배송주소',
       '집단'
     ];
     
@@ -625,15 +657,28 @@ const AdminPage = () => {
     
     participants.forEach(person => {
       const row = [
+        person.id,
         person.name,
         person.email,
         // 전화번호 앞에 작은따옴표 추가하여 텍스트로 인식되도록 처리
         `="${person.phone}"`,
+        person.address || '-',
+        person.gender || '-',
+        person.birth_date || '-',
         person.depressive,
         person.anxiety,
         person.stress !== null ? person.stress : '-',
         formatDate(person.created_at),
+        person.consent_date || '-',
         formatRegistrationStep(person.registration_step, person.confirmation_status),
+        person.experiment_consent ? '동의' : '미동의',
+        person.data_usage_consent ? '동의' : '미동의',
+        person.third_party_consent ? '동의' : '미동의',
+        formatUploadMethod(person.signature_upload_method),
+        formatUploadMethod(person.id_card_upload_method),
+        formatUploadMethod(person.bank_account_upload_method),
+        formatConfirmationStatus(person.confirmation_status),
+        person.watch_delivery_address || '-',
         getGroupType(person).label
       ];
       
