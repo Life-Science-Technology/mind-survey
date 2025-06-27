@@ -41,13 +41,16 @@ export const usePhoneNumber = (initialValue = '', onPhoneChange = () => {}) => {
     let digits = value.replace(/\D/g, '');
     
     // 010이 지워지려고 하면 010으로 고정
-    if (digits.length < 3 || !digits.startsWith('010')) {
-      digits = '010' + digits.replace(/^010/, '').slice(0, 8); // 010 이후 8자리만 허용
-    } else {
-      // 11자리를 초과하는 입력은 무시
-      if (digits.length > 11) {
-        digits = digits.slice(0, 11);
-      }
+    if (digits.length < 3) {
+      digits = '010';
+    } else if (!digits.startsWith('010')) {
+      // 010으로 시작하지 않으면, 앞 3자리를 010으로 강제 변경하고 나머지 숫자 유지
+      digits = '010' + digits.slice(3);
+    }
+    
+    // 11자리를 초과하는 입력은 무시
+    if (digits.length > 11) {
+      digits = digits.slice(0, 11);
     }
     
     // 전화번호 검증 및 에러 메시지 설정
