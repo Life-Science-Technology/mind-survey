@@ -1085,6 +1085,7 @@ const AdminPage = () => {
                             checked={participant.confirmation_status === 'approved'}
                             onChange={() => handleConfirmationChange(participant.id, 'approved')}
                             className="confirmation-radio"
+                            disabled={participant.registration_step !== 1}
                           />
                         </td>
                         <td className="confirmation-cell">
@@ -1095,6 +1096,7 @@ const AdminPage = () => {
                             checked={participant.confirmation_status === 'rejected'}
                             onChange={() => handleConfirmationChange(participant.id, 'rejected')}
                             className="confirmation-radio"
+                            disabled={participant.registration_step !== 1}
                           />
                         </td>
                       </tr>
