@@ -785,7 +785,7 @@ const AdminPage = () => {
               </div>
               <div className="detail-item">
                 <span className="detail-label">성별:</span>
-                <span className="detail-value">{selectedParticipant.gender || '-'}</span>
+                <span className="detail-value">{selectedParticipant.gender === 'male' ? '남' : selectedParticipant.gender === 'female' ? '여' : selectedParticipant.gender || '-'}</span>
               </div>
               <div className="detail-item">
                 <span className="detail-label">생년월일:</span>
