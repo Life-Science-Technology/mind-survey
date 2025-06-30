@@ -25,6 +25,7 @@ const AdminPage = () => {
   const [pinCode, setPinCode] = useState('');
   const [pinError, setPinError] = useState('');
   const [groupFilter, setGroupFilter] = useState('all'); // 집단 필터 상태 추가
+  const [confirmationFilter, setConfirmationFilter] = useState('all'); // 확정상태 필터 상태 추가
   const [recruitmentStatus, setRecruitmentStatus] = useState({
     isRecruiting: true,
     lastUpdated: null,
@@ -520,10 +521,23 @@ const AdminPage = () => {
     
     // 필터링
     let filteredParticipants = participants;
+    
+    // 집단 필터
     if (groupFilter !== 'all') {
-      filteredParticipants = participants.filter(participant => {
+      filteredParticipants = filteredParticipants.filter(participant => {
         const group = getGroupType(participant);
         return group.type === groupFilter;
+      });
+    }
+    
+    // 확정상태 필터
+    if (confirmationFilter !== 'all') {
+      filteredParticipants = filteredParticipants.filter(participant => {
+        if (confirmationFilter === 'pending') {
+          // 대기중: confirmation_status가 null, undefined, 또는 빈 문자열인 경우
+          return !participant.confirmation_status || participant.confirmation_status === '';
+        }
+        return participant.confirmation_status === confirmationFilter;
       });
     }
     
@@ -928,6 +942,10 @@ const AdminPage = () => {
               </div>
             </div>
             <div className="summary-grid">
+              <div className="summary-item total">
+                <span className="summary-label">전체 참여자</span>
+                <span className="summary-value">{participants.length}명</span>
+              </div>
               <div className="summary-item">
                 <span className="summary-label">우울 집단</span>
                 <span className="summary-value">{getConfirmedCounts().depression} / {RECRUITMENT_GOALS.depression}명</span>
@@ -957,6 +975,16 @@ const AdminPage = () => {
           </div>
 
           <div className="admin-controls">
+            <select 
+              value={confirmationFilter} 
+              onChange={(e) => setConfirmationFilter(e.target.value)}
+              className="confirmation-filter-dropdown"
+            >
+              <option value="all">전체</option>
+              <option value="approved">가 (승인)</option>
+              <option value="rejected">부 (거부)</option>
+              <option value="pending">대기중 (미선택)</option>
+            </select>
             <select 
               value={groupFilter} 
               onChange={(e) => setGroupFilter(e.target.value)}
@@ -1107,7 +1135,7 @@ const AdminPage = () => {
           
           <div className="admin-footer">
             <p>총 {participants.length}명의 대기자가 등록되어 있습니다.
-            {groupFilter !== 'all' && ` (현재 ${getFilteredAndSortedParticipants().length}명 표시)`}
+            {(groupFilter !== 'all' || confirmationFilter !== 'all') && ` (현재 ${getFilteredAndSortedParticipants().length}명 표시)`}
             </p>
           </div>
         </>

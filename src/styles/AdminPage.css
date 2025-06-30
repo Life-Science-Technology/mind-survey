@@ -517,6 +517,22 @@
   font-weight: 600;
 }
 
+/* 확정상태 필터 드롭다운 */
+.confirmation-filter-dropdown {
+  padding: 8px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  background-color: white;
+  cursor: pointer;
+  margin-right: 10px;
+}
+
+.confirmation-filter-dropdown:focus {
+  border-color: #4c6ef5;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(76, 110, 245, 0.2);
+}
+
 /* 그룹 필터 드롭다운 */
 .group-filter-dropdown {
   padding: 8px 12px;
@@ -765,13 +781,16 @@
 }
 
 /* 각 그룹별 색상 적용 */
-.summary-item:nth-child(1) .summary-value {
-  color: #dc3545; /* 우울 집단 */
+.summary-item.total .summary-value {
+  color: #495057; /* 총 참여자 - 회색 */
 }
 .summary-item:nth-child(2) .summary-value {
-  color: #fd7e14; /* 스트레스 고위험 집단 */
+  color: #dc3545; /* 우울 집단 */
 }
 .summary-item:nth-child(3) .summary-value {
+  color: #fd7e14; /* 스트레스 고위험 집단 */
+}
+.summary-item:nth-child(4) .summary-value {
   color: #28a745; /* 정상 집단 */
 }
 
