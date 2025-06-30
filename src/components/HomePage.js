@@ -48,7 +48,7 @@ const HomePage = () => {
       const isRecruiting = await checkRecruitmentStatus();
       
       if (!isRecruiting) {
-        alert('모집이 완료되었습니다.');
+        alert('현재 충원이 완료된 상태입니다. 결원 발생 시 추가 모집을 진행하겠습니다');
         return;
       }
       
