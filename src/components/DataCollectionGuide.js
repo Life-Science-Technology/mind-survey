@@ -151,9 +151,8 @@ const DataCollectionGuide = () => {
         anxiety: anxietyScore,
         stress: stressScore,
         registration_step: REGISTRATION_STEPS.SURVEY_COMPLETED, // 설문조사 완료
-        experiment_consent: false,
-        data_usage_consent: false,
-        third_party_consent: false
+        // 동의 필드들은 3단계(동의서 제출)에서 설정하므로 여기서는 제외
+        // experiment_consent, data_usage_consent, third_party_consent 필드는 DB 기본값(NULL)으로 유지
       };
 
       // survey-person 테이블에 직접 insert
