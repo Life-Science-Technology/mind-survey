@@ -1,6 +1,6 @@
 .admin-container {
-  max-width: 1400px;
-  margin: 0 auto;
+  max-width: 100%;
+  margin: 0 ;
   padding: 20px;
   background-color: #fff;
   border-radius: 10px;
@@ -564,6 +564,7 @@
 @media (max-width: 1400px) {
   .admin-container {
     max-width: 100%;
+    margin: 0;
     padding: 15px;
   }
   
