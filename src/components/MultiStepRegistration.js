@@ -139,24 +139,99 @@ const MultiStepRegistration = () => {
   
 
   
+  // 날짜 유효성 검사 함수
+  const isValidDate = (year, month, day) => {
+    const date = new Date(year, month - 1, day);
+    return date.getFullYear() === parseInt(year) && 
+           date.getMonth() === month - 1 && 
+           date.getDate() === parseInt(day);
+  };
+
+  // 생년월일 자동 포맷팅 함수
+  const formatBirthDate = (value) => {
+    // 숫자만 추출
+    const numbers = value.replace(/\D/g, '');
+    
+    // 최대 8자리까지만 허용
+    const truncated = numbers.slice(0, 8);
+    
+    // 현재 연도 가져오기
+    const currentYear = new Date().getFullYear();
+    
+    // 자동으로 하이픈 추가
+    if (truncated.length <= 4) {
+      // 연도 입력 중 - 현재 연도보다 큰 연도 차단
+      if (truncated.length === 4 && parseInt(truncated) > currentYear) {
+        return truncated.slice(0, 3); // 미래 연도면 3자리까지만
+      }
+      return truncated;
+    } else if (truncated.length <= 6) {
+      const year = truncated.slice(0, 4);
+      const month = truncated.slice(4, 6);
+      
+      // 연도 검증 - 현재 연도보다 큰 경우 차단
+      if (parseInt(year) > currentYear) {
+        return truncated.slice(0, 3);
+      }
+      
+      // 월 검증 (01-12) - 0으로 시작하는 경우 허용
+      if (month.length === 2 && (parseInt(month) < 1 || parseInt(month) > 12)) {
+        return `${year}-${truncated.slice(4, 5)}`; // 잘못된 월이면 첫째 자리까지만
+      }
+      
+      return `${year}-${month}`;
+    } else {
+      const year = truncated.slice(0, 4);
+      const month = truncated.slice(4, 6);
+      const day = truncated.slice(6, 8);
+      
+      // 연도 검증 - 현재 연도보다 큰 경우 차단
+      if (parseInt(year) > currentYear) {
+        return truncated.slice(0, 3);
+      }
+      
+      // 월 검증 (01-12)
+      if (parseInt(month) < 1 || parseInt(month) > 12) {
+        return `${year}-${truncated.slice(4, 5)}`; // 월이 잘못되면 첫째 자리까지만
+      }
+      
+      // 일 검증 (01-31 및 해당 월의 유효한 일자)
+      if (parseInt(day) < 1 || parseInt(day) > 31) {
+        return `${year}-${month}-${truncated.slice(6, 7)}`; // 일이 잘못되면 첫째 자리까지만
+      }
+      
+      // 실제 날짜 유효성 검사 (예: 2월 30일 방지)
+      if (!isValidDate(year, month, day)) {
+        return `${year}-${month}-${truncated.slice(6, 7)}`; // 유효하지 않은 날짜면 일의 첫째 자리까지만
+      }
+      
+      // 미래 날짜 체크 (완전한 날짜일 때)
+      const inputDate = new Date(year, month - 1, day);
+      const today = new Date();
+      today.setHours(23, 59, 59, 999); // 오늘 끝까지 허용
+      
+      if (inputDate > today) {
+        return `${year}-${month}-${truncated.slice(6, 7)}`; // 미래 날짜면 일의 첫째 자리까지만
+      }
+      
+      return `${year}-${month}-${day}`;
+    }
+  };
+
+  // 생년월일 입력 처리
+  const handleBirthDateChange = (e) => {
+    const { value } = e.target;
+    const formattedValue = formatBirthDate(value);
+    
+    // 에러 메시지 초기화
+    setRegistrationError('');
+    
+    updateUserData({ birthDate: formattedValue });
+  };
+
   // 일반 입력 처리
   const handleChange = (e) => {
     const { id, value } = e.target;
-    
-    // 생년월일 검증
-    if (id === 'birthDate' && value) {
-      const inputDate = new Date(value);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0); // 시간을 00:00:00으로 설정하여 날짜만 비교
-      
-      if (inputDate > today) {
-        setRegistrationError('생년월일은 오늘 이후의 날짜를 입력할 수 없습니다.');
-        return; // 미래 날짜면 업데이트하지 않음
-      } else {
-        setRegistrationError(''); // 에러 메시지 초기화
-      }
-    }
-    
     updateUserData({ [id]: value });
   };
 
@@ -982,14 +1057,18 @@ const MultiStepRegistration = () => {
                   <div className="form-group">
                     <label htmlFor="birthDate"><strong>생년월일</strong></label>
                     <input 
-                      type="date" 
+                      type="text" 
                       id="birthDate" 
                       value={userData.birthDate || ''}
-                      onChange={handleChange}
+                      onChange={handleBirthDateChange}
                       className="date-input"
-                      max={new Date().toISOString().split('T')[0]}
+                      placeholder="YYYYMMDD (숫자만 입력하세요)"
+                      maxLength="10"
                       required
                     />
+                    <p className="helper-text" style={{ fontSize: '13px', color: '#6c757d', marginTop: '5px' }}>
+                      숫자만 입력하면 자동으로 형식이 맞춰집니다 (예: 19900115 → 1990-01-15)
+                    </p>
                   </div>
 
                   <div className="form-group">
