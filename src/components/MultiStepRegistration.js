@@ -629,12 +629,9 @@ const MultiStepRegistration = () => {
         experiment_consent: consentChecked.experimentParticipation === true,
         data_usage_consent: consentChecked.dataUsage === true,
         third_party_consent: consentChecked.thirdParty,
-        depressive: depressionScore,
-        anxiety: anxietyScore,
-        stress: stressScore,
         watch_delivery_address: userData.watchDeliveryAddress || '' // 갤럭시워치 배송 주소 추가
       };
-
+      
       // RPC 함수를 통한 업데이트 시도 (CORS 우회)
       let updateSuccess = false;
       let participantId = existingUserId;
