@@ -480,11 +480,51 @@ const MultiStepRegistration = () => {
       return;
     }
 
-
     // 2단계에 추가된 상세정보 필드 유효성 검사
     if (!userData.address || !userData.gender || !userData.birthDate) {
       setRegistrationError('주소, 성별, 생년월일을 모두 입력해주세요.');
       return;
+    }
+
+    // 생년월일 형식 및 유효성 검사
+    if (userData.birthDate) {
+      const birthDatePattern = /^\d{4}-\d{2}-\d{2}$/;
+      if (!birthDatePattern.test(userData.birthDate)) {
+        setRegistrationError('생년월일을 올바른 형식으로 입력해주세요. (예: 1990-01-15)');
+        return;
+      }
+
+      // 날짜 유효성 검사
+      const [year, month, day] = userData.birthDate.split('-').map(Number);
+      if (!isValidDate(year, month, day)) {
+        setRegistrationError('존재하지 않는 날짜입니다. 올바른 생년월일을 입력해주세요.');
+        return;
+      }
+
+      // 미래 날짜 체크
+      const inputDate = new Date(year, month - 1, day);
+      const today = new Date();
+      today.setHours(23, 59, 59, 999);
+      
+      if (inputDate > today) {
+        setRegistrationError('미래 날짜는 입력할 수 없습니다. 올바른 생년월일을 입력해주세요.');
+        return;
+      }
+
+      // 너무 과거 날짜 체크 (100년 전)
+      const hundredYearsAgo = new Date();
+      hundredYearsAgo.setFullYear(hundredYearsAgo.getFullYear() - 100);
+      
+      if (inputDate < hundredYearsAgo) {
+        setRegistrationError('생년월일이 너무 과거입니다. 올바른 생년월일을 입력해주세요.');
+        return;
+      }
+
+      // 완전한 8자리 날짜인지 확인 (YYYY-MM-DD 형태)
+      if (userData.birthDate.length !== 10) {
+        setRegistrationError('생년월일을 완전히 입력해주세요. (예: 1990-01-15)');
+        return;
+      }
     }
 
     if (!userData.signatureUploadMethod) {
