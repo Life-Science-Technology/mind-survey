@@ -2,15 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import supabase, { ensureUserSession } from '../supabaseClient';
 import { compressImage, formatFileSize, validateFileType, ALLOWED_IMAGE_TYPES, ALLOWED_DOCUMENT_TYPES, shouldCompress } from '../utils/fileCompression';
-import { REGISTRATION_STEPS, canRegister } from '../config/registrationSteps';
+import { REGISTRATION_STEPS } from '../config/registrationSteps';
 import { validatePhoneNumber, usePhoneNumber } from '../utils/phoneNumberUtils';
 
 const MultiStepRegistration = () => {
   const navigate = useNavigate();
   const location = useLocation();
   
-  // 전달받은 점수 데이터
-  const { depressionScore = 0, anxietyScore = 0, stressScore = 0, userData: initialUserData = {} } = location.state || {};
+  // 전달받은 점수 데이터 (3단계에서는 점수를 업데이트하지 않으므로 depressionScore만 집단 분류용으로 사용)
+  const { depressionScore = 0, stressScore = 0, userData: initialUserData = {} } = location.state || {};
   
   // 상태 관리
   const [currentStep, setCurrentStep] = useState(1);
@@ -672,8 +672,7 @@ const MultiStepRegistration = () => {
       }
 
       // 파일 업로드 처리 (스토리지 업로드 + DB 저장)
-      // eslint-disable-next-line no-unused-vars
-      const { fileUploads, uploadErrors, directSubmissions } = await processFileUploads(participantId);
+      const { fileUploads } = await processFileUploads(participantId);
       
       // 파일 정보 데이터베이스에 저장 (실제 업로드된 파일이 있는 경우만)
       if (fileUploads.length > 0) {
