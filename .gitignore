@@ -26,3 +26,7 @@ yarn-error.log*
 # Cursor IDE
 .cursor/
 .claude/
+
+/prt2025.xls
+
+*.csv
