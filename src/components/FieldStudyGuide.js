@@ -41,28 +41,38 @@ const FieldStudyGuide = () => {
     if (tabId === 'basic-usage') {
       setActiveSubTab('power');
     }
-    // 탭 변경 시 페이지 최상단으로 스크롤
-    window.scrollTo(0, 0);
+    // 탭 변경 시 고정 헤더 높이를 고려한 스크롤
+    setTimeout(() => {
+      const headerHeight = document.querySelector('.guide-header')?.offsetHeight || 200;
+      window.scrollTo(0, headerHeight);
+    }, 100);
   };
 
   const handleSubTabChange = (tabId) => {
     setActiveSubTab(tabId);
-    // 탭 변경 시 페이지 최상단으로 스크롤
-    window.scrollTo(0, 0);
+    // 탭 변경 시 고정 헤더 높이를 고려한 스크롤
+    setTimeout(() => {
+      const headerHeight = document.querySelector('.guide-header')?.offsetHeight || 200;
+      window.scrollTo(0, headerHeight);
+    }, 100);
   };
 
   const handleMonitoringSubTabChange = (tabId) => {
     setActiveMonitoringSubTab(tabId);
-    // 탭 변경 시 페이지 최상단으로 스크롤
-    window.scrollTo(0, 0);
+    // 탭 변경 시 고정 헤더 높이를 고려한 스크롤
+    setTimeout(() => {
+      const headerHeight = document.querySelector('.guide-header')?.offsetHeight || 200;
+      window.scrollTo(0, headerHeight);
+    }, 100);
   };
 
   const mainTabOptions = [
     { value: 'basic-usage', label: '갤럭시워치 기본 사용법' },
     { value: 'pairing', label: '갤럭시 워치와 스마트폰 페어링 하는 법' },
     { value: 'app-install', label: '갤럭시 워치 KIST 어플 설치하는 법' },
-    { value: 'monitoring-usage', label: 'KIST 건강 모니터링 어플 사용법' },
     { value: 'web-registration', label: 'KIST 통합관제시스템 회원가입 및 근무일정 설명' },
+    { value: 'monitoring-usage', label: 'KIST 건강 모니터링 어플 사용법' },
+    { value: 'voice-recording', label: '하루 연상 단어 음성으로 녹음하기' },
   ];
 
   const subTabs = [
@@ -101,6 +111,7 @@ const FieldStudyGuide = () => {
             options={mainTabOptions}
             placeholder="안내 내용을 선택하세요"
             isSearchable={false}
+            maxMenuHeight={400}
             styles={{
               control: (provided) => ({
                 ...provided,
@@ -116,6 +127,14 @@ const FieldStudyGuide = () => {
               dropdownIndicator: (provided) => ({
                 ...provided,
                 color: '#007bff'
+              }),
+              menu: (provided) => ({
+                ...provided,
+                zIndex: 999
+              }),
+              menuList: (provided) => ({
+                ...provided,
+                maxHeight: '400px'
               }),
               option: (provided, state) => ({
                 ...provided,
@@ -237,7 +256,7 @@ const FieldStudyGuide = () => {
                 margin: '20px 0'
               }}>
                 <img 
-                  src={getImageUrl('metahealth_web/metahealth_web-1.png')} 
+                  src={getImageUrl('metahealth_web_modify/metahealth_web_modify.png-1.png')} 
                   alt="간편 회원가입 페이지" 
                   style={{
                     maxWidth: '100%',
@@ -251,7 +270,7 @@ const FieldStudyGuide = () => {
             </div>
 
             <div className="guide-subsection">
-              <h3>3. 로그인 후 왼쪽상단 <img src={getImageUrl('metahealth_web/metahealth_web-7.png')} alt="0" style={{height: '30px', display: 'inline', verticalAlign: 'middle', margin: '0 2px'}} />  아이콘 클릭</h3>
+              <h3>3. 로그인 후 근무일정 클릭</h3>
               <div style={{ 
                 display: 'flex',
                 justifyContent: 'center',
@@ -259,13 +278,12 @@ const FieldStudyGuide = () => {
                 margin: '20px 0'
               }}>
                 <img 
-                  src={getImageUrl('metahealth_web/metahealth_web-5.png')}
+                  src={getImageUrl('metahealth_web_modify/metahealth_web_modify.png-2.png')}
                   alt="로그인 후 메인 페이지에서 메뉴 클릭" 
                   style={{
                     maxWidth: '100%',
                     width: window.innerWidth > 768 ? '400px' : '90%',
                     height: 'auto',
-                    borderRadius: '8px',
                     display: 'block',
                     margin: '0 auto'
                   }}
@@ -274,25 +292,19 @@ const FieldStudyGuide = () => {
             </div>
 
             <div className="guide-subsection">
-              <h3>4. 마이페이지 클릭</h3>
+              <h3>4. 근무 일정에 따라 근무 타입 수정</h3>
               <div style={{ textAlign: 'center', margin: '20px 0' }}>
                 <img 
-                  src={getImageUrl('metahealth_web/metahealth_web-2.png')}
-                  alt="마이페이지 메뉴" 
+                  src={getImageUrl('metahealth_web_modify/metahealth_web_modify.png-3.png')} 
+                  alt="근무일정 메뉴 선택" 
                   style={{
                     maxWidth: '100%',
                     width: window.innerWidth > 768 ? '400px' : '90%',
-                    height: 'auto',
+                    height: 'auto'
                   }}
                 />
-              </div>
-            </div>
-
-            <div className="guide-subsection">
-              <h3>5. 근무일정 클릭</h3>
-              <div style={{ textAlign: 'center', margin: '20px 0' }}>
                 <img 
-                  src={getImageUrl('metahealth_web/metahealth_web-3.png')} 
+                  src={getImageUrl('metahealth_web_modify/metahealth_web_modify.png-4.png')} 
                   alt="근무일정 메뉴 선택" 
                   style={{
                     maxWidth: '100%',
@@ -304,10 +316,10 @@ const FieldStudyGuide = () => {
             </div>
 
             <div className="guide-subsection">
-              <h3>6. 해당 근무일정 입력</h3>
+              <h3>5. Shift updated successfully!가 나오면 성공!</h3>
               <div style={{ textAlign: 'center', margin: '20px 0' }}>
                 <img 
-                  src={getImageUrl('metahealth_web/metahealth_web-4.png')} 
+                  src={getImageUrl('metahealth_web_modify/metahealth_web_modify.png-5.png')} 
                   alt="근무일정 입력 페이지" 
                   style={{
                     maxWidth: '100%',
@@ -480,6 +492,13 @@ const FieldStudyGuide = () => {
 
                 <div className="guide-subsection">
                   <h3>3. 전화 번호 입력 후 저장하기 클릭</h3>
+                  <p style={{ 
+                      color: '#333', 
+                      fontSize: '16px', 
+                      fontWeight: 'bold',
+                      margin: 0,
+                      textAlign: window.innerWidth <= 480 ? 'center' : 'left'
+                    }}>KIST 통합관제시스템에서 회원가입할 때 입력하신 <font color="red">전화번호와 동일</font>해야 합니다!</p>
                   <div style={{ textAlign: 'center', margin: '20px 0' }}>
                     <img 
                       src={getImageUrl('galaxy_monitoring_basic_set/galaxy_monitoring_basic_set-3.png')} 
@@ -496,11 +515,11 @@ const FieldStudyGuide = () => {
                   <h3>4. 연두색 아이콘이 되면 성공!</h3>
                   <div style={{ textAlign: 'center', margin: '20px 0' }}>
                     <img 
-                      src={getImageUrl('galaxy_monitoring_basic_set/galaxy_monitoring_basic_set-4.png')} 
+                      src={getImageUrl('galaxy_monitoring_basic_set/modify3.png')} 
                       alt="연두색 아이콘으로 변경 성공" 
                       style={{
                         ...squareImageStyle,
-                        width: window.innerWidth > 768 ? '250px' : '70%'
+                        width: window.innerWidth > 768 ? '350px' : '70%'
                       }}
                     />
                   </div>
@@ -626,23 +645,11 @@ const FieldStudyGuide = () => {
                 }}>
                   <div style={{ textAlign: 'center' }}>
                     <img 
-                      src={getImageUrl('auto_measure/auto_measure-1.png')} 
+                      src={getImageUrl('auto_measure/auto_measure_1.png')} 
                       alt="센서 데이터 수집 중" 
                       style={{
                         maxWidth: '100%',
-                        width: window.innerWidth > 768 ? '200px' : window.innerWidth > 480 ? '180px' : '200px',
-                        height: 'auto',
-                        borderRadius: '8px'
-                      }}
-                    />
-                  </div>
-                  <div style={{ textAlign: 'center' }}>
-                    <img 
-                      src={getImageUrl('auto_measure/auto_measure-2.png')} 
-                      alt="측정 중" 
-                      style={{
-                        maxWidth: '100%',
-                        width: window.innerWidth > 768 ? '200px' : window.innerWidth > 480 ? '180px' : '200px',
+                        width: window.innerWidth > 768 ? '220px' : window.innerWidth > 480 ? '180px' : '220px',
                         height: 'auto',
                         borderRadius: '8px'
                       }}
@@ -689,9 +696,10 @@ const FieldStudyGuide = () => {
                 <div className="guide-subsection">
                   <h3 style={{ fontSize: '18px' }}>📈 오토측정 안내</h3>
                   <ul style={{ fontSize: '16px', lineHeight: '1.8', color: '#333' }}>
-                    <li>오토측정은 하루 6회, 2시간 간격으로 자동 측정되며, 각 측정은 1분 동안 진행됩니다.</li>
-                    <li>측정이 끝나면 스트레스 알림이 표시되며(→4번 사진 참고), 알림을 클릭하여 스트레스 점수를 선택해주세요.</li>
-                    <li>스트레스가 있는 상태면 <img src={getImageUrl('auto_measure/auto_measure-7.png')} alt="스트레스" style={{width: '20px', height: '20px', display: 'inline', verticalAlign: 'middle', margin: '0 2px'}} /> 스트레스가 없는 상태면 <img src={getImageUrl('auto_measure/auto_measure-8.png')} alt="스트레스" style={{width: '20px', height: '20px', display: 'inline', verticalAlign: 'middle', margin: '0 2px'}} /> (→4번 사진 참고)으로 표시됩니다. 정오를 판단하기 위해 이어지는 화면에서 자신이 실제 느끼는 스트레스 강도를 숫자로 선택해주세요.</li>
+                    <li>오토측정은 회원가입 다음 날부터 자동진행됩니다.</li>
+                    <li>오토측정은 하루 12회, 1시간 간격으로 자동 측정되며, 각 측정은 1분 동안 진행됩니다.</li>
+                    <li>측정이 끝나면 스트레스 알림이 표시되며(→2번 사진 참고), 알림을 클릭하여 스트레스 점수를 선택해주세요.</li>
+                    <li>스트레스가 있는 상태면 <img src={getImageUrl('auto_measure/auto_measure-7.png')} alt="스트레스" style={{width: '20px', height: '20px', display: 'inline', verticalAlign: 'middle', margin: '0 2px'}} /> 스트레스가 없는 상태면 <img src={getImageUrl('auto_measure/auto_measure-8.png')} alt="스트레스" style={{width: '20px', height: '20px', display: 'inline', verticalAlign: 'middle', margin: '0 2px'}} /> (→3번 사진 참고)으로 표시됩니다. 정오를 판단하기 위해 이어지는 화면에서 자신이 실제 느끼는 스트레스 강도를 숫자로 선택해주세요.</li>
                     <li>스트레스 점수를 선택하지 않을 시 진동이 울립니다.</li>
                   </ul>
                 </div>
@@ -792,6 +800,7 @@ const FieldStudyGuide = () => {
                     <li>맥파측정은 오토측정을 놓쳤을 경우 수동으로 진행되며, 1분 동안 진행됩니다.</li>
                     <li>측정이 끝나면 스트레스 점수를 반드시 선택해야 합니다.(→3번 사진 참고).</li>
                     <li>스트레스가 있는 상태면 <img src={getImageUrl('manual_measure/manual_measure-5.png')} alt="스트레스" style={{width: '20px', height: '20px', display: 'inline', verticalAlign: 'middle', margin: '0 2px'}} /> 스트레스가 없는 상태면 <img src={getImageUrl('manual_measure/manual_measure-6.png')} alt="스트레스" style={{width: '20px', height: '20px', display: 'inline', verticalAlign: 'middle', margin: '0 2px'}} /> (→3번 사진 참고)으로 표시됩니다. 정오를 판단하기 위해 이어지는 화면에서 자신이 실제 느끼는 스트레스 강도를 숫자로 선택해주세요.</li>
+                    <li>맥파측정 후 30분 동안 재측정이 불가합니다.</li>
                   </ul>
                 </div>
 
@@ -1157,7 +1166,7 @@ const FieldStudyGuide = () => {
                     <h3>2. 화면을 오른쪽으로 밀면</h3>
                     <div style={{ textAlign: 'center', margin: '20px 0' }}>
                       <img 
-                        src={getImageUrl('galaxy_watch_basic/galaxywatch_basic_2.png')} 
+                        src={getImageUrl('auto_measure/auto_measure-3.png')} 
                         alt="갤럭시 워치 알림" 
                         style={watchImageStyle}
                       />
@@ -1199,6 +1208,192 @@ const FieldStudyGuide = () => {
               </>
             )}
           </>
+        )}
+
+        {/* 하루 연상 단어 음성으로 녹음하기 탭 */}
+        {activeMainTab === 'voice-recording' && (
+          <div className="guide-section">
+            <h2>■ 하루 연상 단어 음성으로 녹음하기</h2>
+            
+            <div className="guide-subsection">
+              <h3>📝 연상단어 녹음 안내</h3>
+              <ul style={{ fontSize: '16px', lineHeight: '1.8', color: '#333' }}>
+                <li>퇴근 후 오늘 하루를 떠올려보고, 연상되는 단어 5개를 음성으로 녹음해 주세요.</li>
+                <li>녹음은 소음이 없는 곳에서 진행해 주세요.</li>
+                <li>예) 
+                  <ul style={{ marginTop: '8px', fontSize: '15px' }}>
+                    <li><span style={{ color: 'red', fontWeight: 'bold' }}>"녹음 시작"</span>, 짜증, 바쁨, 친구, 아메리카노, 지하철</li>
+                    <li><span style={{ color: 'red', fontWeight: 'bold' }}>"녹음 시작"</span>, 빙수, 달리기, 신기록, 즐거움, 피곤</li>
+                    <li><span style={{ color: 'red', fontWeight: 'bold' }}>"녹음 시작"</span>, 여름, 땀, 도로, 피곤, 잠</li>
+                  </ul>
+                </li>
+                <li>파일 이름은 이름 + 날짜 형식으로 저장해주세요. 예) 김경찰0710</li>
+
+              </ul>
+            </div>
+
+            <div className="guide-subsection">
+              <h3>1. 음성 녹음앱 클릭</h3>
+              <div style={{ 
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexDirection: window.innerWidth <= 768 ? 'column' : 'row',
+                gap: window.innerWidth <= 768 ? '20px' : '40px',
+                margin: '30px 0'
+              }}>
+                <div style={{ textAlign: 'center', flex: '1', maxWidth: '100%' }}>
+                  <img 
+                    src={getImageUrl('record/record1-1.png')}
+                    alt="음성 녹음앱 클릭" 
+                    style={{
+                      maxWidth: '100%',
+                      width: window.innerWidth > 768 ? '250px' : '90%',
+                      height: 'auto',
+                      borderRadius: '8px'
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+            
+            <div className="guide-subsection">
+              <h3>2. 연상 단어 5개 녹음하기</h3>
+              <div style={{ 
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexDirection: window.innerWidth <= 768 ? 'column' : 'row',
+                gap: window.innerWidth <= 768 ? '20px' : '40px',
+                margin: '30px 0'
+              }}>
+                <div style={{ textAlign: 'center', flex: '1', maxWidth: '100%' }}>
+                  <img 
+                    src={getImageUrl('record/record1-2.png')}
+                    alt="연상 단어 5개 녹음하기" 
+                    style={{
+                      maxWidth: '100%',
+                      width: window.innerWidth > 768 ? '250px' : '90%',
+                      height: 'auto',
+                      borderRadius: '8px'
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="guide-subsection">
+              <h3>3. 녹음 후 저장 예) 김경찰0710</h3>
+              <div style={{ 
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexDirection: window.innerWidth <= 768 ? 'column' : 'row',
+                gap: window.innerWidth <= 768 ? '20px' : '40px',
+                margin: '30px 0'
+              }}>
+                <div style={{ textAlign: 'center', flex: '1', maxWidth: '100%' }}>
+                  <img 
+                    src={getImageUrl('record/record2-1.png')}
+                    alt="3. 녹음 후 저장 예) 김경찰0710" 
+                    style={{
+                      maxWidth: '100%',
+                      width: window.innerWidth > 768 ? '250px' : '90%',
+                      height: 'auto',
+                      borderRadius: '8px'
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="guide-subsection">
+              <h3>4. 파일 꾹 눌러 선택</h3>
+              <div style={{ 
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexDirection: window.innerWidth <= 768 ? 'column' : 'row',
+                gap: window.innerWidth <= 768 ? '20px' : '40px',
+                margin: '30px 0'
+              }}>
+                <div style={{ textAlign: 'center', flex: '1', maxWidth: '100%' }}>
+                  <img 
+                    src={getImageUrl('record/record2-2.png')}
+                    alt="4. 파일 꾹 눌러 선택" 
+                    style={{
+                      maxWidth: '100%',
+                      width: window.innerWidth > 768 ? '250px' : '90%',
+                      height: 'auto',
+                      borderRadius: '8px'
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="guide-subsection">
+              <h3>5. 카카오톡 아이콘 클릭</h3>
+              <div style={{ 
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexDirection: window.innerWidth <= 768 ? 'column' : 'row',
+                gap: window.innerWidth <= 768 ? '20px' : '40px',
+                margin: '30px 0'
+              }}>
+                <div style={{ textAlign: 'center', flex: '1', maxWidth: '100%' }}>
+                  <img 
+                    src={getImageUrl('record/record2-3.png')}
+                    alt="5. 카카오톡 아이콘 클릭" 
+                    style={{
+                      maxWidth: '100%',
+                      width: window.innerWidth > 768 ? '250px' : '90%',
+                      height: 'auto',
+                      borderRadius: '8px'
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="guide-subsection">
+              <h3>6. 해당 연구원 1:1 카톡방에 파일 전송</h3>
+              <div style={{ 
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexDirection: window.innerWidth <= 768 ? 'column' : 'row',
+                gap: window.innerWidth <= 768 ? '10px' : '15px',
+                margin: '15px 0'
+              }}>
+                <div style={{ textAlign: 'center' }}>
+                  <img 
+                    src={getImageUrl('record/record2-4.png')}
+                    alt="6. 해당 연구원 1:1 카톡방에 파일 전송-1" 
+                    style={{
+                      maxWidth: '100%',
+                      width: window.innerWidth > 768 ? '200px' : '70%',
+                      height: 'auto',
+                      borderRadius: '8px'
+                    }}
+                  />
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <img 
+                    src={getImageUrl('record/record2-5.png')}
+                    alt="6. 해당 연구원 1:1 카톡방에 파일 전송-2" 
+                    style={{
+                      maxWidth: '100%',
+                      width: window.innerWidth > 768 ? '200px' : '70%',
+                      height: 'auto',
+                      borderRadius: '8px'
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
         )}
       </div>
       
