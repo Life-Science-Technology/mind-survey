@@ -41,28 +41,25 @@ const FieldStudyGuide = () => {
     if (tabId === 'basic-usage') {
       setActiveSubTab('power');
     }
-    // 탭 변경 시 고정 헤더 높이를 고려한 스크롤
+    // 탭 변경 시 최상단으로 스크롤
     setTimeout(() => {
-      const headerHeight = document.querySelector('.guide-header')?.offsetHeight || 200;
-      window.scrollTo(0, headerHeight);
+      window.scrollTo(0, 0);
     }, 100);
   };
 
   const handleSubTabChange = (tabId) => {
     setActiveSubTab(tabId);
-    // 탭 변경 시 고정 헤더 높이를 고려한 스크롤
+    // 탭 변경 시 최상단으로 스크롤
     setTimeout(() => {
-      const headerHeight = document.querySelector('.guide-header')?.offsetHeight || 200;
-      window.scrollTo(0, headerHeight);
+      window.scrollTo(0, 0);
     }, 100);
   };
 
   const handleMonitoringSubTabChange = (tabId) => {
     setActiveMonitoringSubTab(tabId);
-    // 탭 변경 시 고정 헤더 높이를 고려한 스크롤
+    // 탭 변경 시 최상단으로 스크롤
     setTimeout(() => {
-      const headerHeight = document.querySelector('.guide-header')?.offsetHeight || 200;
-      window.scrollTo(0, headerHeight);
+      window.scrollTo(0, 0);
     }, 100);
   };
 
