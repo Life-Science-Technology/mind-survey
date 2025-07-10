@@ -638,7 +638,7 @@ const FieldStudyGuide = () => {
                 
                 <div style={{ 
                   display: 'grid',
-                  gridTemplateColumns: window.innerWidth > 768 ? 'repeat(5, 1fr)' : window.innerWidth > 480 ? 'repeat(2, 1fr)' : '1fr',
+                  gridTemplateColumns: window.innerWidth > 768 ? 'repeat(4, 1fr)' : window.innerWidth > 480 ? 'repeat(2, 1fr)' : '1fr',
                   gap: '20px',
                   margin: '30px 0',
                   justifyItems: 'center'
