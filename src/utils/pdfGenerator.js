@@ -157,33 +157,7 @@ export const generateConsentPDF = async (participant) => {
       { text: consentDate, position: formPositions.consentDate, maxWidth: formPositions.consentDate.maxWidth, isAddress: false }
     ];
     
-    for (const field of fieldData) {
-      if (field.text) {
-        try {
-          const textImage = await createTextImage(field.text, fontSize, field.maxWidth, field.isAddress);
-          if (textImage) {
-            const textImageBytes = await textImage.arrayBuffer();
-            const embeddedTextImage = await pdfDoc.embedPng(textImageBytes);
-            
-            // 텍스트 이미지의 높이를 고려하여 y 위치 조정
-            const adjustedY = field.isAddress ? 
-              field.position.y - embeddedTextImage.height + fontSize : // 주소: 텍스트 하단 기준
-              field.position.y; // 다른 필드: 기존 방식
-            
-            lastPage.drawImage(embeddedTextImage, {
-              x: field.position.x,
-              y: adjustedY,
-              width: embeddedTextImage.width,
-              height: embeddedTextImage.height,
-            });
-          }
-        } catch (textError) {
-          console.warn(`텍스트 이미지 생성 실패: ${field.text}`, textError);
-        }
-      }
-    }
-    
-    // 5. 서명 이미지 처리 ("성명 /" 옆 "(서명 또는 인)" 위치에)
+    // 5. 서명 이미지 처리 먼저 (배경에 위치하도록)
     const signaturePosition = { x: 470, y: height - 340 }; // 성명과 같은 높이, 서명 위치 정확히 조정
     
     try {
@@ -223,6 +197,33 @@ export const generateConsentPDF = async (participant) => {
     } catch (signatureError) {
       console.warn('서명 이미지 처리 중 오류:', signatureError);
       // 서명 처리 실패해도 PDF 생성은 계속 진행 (별도 오류 표시 안함)
+    }
+
+    // 6. 텍스트 이미지 처리 (서명 위에 표시되도록)
+    for (const field of fieldData) {
+      if (field.text) {
+        try {
+          const textImage = await createTextImage(field.text, fontSize, field.maxWidth, field.isAddress);
+          if (textImage) {
+            const textImageBytes = await textImage.arrayBuffer();
+            const embeddedTextImage = await pdfDoc.embedPng(textImageBytes);
+            
+            // 텍스트 이미지의 높이를 고려하여 y 위치 조정
+            const adjustedY = field.isAddress ? 
+              field.position.y - embeddedTextImage.height + fontSize : // 주소: 텍스트 하단 기준
+              field.position.y; // 다른 필드: 기존 방식
+            
+            lastPage.drawImage(embeddedTextImage, {
+              x: field.position.x,
+              y: adjustedY,
+              width: embeddedTextImage.width,
+              height: embeddedTextImage.height,
+            });
+          }
+        } catch (textError) {
+          console.warn(`텍스트 이미지 생성 실패: ${field.text}`, textError);
+        }
+      }
     }
     
     // 7. PDF 바이트 생성
