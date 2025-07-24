@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import supabase, { ensureUserSession } from '../supabaseClient';
 import JSZip from 'jszip';
 import { STEP_DESCRIPTIONS } from '../config/registrationSteps';
+import { generateConsentPDF } from '../utils/pdfGenerator';
 import '../styles/AdminPage.css';
 
 const RECRUITMENT_GOALS = {
@@ -327,6 +328,15 @@ const AdminPage = () => {
 
     } catch (error) {
       alert(`파일 다운로드 실패: ${error.message}\n\n참고: 현재 Storage RLS 정책으로 인해 클라이언트에서 직접 다운로드가 제한될 수 있습니다.`);
+    }
+  };
+
+  // PDF 동의서 생성 및 다운로드 함수
+  const handlePDFDownload = async (participant) => {
+    try {
+      await generateConsentPDF(participant);
+    } catch (error) {
+      alert(`PDF 생성 실패: ${error.message}`);
     }
   };
 
@@ -1029,6 +1039,7 @@ const AdminPage = () => {
                   <th rowSpan="2">집단</th>
                   <th rowSpan="2">업로드 상태</th>
                   <th rowSpan="2">업로드된 파일</th>
+                  <th rowSpan="2">PDF 다운로드</th>
                   <th rowSpan="2">상세 정보</th>
                   <th colSpan="2">확정여부</th>
                 </tr>
@@ -1093,6 +1104,15 @@ const AdminPage = () => {
                           ) : (
                             <span className="no-files">파일 없음</span>
                           )}
+                        </td>
+                        <td>
+                          <button 
+                            className="pdf-download-btn"
+                            onClick={() => handlePDFDownload(participant)}
+                            title="동의서 PDF 다운로드"
+                          >
+                            📄 동의서 PDF
+                          </button>
                         </td>
                         <td>
                           <button 
