@@ -659,6 +659,7 @@ const AdminPage = () => {
       '주소',
       '성별',
       '생년월일',
+      '근무소속부서',
       '우울점수', 
       '불안점수',
       '스트레스점수',
@@ -689,6 +690,7 @@ const AdminPage = () => {
         person.address || '-',
         person.gender || '-',
         person.birth_date || '-',
+        person.department || '-',
         person.depressive,
         person.anxiety,
         person.stress !== null ? person.stress : '-',
@@ -822,6 +824,10 @@ const AdminPage = () => {
               <div className="detail-item">
                 <span className="detail-label">워치 배송 주소:</span>
                 <span className="detail-value">{selectedParticipant.watch_delivery_address || '-'}</span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">근무 소속부서:</span>
+                <span className="detail-value">{selectedParticipant.department || '-'}</span>
               </div>
               <div className="detail-item">
                 <span className="detail-label">우울 점수:</span>
