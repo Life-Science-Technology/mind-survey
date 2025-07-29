@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import supabase, { ensureUserSession } from '../supabaseClient';
 import { compressImage, formatFileSize, validateFileType, ALLOWED_IMAGE_TYPES, ALLOWED_DOCUMENT_TYPES, shouldCompress } from '../utils/fileCompression';
 import { REGISTRATION_STEPS } from '../config/registrationSteps';
 import { validatePhoneNumber, usePhoneNumber } from '../utils/phoneNumberUtils';
+import SignatureCanvas from 'react-signature-canvas';
 
 const MultiStepRegistration = () => {
   const navigate = useNavigate();
@@ -36,7 +37,6 @@ const MultiStepRegistration = () => {
     address: '',
     gender: '',
     birthDate: '',
-    signatureUploadMethod: '', // 'upload' 또는 'direct'
     idCardUploadMethod: '', // 'upload' 또는 'direct'
     bankAccountUploadMethod: '' // 'upload' 또는 'direct'
   });
@@ -59,11 +59,44 @@ const MultiStepRegistration = () => {
   });
   const [isUploading, setIsUploading] = useState(false);
   
+  // 서명 패드 관련 상태
+  const signatureRef = useRef(null);
+  const [signatureData, setSignatureData] = useState(null);
+  const [canvasSize, setCanvasSize] = useState({ width: 400, height: 200 });
+  
 
 
   // 컴포넌트 마운트 시 스크롤을 최상단으로 이동
   useEffect(() => {
     window.scrollTo(0, 0);
+  }, []);
+
+  // 캔버스 크기 설정
+  useEffect(() => {
+    const updateCanvasSize = () => {
+      const isMobile = window.innerWidth <= 768;
+      const containerPadding = isMobile ? 40 : 80;
+      const maxWidth = isMobile ? 350 : 500;
+      const containerWidth = Math.min(window.innerWidth - containerPadding, maxWidth);
+      const height = isMobile ? 160 : 200;
+      
+      setCanvasSize({
+        width: containerWidth,
+        height: height
+      });
+    };
+
+    // 초기 로드시 약간의 지연을 두어 DOM이 완전히 렌더링된 후 크기 계산
+    setTimeout(updateCanvasSize, 100);
+    window.addEventListener('resize', updateCanvasSize);
+    window.addEventListener('orientationchange', () => {
+      setTimeout(updateCanvasSize, 200);
+    });
+    
+    return () => {
+      window.removeEventListener('resize', updateCanvasSize);
+      window.removeEventListener('orientationchange', updateCanvasSize);
+    };
   }, []);
 
   // 뒤로가기 핸들러
@@ -248,6 +281,39 @@ const MultiStepRegistration = () => {
       updateUserData({ address: '' });
     }
   };
+
+  // 서명 패드 관련 함수
+  const clearSignature = () => {
+    if (signatureRef.current) {
+      signatureRef.current.clear();
+      setSignatureData(null);
+      // 파일 상태도 초기화
+      setFiles(prev => ({
+        ...prev,
+        signatureImage: null
+      }));
+    }
+  };
+
+  const saveSignature = () => {
+    if (signatureRef.current && !signatureRef.current.isEmpty()) {
+      const canvas = signatureRef.current.getCanvas();
+      const dataURL = canvas.toDataURL('image/png');
+      
+      // dataURL을 File 객체로 변환
+      fetch(dataURL)
+        .then(res => res.blob())
+        .then(blob => {
+          const file = new File([blob], 'signature.png', { type: 'image/png' });
+          setFiles(prev => ({
+            ...prev,
+            signatureImage: file
+          }));
+          setSignatureData(dataURL);
+        });
+    }
+  };
+
 
   // 파일 처리 함수
   const handleFileChange = async (e, fileType) => {
@@ -527,13 +593,8 @@ const MultiStepRegistration = () => {
       }
     }
 
-    if (!userData.signatureUploadMethod) {
-      setRegistrationError('서명 제출 방법을 선택해주세요.');
-      return;
-    }
-
-    if (userData.signatureUploadMethod === 'upload' && !files.signatureImage) {
-      setRegistrationError('서명 이미지를 업로드해주세요.');
+    if (!files.signatureImage) {
+      setRegistrationError('서명을 그리고 저장 버튼을 눌러주세요.');
       return;
     }
 
@@ -591,12 +652,10 @@ const MultiStepRegistration = () => {
       trackDirectSubmission('bank_account', '통장');
     }
 
-    // 서명 이미지 처리
-    if (userData.signatureUploadMethod === 'upload') {
+    // 서명 이미지 처리 (항상 업로드 방식)
+    if (files.signatureImage) {
       const uploadResult = await uploadFile(files.signatureImage, `signature_image_${participantId}`, 'signatureImage');
       if (uploadResult) fileUploads.push(uploadResult);
-    } else if (userData.signatureUploadMethod === 'direct') {
-      trackDirectSubmission('signature_image', '서명');
     }
 
     // 기타 파일들 (항상 업로드 방식)
@@ -661,7 +720,7 @@ const MultiStepRegistration = () => {
         address: finalAddress,
         gender: userData.gender,
         birth_date: userData.birthDate,
-        signature_upload_method: userData.signatureUploadMethod,
+        signature_upload_method: 'draw', // 항상 직접 서명
         id_card_upload_method: userData.idCardUploadMethod,
         bank_account_upload_method: userData.bankAccountUploadMethod,
         consent_date: new Date().toISOString().split('T')[0],
@@ -1108,59 +1167,194 @@ const MultiStepRegistration = () => {
                   </div>
 
                   <div className="form-group">
-                    <label><strong>서명 제출 방법 선택 *</strong></label>
+                    <label><strong>서명 *</strong></label>
                     
-                    <div className="signature-method-options">
-                      <label className="radio-option">
-                        <input 
-                          type="radio" 
-                          name="signatureUploadMethod" 
-                          value="upload" 
-                          checked={userData.signatureUploadMethod === 'upload'}
-                          onChange={(e) => updateUserData({ signatureUploadMethod: e.target.value })}
-                          required
-                        />
-                        <span className="radio-custom"></span>
-                        서명 이미지 업로드
-                      </label>
-                      <label className="radio-option">
-                        <input 
-                          type="radio" 
-                          name="signatureUploadMethod" 
-                          value="direct" 
-                          checked={userData.signatureUploadMethod === 'direct'}
-                          onChange={(e) => updateUserData({ signatureUploadMethod: e.target.value })}
-                          required
-                        />
-                        <span className="radio-custom"></span>
-                        이미지 직접 전송 (카톡, 메일 등)
-                      </label>
-                    </div>
-
-                    {userData.signatureUploadMethod === 'upload' && (
-                      <div className="file-upload-item" style={{ marginTop: '15px' }}>
-                        <label>서명 이미지 파일</label>
-                        <input 
-                          type="file" 
-                          accept=".jpg,.jpeg,.png"
-                          onChange={(e) => handleFileChange(e, 'signatureImage')}
-                        />
-                        {files.signatureImage && (
-                          <p className="file-info">
-                            선택된 파일: {files.signatureImage.name} ({formatFileSize(files.signatureImage.size)})
-                          </p>
+                    {/* 직접 서명만 남기고 다른 옵션 제거 */}
+                      <div className="signature-pad-container" style={{ marginTop: '15px' }}>
+                        <style>
+                          {`
+                            .signature-pad-container {
+                              width: 100%;
+                              display: flex;
+                              flex-direction: column;
+                              align-items: center;
+                            }
+                            .signature-canvas-wrapper {
+                              border: 2px solid #000;
+                              border-radius: 8px;
+                              background-color: #fff;
+                              margin-top: 10px;
+                              position: relative;
+                              overflow: hidden;
+                            }
+                            .signature-canvas {
+                              display: block !important;
+                              touch-action: none !important;
+                              cursor: crosshair;
+                              border: none !important;
+                              border-radius: 0 !important;
+                              margin: 0 !important;
+                              padding: 0 !important;
+                            }
+                            .signature-buttons {
+                              margin-top: 15px;
+                              display: flex;
+                              gap: 15px;
+                              justify-content: center;
+                              flex-wrap: wrap;
+                            }
+                            .signature-btn {
+                              padding: 10px 20px;
+                              border: none;
+                              border-radius: 6px;
+                              cursor: pointer;
+                              font-size: 14px;
+                              font-weight: 600;
+                              min-width: 100px;
+                              transition: all 0.2s ease;
+                            }
+                            .signature-btn.clear {
+                              background-color: #6c757d;
+                              color: white;
+                            }
+                            .signature-btn.save {
+                              background-color: #007bff;
+                              color: white;
+                            }
+                            .signature-btn:hover {
+                              transform: translateY(-1px);
+                              box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                            }
+                            .signature-btn:active {
+                              transform: translateY(0);
+                            }
+                            .signature-preview {
+                              margin-top: 20px;
+                              text-align: center;
+                              padding: 20px;
+                              background-color: #f8f9fa;
+                              border-radius: 8px;
+                              border: 1px solid #e9ecef;
+                              width: 100%;
+                              max-width: 500px;
+                            }
+                            .signature-preview img {
+                              border: 1px solid #ddd;
+                              border-radius: 4px;
+                              max-width: 100%;
+                              height: auto;
+                              background-color: white;
+                            }
+                            @media (max-width: 768px) {
+                              .signature-pad-container {
+                                padding: 0 20px;
+                              }
+                              .signature-canvas-wrapper {
+                                border: 2px solid #000 !important;
+                                margin: 10px auto !important;
+                              }
+                              .signature-canvas {
+                                border: none !important;
+                                border-radius: 0 !important;
+                              }
+                              .signature-buttons {
+                                flex-direction: row;
+                                gap: 12px;
+                                margin-top: 20px;
+                              }
+                              .signature-btn {
+                                flex: 1;
+                                max-width: 140px;
+                                padding: 14px 20px;
+                                font-size: 16px;
+                                touch-action: manipulation;
+                              }
+                            }
+                            @media (max-width: 480px) {
+                              .signature-pad-container {
+                                padding: 0 15px;
+                              }
+                              .signature-btn {
+                                padding: 16px 20px;
+                                font-size: 16px;
+                                min-height: 50px;
+                              }
+                            }
+                            
+                            /* 모바일에서 페이지 스크롤 방지 */
+                            @media (max-width: 768px) {
+                              .signature-pad-container.active {
+                                position: relative;
+                                z-index: 10;
+                              }
+                              .signature-canvas-wrapper.active {
+                                overflow: hidden;
+                              }
+                            }
+                          `}
+                        </style>
+                        <label><strong>아래에 서명해주세요</strong></label>
+                        <div 
+                          className="signature-canvas-wrapper" 
+                          style={{ 
+                            width: `${canvasSize.width}px`, 
+                            height: `${canvasSize.height}px`,
+                            margin: '0 auto',
+                            display: 'block',
+                            position: 'relative'
+                          }}
+                        >
+                          <SignatureCanvas 
+                            ref={signatureRef}
+                            penColor='black'
+                            minWidth={2}
+                            maxWidth={2}
+                            throttle={0}
+                            velocityFilterWeight={0.7}
+                            canvasProps={{
+                              width: canvasSize.width,
+                              height: canvasSize.height,
+                              className: 'signature-canvas',
+                              style: {
+                                width: `${canvasSize.width}px`,
+                                height: `${canvasSize.height}px`,
+                                display: 'block',
+                                touchAction: 'none',
+                                position: 'absolute',
+                                top: '0',
+                                left: '0'
+                              }
+                            }}
+                            backgroundColor='rgba(255,255,255,1)'
+                          />
+                        </div>
+                        <div className="signature-buttons">
+                          <button 
+                            type="button" 
+                            onClick={clearSignature}
+                            className="signature-btn clear"
+                          >
+                            지우기
+                          </button>
+                          <button 
+                            type="button" 
+                            onClick={saveSignature}
+                            className="signature-btn save"
+                          >
+                            저장
+                          </button>
+                        </div>
+                        {signatureData && (
+                          <div className="signature-preview">
+                            <p style={{ color: '#28a745', fontWeight: 'bold', margin: '0 0 15px 0' }}>✓ 서명이 저장되었습니다</p>
+                            <img 
+                              src={signatureData} 
+                              alt="저장된 서명"
+                            />
+                          </div>
                         )}
-                        <p className="helper-text">이미지 파일(JPG, JPEG, PNG)만 업로드 가능합니다.</p>
+                        <p className="helper-text">마우스나 터치로 서명한 후 '저장' 버튼을 눌러주세요.</p>
                       </div>
-                    )}
-
-                    {userData.signatureUploadMethod === 'direct' && (
-                      <div className="direct-submission-info" style={{ marginTop: '15px', padding: '15px', backgroundColor: '#f8f9ff', borderRadius: '8px', border: '1px solid #e6ecff' }}>
-                        <p><strong>직접 전송 안내:</strong></p>
-                        <p>서명 이미지를 카카오톡, 이메일 등을 통해 직접 전송하시면 됩니다.</p>
-                        <p>연구팀에서 별도로 연락드릴 예정입니다.</p>
-                      </div>
-                    )}
 
                     {/* 서명 예시 */}
                     <div className="signature-example" style={{ marginTop: '20px', padding: '15px', backgroundColor: '#f8f9fa', borderRadius: '8px', border: '1px solid #e9ecef' }}>
