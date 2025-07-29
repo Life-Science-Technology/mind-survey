@@ -71,26 +71,38 @@ const MultiStepRegistration = () => {
     window.scrollTo(0, 0);
   }, []);
 
-  // 캔버스 크기 설정
+  // 캔버스 크기 설정 (반응형)
   useEffect(() => {
     const updateCanvasSize = () => {
-      const isMobile = window.innerWidth <= 768;
-      const containerPadding = isMobile ? 40 : 80;
-      const maxWidth = isMobile ? 350 : 500;
-      const containerWidth = Math.min(window.innerWidth - containerPadding, maxWidth);
-      const height = isMobile ? 160 : 200;
-      
-      setCanvasSize({
-        width: containerWidth,
-        height: height
-      });
+      // 부모 컨테이너의 실제 너비를 기준으로 계산
+      const containerElement = document.querySelector('.signature-pad-container');
+      if (containerElement) {
+        const containerRect = containerElement.getBoundingClientRect();
+        const availableWidth = containerRect.width - 60; // 패딩 30px * 2
+        
+        // 비율 기반으로 높이 계산 (16:9 비율 정도)
+        const aspectRatio = 2.5; // 가로:세로 비율
+        const height = Math.max(120, availableWidth / aspectRatio); // 최소 높이 120px
+        
+        setCanvasSize({
+          width: Math.max(200, availableWidth), // 최소 너비 200px
+          height: Math.min(200, height) // 최대 높이 200px
+        });
+      } else {
+        // fallback 크기
+        const isMobile = window.innerWidth <= 768;
+        setCanvasSize({
+          width: isMobile ? 250 : 350,
+          height: isMobile ? 100 : 140
+        });
+      }
     };
 
     // 초기 로드시 약간의 지연을 두어 DOM이 완전히 렌더링된 후 크기 계산
-    setTimeout(updateCanvasSize, 100);
-    window.addEventListener('resize', updateCanvasSize);
+    setTimeout(updateCanvasSize, 150);
+    window.addEventListener('resize', () => setTimeout(updateCanvasSize, 100));
     window.addEventListener('orientationchange', () => {
-      setTimeout(updateCanvasSize, 200);
+      setTimeout(updateCanvasSize, 300);
     });
     
     return () => {
@@ -1178,6 +1190,7 @@ const MultiStepRegistration = () => {
                               display: flex;
                               flex-direction: column;
                               align-items: center;
+                              padding: 0 30px;
                             }
                             .signature-canvas-wrapper {
                               border: 2px solid #000;
@@ -1186,6 +1199,8 @@ const MultiStepRegistration = () => {
                               margin-top: 10px;
                               position: relative;
                               overflow: hidden;
+                              max-width: 100%;
+                              box-sizing: border-box;
                             }
                             .signature-canvas {
                               display: block !important;
@@ -1252,10 +1267,14 @@ const MultiStepRegistration = () => {
                               .signature-canvas-wrapper {
                                 border: 2px solid #000 !important;
                                 margin: 10px auto !important;
+                                width: 100% !important;
+                                max-width: calc(100vw - 80px) !important;
                               }
                               .signature-canvas {
                                 border: none !important;
                                 border-radius: 0 !important;
+                                width: 100% !important;
+                                height: auto !important;
                               }
                               .signature-buttons {
                                 flex-direction: row;
@@ -1273,6 +1292,9 @@ const MultiStepRegistration = () => {
                             @media (max-width: 480px) {
                               .signature-pad-container {
                                 padding: 0 15px;
+                              }
+                              .signature-canvas-wrapper {
+                                max-width: calc(100vw - 50px) !important;
                               }
                               .signature-btn {
                                 padding: 16px 20px;
