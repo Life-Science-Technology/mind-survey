@@ -21,6 +21,7 @@ const MultiStepRegistration = () => {
   const [existingUserId, setExistingUserId] = useState(null); // 1단계에서 가져온 기존 사용자 ID
   const [step1State, setStep1State] = useState('namePhone'); // 'namePhone', 'email', 'address'
   const [foundUser, setFoundUser] = useState(null); // DB에서 찾은 사용자 정보
+  const [isEditMode, setIsEditMode] = useState(false); // 수정 모드 상태 추가
   const [consentChecked, setConsentChecked] = useState({
     personalInfo: false,
     experimentParticipation: null, // null: 선택 안함, true: 첫번째 선택, false: 두번째 선택
@@ -37,6 +38,7 @@ const MultiStepRegistration = () => {
     address: '',
     gender: '',
     birthDate: '',
+    department: '', // 근무 소속부서 추가
     idCardUploadMethod: '', // 'upload' 또는 'direct'
     bankAccountUploadMethod: '' // 'upload' 또는 'direct'
   });
@@ -451,9 +453,62 @@ const MultiStepRegistration = () => {
             return;
           }
 
-          // 2. 이미 등록을 완료했는지 확인
+          // 2. 이미 등록을 완료했는지 확인 - 수정 가능하도록 변경
           if (registration_step >= REGISTRATION_STEPS.CONSENT_SUBMITTED) { // 3단계 이상
-            setRegistrationError('이미 서류 제출이 완료된 사용자입니다.');
+            // 수정 확인 대화박스
+            const confirmEdit = window.confirm(
+              '이미 제출한 참가자입니다. 수정을 진행하시겠습니까?\n\n수정하시려면 "확인"을 클릭해주세요.'
+            );
+            
+            if (!confirmEdit) {
+              setRegistrationError('수정을 취소했습니다.');
+              return;
+            }
+
+            // 기존 데이터를 불러와서 수정 모드로 진입
+            try {
+              const { data: existingData, error: fetchError } = await supabase
+                .from('survey-person')
+                .select('*')
+                .eq('id', existingUser.id)
+                .single();
+
+              if (!fetchError && existingData) {
+                // 기존 데이터로 상태 업데이트
+                setUserData(prevData => ({
+                  ...prevData,
+                  address: existingData.address || '',
+                  gender: existingData.gender || '',
+                  birthDate: existingData.birth_date || '',
+                  department: existingData.department || '',
+                  idCardUploadMethod: existingData.id_card_upload_method || '',
+                  bankAccountUploadMethod: existingData.bank_account_upload_method || '',
+                  watchDeliveryAddress: existingData.watch_delivery_address || ''
+                }));
+
+                // 동의 상태도 복원
+                setConsentChecked({
+                  personalInfo: true, // 이미 제출했으므로 true
+                  experimentParticipation: existingData.experiment_consent,
+                  dataUsage: existingData.data_usage_consent,
+                  thirdParty: existingData.third_party_consent || false
+                });
+
+                // 갤럭시워치 배송 주소 입력부터 수정 모드로 시작
+                setExistingUserId(existingUser.id);
+                setIsEditMode(true); // 수정 모드 활성화
+                setRegistrationError('');
+                setStep1State('address'); // 갤럭시워치 주소 입력 단계로 설정
+                setCurrentStep(1); // 1단계의 주소 입력부터 시작
+                return;
+              }
+            } catch (error) {
+              console.warn('기존 데이터 로드 실패:', error);
+            }
+            
+            // 데이터 로드 실패 시 기본 진행
+            setRegistrationError('서류가 이미 제출되었습니다. 수정이 필요한 경우 다시 시도해주세요.');
+            setStep1State('address');
             return;
           }
 
@@ -536,9 +591,14 @@ const MultiStepRegistration = () => {
     //     setRegistrationError('시스템 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
     //   }
     } else if (step1State === 'address') {
-      // 갤럭시워치 배송 주소 확인
+      // 갤럭시워치 배송 주소 및 근무 소속부서 확인
       if (!userData.watchDeliveryAddress) {
         setRegistrationError('갤럭시워치 배송 주소를 입력해주세요.');
+        return;
+      }
+      
+      if (!userData.department) {
+        setRegistrationError('근무 소속부서를 입력해주세요.');
         return;
       }
       
@@ -732,6 +792,7 @@ const MultiStepRegistration = () => {
         address: finalAddress,
         gender: userData.gender,
         birth_date: userData.birthDate,
+        department: userData.department, // 근무 소속부서 추가
         signature_upload_method: 'draw', // 항상 직접 서명
         id_card_upload_method: userData.idCardUploadMethod,
         bank_account_upload_method: userData.bankAccountUploadMethod,
@@ -835,6 +896,23 @@ const MultiStepRegistration = () => {
           </div>
         ) : (
           <div className="multi-step-registration">
+            {/* 수정 모드 알림 - 상단에 표시 */}
+            {isEditMode && (
+              <div style={{ 
+                backgroundColor: '#fff3cd', 
+                border: '1px solid #ffeaa7', 
+                borderRadius: '8px', 
+                padding: '15px', 
+                marginBottom: '20px',
+                color: '#856404'
+              }}>
+                <h6 style={{ margin: '0 0 10px 0', color: '#856404' }}>📝 서류 수정 모드</h6>
+                <p style={{ margin: '0', fontSize: '14px' }}>
+                  이미 제출된 서류를 수정하고 있습니다. 필요한 항목을 변경한 후 다시 제출해주세요.
+                </p>
+              </div>
+            )}
+
             {/* 진행 상태 표시 */}
             <div className="step-indicator">
               <div className={`step ${currentStep >= 1 ? 'active' : ''}`}>1. 기본정보</div>
@@ -879,6 +957,7 @@ const MultiStepRegistration = () => {
                     )}
                   </div>
 
+
                   {/* 이메일 입력 (주석 처리) */}
                   {/* {step1State !== 'namePhone' && (
                     <div className="form-group">
@@ -908,20 +987,35 @@ const MultiStepRegistration = () => {
 
                   {/* 갤럭시워치 배송 주소 입력 (조건부 표시) */}
                   {step1State === 'address' && (
-                    <div className="form-group" style={{backgroundColor: '#f8f9fa', padding: '15px', borderRadius: '8px', border: '2px solid #28a745'}}>
-                      <label htmlFor="watchDeliveryAddress"><strong>갤럭시워치 배송 주소</strong></label>
-                      <input 
-                        type="text" 
-                        id="watchDeliveryAddress" 
-                        value={userData.watchDeliveryAddress || ''}
-                        onChange={handleChange}
-                        placeholder="갤럭시워치를 받으실 주소를 입력해주세요"
-                        required
-                      />
-                      <p className="helper-text" style={{color: '#28a745'}}>
-                        갤럭시워치가 이 주소로 배송됩니다. 정확한 주소를 입력해주세요.
-                      </p>
-                    </div>
+                    <>
+                      <div className="form-group" style={{backgroundColor: '#f8f9fa', padding: '15px', borderRadius: '8px', border: '2px solid #28a745'}}>
+                        <label htmlFor="watchDeliveryAddress"><strong>갤럭시워치 배송 주소</strong></label>
+                        <input 
+                          type="text" 
+                          id="watchDeliveryAddress" 
+                          value={userData.watchDeliveryAddress || ''}
+                          onChange={handleChange}
+                          placeholder="갤럭시워치를 받으실 주소를 입력해주세요"
+                          required
+                        />
+                        <p className="helper-text" style={{color: '#28a745'}}>
+                          갤럭시워치가 이 주소로 배송됩니다. 정확한 주소를 입력해주세요.
+                        </p>
+                      </div>
+
+                      <div className="form-group">
+                        <label htmlFor="department"><strong>근무 소속부서</strong></label>
+                        <input 
+                          type="text" 
+                          id="department" 
+                          value={userData.department || ''}
+                          onChange={handleChange}
+                          placeholder="예: 지구대, 기동대, 광역수사대 등"
+                          required
+                        />
+                        <p className="helper-text">소속 부서명을 입력해주세요</p>
+                      </div>
+                    </>
                   )}
                 </div>
 
@@ -1811,7 +1905,8 @@ const MultiStepRegistration = () => {
                     onClick={handleFinalSubmit}
                     disabled={isRegistering || isUploading || !isFinalSubmitValid()}
                   >
-                    {isRegistering ? (isUploading ? '파일 업로드 중...' : '등록 중...') : '참여자 서류 제출'}
+                    {isRegistering ? (isUploading ? '파일 업로드 중...' : '등록 중...') : 
+                     (isEditMode ? '서류 수정 제출' : '참여자 서류 제출')}
                   </button>
                 </div>
               </div>
