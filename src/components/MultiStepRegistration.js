@@ -39,6 +39,7 @@ const MultiStepRegistration = () => {
     gender: '',
     birthDate: '',
     department: '', // 근무 소속부서 추가
+    workType: '', // 근무 형태 추가
     idCardUploadMethod: '', // 'upload' 또는 'direct'
     bankAccountUploadMethod: '' // 'upload' 또는 'direct'
   });
@@ -481,6 +482,7 @@ const MultiStepRegistration = () => {
                   gender: existingData.gender || '',
                   birthDate: existingData.birth_date || '',
                   department: existingData.department || '',
+                  workType: existingData.work_type || '',
                   idCardUploadMethod: existingData.id_card_upload_method || '',
                   bankAccountUploadMethod: existingData.bank_account_upload_method || '',
                   watchDeliveryAddress: existingData.watch_delivery_address || ''
@@ -599,6 +601,11 @@ const MultiStepRegistration = () => {
       
       if (!userData.department) {
         setRegistrationError('근무 소속부서를 입력해주세요.');
+        return;
+      }
+      
+      if (!userData.workType) {
+        setRegistrationError('근무 형태를 입력해주세요.');
         return;
       }
       
@@ -793,6 +800,7 @@ const MultiStepRegistration = () => {
         gender: userData.gender,
         birth_date: userData.birthDate,
         department: userData.department, // 근무 소속부서 추가
+        work_type: userData.workType, // 근무 형태 추가
         signature_upload_method: 'draw', // 항상 직접 서명
         id_card_upload_method: userData.idCardUploadMethod,
         bank_account_upload_method: userData.bankAccountUploadMethod,
@@ -1014,6 +1022,31 @@ const MultiStepRegistration = () => {
                           required
                         />
                         <p className="helper-text">소속 부서명을 입력해주세요</p>
+                      </div>
+
+                      <div className="form-group">
+                        <label htmlFor="workType"><strong>근무 형태</strong></label>
+                        <input 
+                          type="text" 
+                          id="workType" 
+                          value={userData.workType || ''}
+                          onChange={handleChange}
+                          placeholder="예: 주간근무 (일근직), 2조 2교대, 3조 3교대 등"
+                          required
+                        />
+                        <div className="helper-text" style={{marginTop: '5px'}}>
+                          <p style={{margin: '3px 0', fontSize: '13px', color: '#6c757d'}}>근무 형태를 입력해 주세요</p>
+                          <div style={{fontSize: '12px', color: '#868e96', lineHeight: '1.3'}}>
+                            <div>• 주간근무 (일근직)</div>
+                            <div>• 2조 2교대 (근무일-휴무일)</div>
+                            <div>• 3조 2교대 (당직 24시간 포)</div>
+                            <div>• 4조 2교대 (주야휴비)</div>
+                            <div>• 3조 3교대 (8시간 기준 교대)</div>
+                            <div>• 4조 3교대 (8시간 기준 교대)</div>
+                            <div>• 불규칙 (수시 변동)</div>
+                            <div>• 기타 (직접 입력)</div>
+                          </div>
+                        </div>
                       </div>
                     </>
                   )}
