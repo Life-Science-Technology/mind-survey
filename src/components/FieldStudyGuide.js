@@ -654,6 +654,44 @@ const FieldStudyGuide = () => {
                     뒤로가기 버튼을 누르거나 화면을 왼쪽에서 오른쪽으로 밀면 이전 화면으로 돌아갈 수 있습니다.
                   </p>
                 </div>
+
+                <div className="guide-subsection" style={{ marginTop: '40px', borderTop: '2px solid #e9ecef', paddingTop: '30px' }}>
+                  <h2 style={{ color: '#333', marginBottom: '20px' }}>진동을 끄고 싶은 경우(방해금지 모드)</h2>
+                  
+                  <div style={{ textAlign: 'center', margin: '30px 0' }}>
+                    <img 
+                      src={getImageUrl('off_vibration_2.png')} 
+                      alt="진동을 끄고 싶은 경우(방해금지 모드)" 
+                      style={{
+                        maxWidth: '100%',
+                        width: window.innerWidth > 768 ? '600px' : '95%',
+                        height: 'auto',
+                        borderRadius: '8px',
+                        display: 'block',
+                        margin: '0 auto'
+                      }}
+                    />
+                  </div>
+
+                  <p style={{ 
+                    color: '#333', 
+                    fontSize: '16px', 
+                    lineHeight: '1.6',
+                    margin: '15px 0'
+                  }}>
+                    버튼이 <span style={{ color: 'red', fontWeight: 'bold' }}>빨간색 아이콘</span>으로 표시되어 있으면 자동측정 및 진동이 일과 시간에 맞춰 자동으로 해제됩니다.
+                  </p>
+                  <p style={{ 
+                    color: '#333', 
+                    fontSize: '16px', 
+                    lineHeight: '1.6',
+                    margin: '15px 0'
+                  }}>
+                    방해금지 모드는 다음 날 자동으로 해제됩니다.
+                  </p>
+
+
+                </div>
               </div>
             )}
 
