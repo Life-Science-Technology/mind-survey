@@ -100,7 +100,7 @@ const FieldStudyGuide = () => {
           paddingBottom: '10px'
         }}
       >
-        <h1>실증 실험 안내</h1>
+        <h1>실험 방법 및 워치 조작</h1>
         
         {/* 메인 탭 네비게이션 - React Select */}
         <div className="main-tab-navigation" style={{ marginTop: '20px' }}>

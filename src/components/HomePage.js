@@ -67,7 +67,7 @@ const HomePage = () => {
     }
   };
 
-  // 실증 실험 안내 클릭 핸들러
+  // 실험 방법 및 워치 조작 클릭 핸들러
   const handleGuideClick = () => {
     try {
       navigate('/field-study-guide');
@@ -131,7 +131,7 @@ const HomePage = () => {
               실증 실험 <span className="highlight-teal">참여 대상자 등록</span>을 위해서는 아래 <span className="highlight-teal">정신 건강 설문</span> 에 먼저 응해 주시고,
             </p>
             <p className="description-text">
-              실험 <span className="highlight-pink">참여자로 확인</span>되신 분들은 아래 <span className="highlight-pink">실증 실험 안내</span>를 통해 실험 내용을 확인해 주세요.
+              실험 <span className="highlight-pink">참여자로 확인</span>되신 분들은 아래 <span className="highlight-pink">실험 방법 및 워치 조작</span>를 통해 실험 내용을 확인해 주세요.
             </p>
           </div>
         </div>
@@ -157,10 +157,10 @@ const HomePage = () => {
             onKeyDown={(e) => handleKeyDown(e, handleGuideClick)}
             role="button"
             tabIndex={0}
-            aria-label="실증 실험 안내 페이지"
+            aria-label="실험 방법 및 워치 조작 페이지"
           >
             <div className="card-content">
-              <h3 className="card-title">실증 실험 안내</h3>
+              <h3 className="card-title">실험 방법 및 워치 조작</h3>
             </div>
           </div>
 
@@ -173,8 +173,7 @@ const HomePage = () => {
             aria-label="실증 실험 대기자 동의서 제출"
           >
             <div className="card-content">
-              <h3 className="card-title">실험 종료 안내</h3>
-              <h3 className="card-title">(제출 서류)</h3>
+              <h3 className="card-title">동의서 및 서류 제출</h3>
             </div>
           </div>
 
