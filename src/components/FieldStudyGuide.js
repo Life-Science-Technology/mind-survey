@@ -1320,16 +1320,16 @@ const FieldStudyGuide = () => {
             <div className="guide-subsection">
               <h3>📝 연상단어 녹음 안내</h3>
               <ul style={{ fontSize: '16px', lineHeight: '1.8', color: '#333' }}>
-                <li>퇴근 후 오늘 하루를 떠올려보고, 연상되는 단어 5개를 음성으로 녹음해 주세요.</li>
-                <li>녹음은 소음이 없는 곳에서 진행해 주세요.</li>
+                <li>퇴근 후 오늘 떠오르는 단어 5개 음성과 기분 녹음</li>
+                <li>소음 없는 곳에서 진행</li>
+                <li>시작 시 “녹음 시작” 이라고 말한 뒤 녹음 진행</li>
                 <li>예) 
                   <ul style={{ marginTop: '8px', fontSize: '15px' }}>
-                    <li><span style={{ color: 'red', fontWeight: 'bold' }}>"녹음 시작"</span>, 짜증, 바쁨, 친구, 아메리카노, 지하철</li>
-                    <li><span style={{ color: 'red', fontWeight: 'bold' }}>"녹음 시작"</span>, 빙수, 달리기, 신기록, 즐거움, 피곤</li>
-                    <li><span style={{ color: 'red', fontWeight: 'bold' }}>"녹음 시작"</span>, 여름, 땀, 도로, 피곤, 잠</li>
+                    <li><span style={{ color: 'red', fontWeight: 'bold' }}>"녹음 시작"</span>, 짜증, 바쁨, 친구, 대형사고, 지하철 + 오늘 기분은 00하다</li>
+                    <li><span style={{ color: 'red', fontWeight: 'bold' }}>"녹음 시작"</span>, 빙수, 달리기, 신기록, 즐거움, 피곤 + 오늘 기분은 00하다</li>
                   </ul>
                 </li>
-                <li>파일 이름은 이름 + 날짜 형식으로 저장해주세요. 예) 김경찰0710</li>
+                <li>파일 이름은 이름 + 날짜 형식으로 저장 예) 김경찰0710</li>
 
               </ul>
             </div>
