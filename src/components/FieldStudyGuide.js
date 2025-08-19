@@ -67,6 +67,7 @@ const FieldStudyGuide = () => {
     { value: 'experiment-preparation', label: '실험 준비 방법' },
     { value: 'basic-usage', label: '갤럭시워치 기본 사용법' },
     { value: 'pairing', label: '갤럭시 워치와 스마트폰 페어링 하는 법' },
+    { value: 'dev-mode', label: 'Dev mode 활성화 하는 법' },
     { value: 'app-install', label: '갤럭시 워치 KIST 어플 설치하는 법' },
     { value: 'web-registration', label: 'KIST 통합관제시스템 회원가입 및 근무일정 설명' },
     { value: 'monitoring-usage', label: 'KIST 건강 모니터링 어플 사용법' },
@@ -886,6 +887,83 @@ const FieldStudyGuide = () => {
               </div>
             )}
           </>
+        )}
+
+        {/* Dev mode 활성화 탭 */}
+        {activeMainTab === 'dev-mode' && (
+          <div className="guide-section">
+            <h2>■ Dev mode 활성화 하는 법</h2>
+            
+            <div className="guide-subsection">
+              <h3>1. 환경설정 클릭</h3>
+              <div style={{ textAlign: 'center', margin: '20px 0' }}>
+                <img 
+                  src={getImageUrl('dev_mode/dev_mode-1.png')} 
+                  alt="환경설정 클릭" 
+                  style={{
+                    ...squareImageStyle,
+                    width: window.innerWidth > 768 ? '250px' : '70%'
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="guide-subsection">
+              <h3>2. 애플리케이션 클릭</h3>
+              <div style={{ textAlign: 'center', margin: '20px 0' }}>
+                <img 
+                  src={getImageUrl('dev_mode/dev_mode-2.png')} 
+                  alt="애플리케이션 클릭" 
+                  style={{
+                    ...squareImageStyle,
+                    width: window.innerWidth > 768 ? '250px' : '70%'
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="guide-subsection">
+              <h3>3. 헬스 플랫폼 클릭</h3>
+              <div style={{ textAlign: 'center', margin: '20px 0' }}>
+                <img 
+                  src={getImageUrl('dev_mode/dev_mode-3.png')} 
+                  alt="헬스 플랫폼 클릭" 
+                  style={{
+                    ...squareImageStyle,
+                    width: window.innerWidth > 768 ? '250px' : '70%'
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="guide-subsection">
+              <h3>4. 헬스 플랫폼을 10번 클릭</h3>
+              <div style={{ textAlign: 'center', margin: '20px 0' }}>
+                <img 
+                  src={getImageUrl('dev_mode/dev_mode-4.png')} 
+                  alt="헬스 플랫폼을 10번 클릭" 
+                  style={{
+                    ...squareImageStyle,
+                    width: window.innerWidth > 768 ? '250px' : '70%'
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="guide-subsection">
+              <h3>5. [Dev mode] 글자 나오면 성공!</h3>
+              <div style={{ textAlign: 'center', margin: '20px 0' }}>
+                <img 
+                  src={getImageUrl('dev_mode/dev_mode-5.png')} 
+                  alt="[Dev mode] 글자 나오면 성공!" 
+                  style={{
+                    ...squareImageStyle,
+                    width: window.innerWidth > 768 ? '250px' : '70%'
+                  }}
+                />
+              </div>
+            </div>
+          </div>
         )}
 
         {/* 페어링 탭 */}
