@@ -21,7 +21,7 @@ const squareImageStyle = {
 
 const FieldStudyGuide = () => {
   const navigate = useNavigate();
-  const [activeMainTab, setActiveMainTab] = useState('basic-usage');
+  const [activeMainTab, setActiveMainTab] = useState('experiment-preparation');
   const [activeSubTab, setActiveSubTab] = useState('power');
   const [activeMonitoringSubTab, setActiveMonitoringSubTab] = useState('basic-settings');
   
@@ -64,6 +64,7 @@ const FieldStudyGuide = () => {
   };
 
   const mainTabOptions = [
+    { value: 'experiment-preparation', label: '실험 준비 방법' },
     { value: 'basic-usage', label: '갤럭시워치 기본 사용법' },
     { value: 'pairing', label: '갤럭시 워치와 스마트폰 페어링 하는 법' },
     { value: 'app-install', label: '갤럭시 워치 KIST 어플 설치하는 법' },
@@ -205,6 +206,32 @@ const FieldStudyGuide = () => {
       </div>
       
       <div className="guide-content">
+        {/* 실험 준비 방법 탭 */}
+        {activeMainTab === 'experiment-preparation' && (
+          <div className="guide-section">
+            <h2>■ 실험 준비 방법</h2>
+            <div style={{ 
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              margin: '20px 0'
+            }}>
+              <img 
+                src={getImageUrl('ready.png')}
+                alt="실험 준비 방법 순서도" 
+                style={{
+                  maxWidth: '100%',
+                  width: window.innerWidth > 768 ? '600px' : '95%',
+                  height: 'auto',
+                  borderRadius: '8px',
+                  display: 'block',
+                  margin: '0 auto'
+                }}
+              />
+            </div>
+          </div>
+        )}
+
         {/* 웹 회원가입 및 근무일정 탭 */}
         {activeMainTab === 'web-registration' && (
           <div className="guide-section">
