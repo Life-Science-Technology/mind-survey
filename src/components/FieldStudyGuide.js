@@ -110,7 +110,7 @@ const FieldStudyGuide = () => {
             options={mainTabOptions}
             placeholder="안내 내용을 선택하세요"
             isSearchable={false}
-            maxMenuHeight={400}
+            maxMenuHeight={600}
             styles={{
               control: (provided) => ({
                 ...provided,
@@ -133,7 +133,7 @@ const FieldStudyGuide = () => {
               }),
               menuList: (provided) => ({
                 ...provided,
-                maxHeight: '400px'
+                maxHeight: '600px'
               }),
               option: (provided, state) => ({
                 ...provided,
