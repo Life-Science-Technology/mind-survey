@@ -4,14 +4,6 @@ import { useNavigate } from 'react-router-dom';
 const ExperimentCompletePage = () => {
   const navigate = useNavigate();
 
-  // 삼성 헬스 데이터 안내 핸들러
-  const handleHealthDataGuide = () => {
-    try {
-      navigate('/samsung-health-download-guide');
-    } catch (error) {
-      alert('페이지 이동 중 오류가 발생했습니다. 다시 시도해주세요.');
-    }
-  };
 
   // 동의서 및 사본 제출 핸들러
   const handleDocumentSubmission = () => {
@@ -83,22 +75,6 @@ const ExperimentCompletePage = () => {
         </div>
 
         <div className="action-buttons">
-          <div 
-            className="action-card" 
-            onClick={handleHealthDataGuide}
-            onKeyDown={(e) => handleKeyDown(e, handleHealthDataGuide)}
-            role="button"
-            tabIndex={0}
-            aria-label="삼성 헬스 데이터 다운로드 및 전송 방법"
-          >
-            <div className="card-content">
-              <h3 className="card-title">삼성 헬스 데이터</h3>
-              <h3 className="card-title">다운로드 및 전송 방법</h3>
-            </div>
-          </div>
-          
-
-
           <div 
             className="action-card" 
             onClick={handleDocumentSubmission}
