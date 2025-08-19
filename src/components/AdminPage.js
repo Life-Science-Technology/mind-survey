@@ -5,7 +5,8 @@ import { STEP_DESCRIPTIONS } from '../config/registrationSteps';
 import { generateConsentPDF } from '../utils/pdfGenerator';
 import '../styles/AdminPage.css';
 
-const RECRUITMENT_GOALS = {
+// 기본 충원 목표 (DB에서 로드 실패 시 사용)
+const DEFAULT_RECRUITMENT_GOALS = {
   depression: 50,
   stress: 25,
   normal: 25,
@@ -32,6 +33,9 @@ const AdminPage = () => {
     lastUpdated: null,
     notes: null
   }); // 모집 상태 관리
+  const [recruitmentGoals, setRecruitmentGoals] = useState(DEFAULT_RECRUITMENT_GOALS); // 충원 목표 관리
+  const [isEditingGoals, setIsEditingGoals] = useState(false); // 목표 수정 모드
+  const [tempGoals, setTempGoals] = useState(DEFAULT_RECRUITMENT_GOALS); // 임시 목표 저장
 
   
   // 서버 기반 관리자 인증
@@ -72,6 +76,70 @@ const AdminPage = () => {
   
   // 인증 관련 상태
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  // 충원 목표 로드 함수
+  const loadRecruitmentGoals = useCallback(async () => {
+    try {
+      const adminToken = sessionStorage.getItem('adminToken');
+      if (!adminToken) {
+        throw new Error('Admin token not found');
+      }
+      
+      const { data, error } = await supabase
+        .rpc('get_recruitment_goals_for_admin', { 
+          admin_token: adminToken
+        });
+        
+      if (error) {
+        throw error;
+      }
+      
+      if (data && data.length > 0) {
+        const goals = data[0];
+        setRecruitmentGoals({
+          depression: goals.depression_goal,
+          stress: goals.stress_goal,
+          normal: goals.normal_goal
+        });
+      }
+    } catch (error) {
+      console.error('Failed to load recruitment goals:', error);
+      setRecruitmentGoals(DEFAULT_RECRUITMENT_GOALS);
+    }
+  }, []);
+
+  // 충원 목표 업데이트 함수
+  const updateRecruitmentGoals = async (newGoals) => {
+    try {
+      const adminToken = sessionStorage.getItem('adminToken');
+      if (!adminToken) {
+        throw new Error('Admin token not found');
+      }
+      
+      const { error } = await supabase
+        .rpc('update_recruitment_goals_for_admin', { 
+          admin_token: adminToken,
+          new_depression_goal: newGoals.depression,
+          new_stress_goal: newGoals.stress,
+          new_normal_goal: newGoals.normal,
+          admin_notes: 'Goals updated by admin'
+        });
+        
+      if (error) {
+        throw error;
+      }
+      
+      // 상태 업데이트 후 다시 로드
+      await loadRecruitmentGoals();
+      setIsEditingGoals(false);
+      
+      alert('충원 목표가 성공적으로 업데이트되었습니다.');
+      
+    } catch (error) {
+      console.error('Failed to update recruitment goals:', error);
+      alert(`충원 목표 업데이트 실패: ${error.message}`);
+    }
+  };
 
   // 모집 상태 로드 함수
   const loadRecruitmentStatus = useCallback(async () => {
@@ -206,16 +274,17 @@ const AdminPage = () => {
       setParticipants(data || []);
       setError(null);
       
-      // 참가자 데이터 로드 후 모든 파일 정보와 모집 상태도 로드
+      // 참가자 데이터 로드 후 모든 파일 정보, 모집 상태, 충원 목표도 로드
       await loadAllParticipantFiles();
       await loadRecruitmentStatus();
+      await loadRecruitmentGoals();
       
     } catch (error) {
       setError('관리자 데이터 로드 실패: ' + error.message);
     } finally {
       setIsLoading(false);
     }
-  }, [loadAllParticipantFiles, loadRecruitmentStatus]); // 의존성 추가
+  }, [loadAllParticipantFiles, loadRecruitmentStatus, loadRecruitmentGoals]); // 의존성 추가
 
   // 컴포넌트 마운트 시 인증 상태 확인
   useEffect(() => {
@@ -464,10 +533,6 @@ const AdminPage = () => {
 
       // 성공 시 참가자 데이터 다시 로드하여 UI 업데이트
       await loadParticipants(false);
-      
-      // 성공 메시지 표시
-      const statusText = status === 'approved' ? '승인' : '거부';
-      console.log(`참가자 ${participantId} 확정여부가 ${statusText}로 업데이트되었습니다.`);
       
     } catch (error) {
       alert(`확정여부 업데이트 실패: ${error.message}`);
@@ -774,6 +839,110 @@ const AdminPage = () => {
     if (pinError) setPinError('');
   };
 
+  // 목표 편집 시작할 때 초기값 설정
+  const handleStartEditingGoals = () => {
+    setTempGoals(recruitmentGoals);
+    setIsEditingGoals(true);
+  };
+
+  // 목표값 변경 핸들러
+  const handleGoalsChange = (groupType, value) => {
+    setTempGoals(prev => ({
+      ...prev,
+      [groupType]: parseInt(value) || 0
+    }));
+  };
+
+  // 목표 저장 핸들러
+  const handleSaveGoals = () => {
+    // 입력 검증
+    if (tempGoals.depression < 0 || tempGoals.stress < 0 || tempGoals.normal < 0) {
+      alert('목표 인원은 0 이상이어야 합니다.');
+      return;
+    }
+    
+    // eslint-disable-next-line no-restricted-globals
+    if (confirm('충원 목표를 변경하시겠습니까?')) {
+      updateRecruitmentGoals(tempGoals);
+    }
+  };
+
+  // 충원 목표 편집 모달 렌더링
+  const renderGoalsEditModal = () => {
+    
+    return (
+      <div className="file-modal-overlay" onClick={() => setIsEditingGoals(false)}>
+        <div className="file-modal goals-modal" onClick={(e) => e.stopPropagation()}>
+          <div className="file-modal-header">
+            <h3>충원 목표 수정</h3>
+            <button 
+              className="modal-close-btn"
+              onClick={() => setIsEditingGoals(false)}
+            >
+              ✕
+            </button>
+          </div>
+          
+          <div className="file-modal-content">
+            <div className="goals-edit-content">
+              <div className="goal-item">
+                <label htmlFor="depression-goal">우울 집단 목표:</label>
+                <input
+                  type="number"
+                  id="depression-goal"
+                  min="0"
+                  value={tempGoals.depression}
+                  onChange={(e) => handleGoalsChange('depression', e.target.value)}
+                />
+                <span>명</span>
+              </div>
+              <div className="goal-item">
+                <label htmlFor="stress-goal">스트레스 고위험 집단 목표:</label>
+                <input
+                  type="number"
+                  id="stress-goal"
+                  min="0"
+                  value={tempGoals.stress}
+                  onChange={(e) => handleGoalsChange('stress', e.target.value)}
+                />
+                <span>명</span>
+              </div>
+              <div className="goal-item">
+                <label htmlFor="normal-goal">정상 집단 목표:</label>
+                <input
+                  type="number"
+                  id="normal-goal"
+                  min="0"
+                  value={tempGoals.normal}
+                  onChange={(e) => handleGoalsChange('normal', e.target.value)}
+                />
+                <span>명</span>
+              </div>
+              <div className="total-goal">
+                <strong>총 목표: {tempGoals.depression + tempGoals.stress + tempGoals.normal}명</strong>
+              </div>
+            </div>
+          </div>
+          
+          <div className="file-modal-footer">
+            <button 
+              className="modal-save-btn"
+              onClick={handleSaveGoals}
+            >
+              저장
+            </button>
+            <button 
+              className="modal-close-btn secondary"
+              onClick={() => setIsEditingGoals(false)}
+            >
+              취소
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   // 상세 정보 모달 렌더링
   const renderDetailsModal = () => {
     if (!selectedParticipant) return null;
@@ -950,17 +1119,24 @@ const AdminPage = () => {
           <p>📊 데이터를 불러오는 중...</p>
           <p className="loading-detail">참가자 정보와 파일 목록을 조회하고 있습니다.</p>
         </div>
-      ) : participants.length === 0 ? (
-        <p>등록된 참가자가 없습니다.</p>
       ) : (
         <>
           <div className="summary-container">
             <div className="summary-header">
               <h3>확정자 현황 (충원 목표)</h3>
-              <div className="recruitment-status-display">
-                <span className={`status-badge ${recruitmentStatus.isRecruiting ? 'recruiting' : 'closed'}`}>
-                  {recruitmentStatus.isRecruiting ? '충원중' : '충원 완료'}
-                </span>
+              <div className="summary-controls">
+                <button 
+                  className="edit-goals-btn"
+                  onClick={handleStartEditingGoals}
+                  title="충원 목표 수정"
+                >
+                  ⚙️ 목표 수정
+                </button>
+                <div className="recruitment-status-display">
+                  <span className={`status-badge ${recruitmentStatus.isRecruiting ? 'recruiting' : 'closed'}`}>
+                    {recruitmentStatus.isRecruiting ? '충원중' : '충원 완료'}
+                  </span>
+                </div>
               </div>
             </div>
             <div className="summary-grid">
@@ -970,15 +1146,15 @@ const AdminPage = () => {
               </div>
               <div className="summary-item">
                 <span className="summary-label">우울 집단</span>
-                <span className="summary-value">{getConfirmedCounts().depression} / {RECRUITMENT_GOALS.depression}명</span>
+                <span className="summary-value">{getConfirmedCounts().depression} / {recruitmentGoals.depression}명</span>
               </div>
               <div className="summary-item">
                 <span className="summary-label">스트레스 고위험 집단</span>
-                <span className="summary-value">{getConfirmedCounts().stress} / {RECRUITMENT_GOALS.stress}명</span>
+                <span className="summary-value">{getConfirmedCounts().stress} / {recruitmentGoals.stress}명</span>
               </div>
               <div className="summary-item">
                 <span className="summary-label">정상 집단</span>
-                <span className="summary-value">{getConfirmedCounts().normal} / {RECRUITMENT_GOALS.normal}명</span>
+                <span className="summary-value">{getConfirmedCounts().normal} / {recruitmentGoals.normal}명</span>
               </div>
             </div>
             <div className="recruitment-controls">
@@ -1025,151 +1201,159 @@ const AdminPage = () => {
             </button>
           </div>
           
-          <div className="table-container">
-            <table className="admin-table">
-              <thead>
-                <tr>
-                  <th rowSpan="2">No.</th>
-                  <th rowSpan="2">이름</th>
-                  <th rowSpan="2">이메일</th>
-                  <th rowSpan="2">전화번호</th>
-                  <th rowSpan="2" onClick={() => handleSort('depressive')}>
-                    우울점수{renderSortArrow('depressive')}
-                  </th>
-                  <th rowSpan="2" onClick={() => handleSort('anxiety')}>
-                    불안점수{renderSortArrow('anxiety')}
-                  </th>
-                  <th rowSpan="2" onClick={() => handleSort('stress')}>
-                    스트레스점수{renderSortArrow('stress')}
-                  </th>
-                  <th rowSpan="2" onClick={() => handleSort('created_at')}>
-                    등록일{renderSortArrow('created_at')}
-                  </th>
-                  <th rowSpan="2" onClick={() => handleSort('registration_step')}>
-                    등록단계{renderSortArrow('registration_step')}
-                  </th>
-                  <th rowSpan="2">집단</th>
-                  <th rowSpan="2">업로드 상태</th>
-                  <th rowSpan="2">업로드된 파일</th>
-                  <th rowSpan="2">PDF 다운로드</th>
-                  <th rowSpan="2">상세 정보</th>
-                  <th colSpan="2">확정여부</th>
-                </tr>
-                <tr>
-                  <th>가</th>
-                  <th>부</th>
-                </tr>
-              </thead>
-              <tbody>
-                {
-                  getFilteredAndSortedParticipants().map((participant, index) => {
-                    const uploadStatus = getUploadStatus(participant);
-                    const fileCount = getUploadedFileCount(participant);
-                    
-                    return (
-                      <tr key={participant.id || index}>
-                        <td>{index + 1}</td>
-                        <td>{participant.name || '-'}</td>
-                        <td>{participant.email || '-'}</td>
-                        <td>{participant.phone || '-'}</td>
-                        <td className={participant.depressive >= 10 ? 'highlight' : ''}>
-                          {participant.depressive || 0}
-                        </td>
-                        <td className={participant.anxiety >= 10 ? 'highlight' : ''}>
-                          {participant.anxiety || 0}
-                        </td>
-                        <td className={participant.stress !== null && participant.stress >= 17 ? 'highlight' : ''}>
-                          {participant.stress !== null ? participant.stress : '-'}
-                        </td>
-                        <td>{formatDate(participant.created_at)}</td>
-                        <td className={`registration-step-${participant.confirmation_status === 'rejected' ? 'rejected' : (participant.registration_step || 0)}`}>
-                          {formatRegistrationStep(participant.registration_step, participant.confirmation_status)}
-                        </td>
-                        <td className={`group-${getGroupType(participant).type}`}>
-                          {getGroupType(participant).label}
-                        </td>
-                        <td>
-                          <div className="upload-status">
-                            <span className={`status-item ${uploadStatus.signature ? 'uploaded' : 'pending'}`}>
-                              서명: {uploadStatus.signature ? '✅' : '❌'}
-                            </span>
-                            <span className={`status-item ${uploadStatus.idCard ? 'uploaded' : 'pending'}`}>
-                              신분증: {uploadStatus.idCard ? '✅' : '❌'}
-                            </span>
-                            <span className={`status-item ${uploadStatus.bankAccount ? 'uploaded' : 'pending'}`}>
-                              통장: {uploadStatus.bankAccount ? '✅' : '❌'}
-                            </span>
-                          </div>
-                        </td>
-                        <td>
-                          {fileCount > 0 ? (
+          {participants.length === 0 ? (
+            <div className="no-participants-message">
+              <p>등록된 참가자가 없습니다.</p>
+            </div>
+          ) : (
+            <>
+              <div className="table-container">
+                <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th rowSpan="2">No.</th>
+                    <th rowSpan="2">이름</th>
+                    <th rowSpan="2">이메일</th>
+                    <th rowSpan="2">전화번호</th>
+                    <th rowSpan="2" onClick={() => handleSort('depressive')}>
+                      우울점수{renderSortArrow('depressive')}
+                    </th>
+                    <th rowSpan="2" onClick={() => handleSort('anxiety')}>
+                      불안점수{renderSortArrow('anxiety')}
+                    </th>
+                    <th rowSpan="2" onClick={() => handleSort('stress')}>
+                      스트레스점수{renderSortArrow('stress')}
+                    </th>
+                    <th rowSpan="2" onClick={() => handleSort('created_at')}>
+                      등록일{renderSortArrow('created_at')}
+                    </th>
+                    <th rowSpan="2" onClick={() => handleSort('registration_step')}>
+                      등록단계{renderSortArrow('registration_step')}
+                    </th>
+                    <th rowSpan="2">집단</th>
+                    <th rowSpan="2">업로드 상태</th>
+                    <th rowSpan="2">업로드된 파일</th>
+                    <th rowSpan="2">PDF 다운로드</th>
+                    <th rowSpan="2">상세 정보</th>
+                    <th colSpan="2">확정여부</th>
+                  </tr>
+                  <tr>
+                    <th>가</th>
+                    <th>부</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {
+                    getFilteredAndSortedParticipants().map((participant, index) => {
+                      const uploadStatus = getUploadStatus(participant);
+                      const fileCount = getUploadedFileCount(participant);
+                      
+                      return (
+                        <tr key={participant.id || index}>
+                          <td>{index + 1}</td>
+                          <td>{participant.name || '-'}</td>
+                          <td>{participant.email || '-'}</td>
+                          <td>{participant.phone || '-'}</td>
+                          <td className={participant.depressive >= 10 ? 'highlight' : ''}>
+                            {participant.depressive || 0}
+                          </td>
+                          <td className={participant.anxiety >= 10 ? 'highlight' : ''}>
+                            {participant.anxiety || 0}
+                          </td>
+                          <td className={participant.stress !== null && participant.stress >= 17 ? 'highlight' : ''}>
+                            {participant.stress !== null ? participant.stress : '-'}
+                          </td>
+                          <td>{formatDate(participant.created_at)}</td>
+                          <td className={`registration-step-${participant.confirmation_status === 'rejected' ? 'rejected' : (participant.registration_step || 0)}`}>
+                            {formatRegistrationStep(participant.registration_step, participant.confirmation_status)}
+                          </td>
+                          <td className={`group-${getGroupType(participant).type}`}>
+                            {getGroupType(participant).label}
+                          </td>
+                          <td>
+                            <div className="upload-status">
+                              <span className={`status-item ${uploadStatus.signature ? 'uploaded' : 'pending'}`}>
+                                서명: {uploadStatus.signature ? '✅' : '❌'}
+                              </span>
+                              <span className={`status-item ${uploadStatus.idCard ? 'uploaded' : 'pending'}`}>
+                                신분증: {uploadStatus.idCard ? '✅' : '❌'}
+                              </span>
+                              <span className={`status-item ${uploadStatus.bankAccount ? 'uploaded' : 'pending'}`}>
+                                통장: {uploadStatus.bankAccount ? '✅' : '❌'}
+                              </span>
+                            </div>
+                          </td>
+                          <td>
+                            {fileCount > 0 ? (
+                              <button 
+                                className="file-view-btn"
+                                onClick={() => {
+                                  setSelectedParticipant(participant);
+                                  setShowFiles(true);
+                                  loadParticipantFiles(participant.id);
+                                }}
+                              >
+                                📁 파일 보기 ({fileCount})
+                              </button>
+                            ) : (
+                              <span className="no-files">파일 없음</span>
+                            )}
+                          </td>
+                          <td>
                             <button 
-                              className="file-view-btn"
+                              className="pdf-download-btn"
+                              onClick={() => handlePDFDownload(participant)}
+                              title="동의서 PDF 다운로드"
+                            >
+                              📄 동의서 PDF
+                            </button>
+                          </td>
+                          <td>
+                            <button 
+                              className="details-view-btn"
                               onClick={() => {
                                 setSelectedParticipant(participant);
-                                setShowFiles(true);
-                                loadParticipantFiles(participant.id);
+                                setShowDetails(true);
                               }}
                             >
-                              📁 파일 보기 ({fileCount})
+                              📋 상세보기
                             </button>
-                          ) : (
-                            <span className="no-files">파일 없음</span>
-                          )}
-                        </td>
-                        <td>
-                          <button 
-                            className="pdf-download-btn"
-                            onClick={() => handlePDFDownload(participant)}
-                            title="동의서 PDF 다운로드"
-                          >
-                            📄 동의서 PDF
-                          </button>
-                        </td>
-                        <td>
-                          <button 
-                            className="details-view-btn"
-                            onClick={() => {
-                              setSelectedParticipant(participant);
-                              setShowDetails(true);
-                            }}
-                          >
-                            📋 상세보기
-                          </button>
-                        </td>
-                        <td className="confirmation-cell">
-                          <input
-                            type="radio"
-                            name={`confirmation_${participant.id}`}
-                            value="approved"
-                            checked={participant.confirmation_status === 'approved'}
-                            onChange={() => handleConfirmationChange(participant.id, 'approved')}
-                            className="confirmation-radio"
-                          />
-                        </td>
-                        <td className="confirmation-cell">
-                          <input
-                            type="radio"
-                            name={`confirmation_${participant.id}`}
-                            value="rejected"
-                            checked={participant.confirmation_status === 'rejected'}
-                            onChange={() => handleConfirmationChange(participant.id, 'rejected')}
-                            className="confirmation-radio"
-                          />
-                        </td>
-                      </tr>
-                    );
-                  })
-                }
-              </tbody>
-            </table>
-          </div>
-          
-          <div className="admin-footer">
-            <p>총 {participants.length}명의 대기자가 등록되어 있습니다.
-            {(groupFilter !== 'all' || confirmationFilter !== 'all') && ` (현재 ${getFilteredAndSortedParticipants().length}명 표시)`}
-            </p>
-          </div>
+                          </td>
+                          <td className="confirmation-cell">
+                            <input
+                              type="radio"
+                              name={`confirmation_${participant.id}`}
+                              value="approved"
+                              checked={participant.confirmation_status === 'approved'}
+                              onChange={() => handleConfirmationChange(participant.id, 'approved')}
+                              className="confirmation-radio"
+                            />
+                          </td>
+                          <td className="confirmation-cell">
+                            <input
+                              type="radio"
+                              name={`confirmation_${participant.id}`}
+                              value="rejected"
+                              checked={participant.confirmation_status === 'rejected'}
+                              onChange={() => handleConfirmationChange(participant.id, 'rejected')}
+                              className="confirmation-radio"
+                            />
+                          </td>
+                        </tr>
+                      );
+                    })
+                  }
+                </tbody>
+              </table>
+            </div>
+            
+            <div className="admin-footer">
+              <p>총 {participants.length}명의 대기자가 등록되어 있습니다.
+              {(groupFilter !== 'all' || confirmationFilter !== 'all') && ` (현재 ${getFilteredAndSortedParticipants().length}명 표시)`}
+              </p>
+            </div>
+            </>
+          )}
         </>
       )}
 
@@ -1238,6 +1422,9 @@ const AdminPage = () => {
 
       {/* 상세 정보 모달 */}
       {showDetails && selectedParticipant && renderDetailsModal()}
+
+      {/* 충원 목표 편집 모달 */}
+      {isEditingGoals && renderGoalsEditModal()}
     </div>
   );
 };

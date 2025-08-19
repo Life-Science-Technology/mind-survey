@@ -14,6 +14,122 @@
   text-align: center;
 }
 
+/* 요약 섹션 스타일 */
+.summary-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.summary-controls {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.edit-goals-btn {
+  background-color: #6c757d;
+  color: #fff;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.edit-goals-btn:hover {
+  background-color: #5a6268;
+}
+
+/* 충원 목표 편집 모달 스타일 */
+.goals-modal {
+  max-width: 500px;
+}
+
+.goals-edit-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.goal-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.goal-item label {
+  flex: 1;
+  font-weight: 500;
+  color: #495057;
+}
+
+.goal-item input {
+  width: 80px;
+  padding: 8px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.goal-item span {
+  color: #6c757d;
+  font-size: 14px;
+}
+
+.total-goal {
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  text-align: center;
+  color: #495057;
+}
+
+.modal-save-btn {
+  background-color: #28a745;
+  color: #fff;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.modal-save-btn:hover {
+  background-color: #218838;
+}
+
+/* 참가자가 없을 때 메시지 스타일 */
+.no-participants-message {
+  text-align: center;
+  padding: 40px 20px;
+  color: #6c757d;
+  font-size: 16px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+/* 총 충원 목표 스타일 */
+.summary-item.total-goal {
+  background-color: #e3f2fd;
+  border: 2px solid #2196f3;
+}
+
+.summary-item.total-goal .summary-label {
+  color: #1976d2;
+  font-weight: 600;
+}
+
+.summary-item.total-goal .summary-value {
+  color: #1565c0;
+  font-weight: 700;
+}
+
 .admin-controls {
   display: flex;
   justify-content: flex-end;
