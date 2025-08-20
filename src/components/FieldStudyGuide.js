@@ -545,7 +545,7 @@ const FieldStudyGuide = () => {
                       alt="터코가기 버튼 클릭 → 메인 화면으로 이동" 
                       style={{
                         ...squareImageStyle,
-                        width: window.innerWidth > 768 ? '350px' : '70%'
+                        width: window.innerWidth > 768 ? '250px' : '70%'
                       }}
                     />
                   </div>
@@ -559,7 +559,7 @@ const FieldStudyGuide = () => {
                         alt="전화 번호 입력 화면"                       
                       style={{
                         ...squareImageStyle,
-                        width: window.innerWidth > 768 ? '350px' : '70%'
+                        width: window.innerWidth > 768 ? '250px' : '70%'
                       }}
                     />
                   </div>
@@ -605,7 +605,7 @@ const FieldStudyGuide = () => {
                       alt="오토측정시작 버튼 클릭" 
                       style={{
                         ...squareImageStyle,
-                        width: window.innerWidth > 768 ? '250px' : '70%'
+                        width: window.innerWidth > 768 ? '350px' : '70%'
                       }}
                     />
                   </div>
