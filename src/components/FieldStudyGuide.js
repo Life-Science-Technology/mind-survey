@@ -499,8 +499,8 @@ const FieldStudyGuide = () => {
                   <h3>1. 허용 클릭</h3>
                   <div style={{ textAlign: 'center', margin: '20px 0' }}>
                     <img 
-                      src={getImageUrl('galaxy_monitoring_basic_set/galaxy_monitoring_basic_set-1.png')} 
-                      alt="LST App에서 내 신체 활동 정보에 액세스하도록 허용하시겠습니까?" 
+                      src={getImageUrl('galaxy_monitoring_basic_set/galaxy_monitoring_basic_4.png')} 
+                      alt="허용 클릭" 
                       style={{
                         ...squareImageStyle,
                         width: window.innerWidth > 768 ? '250px' : '70%'
@@ -510,11 +510,11 @@ const FieldStudyGuide = () => {
                 </div>
 
                 <div className="guide-subsection">
-                  <h3>2. 전화 번호 클릭</h3>
+                  <h3>2. 앱을 사용 중일 때 클릭</h3>
                   <div style={{ textAlign: 'center', margin: '20px 0' }}>
                     <img 
-                      src={getImageUrl('galaxy_monitoring_basic_set/galaxy_monitoring_basic_set-2.png')} 
-                      alt="전화 번호 입력 화면" 
+                      src={getImageUrl('galaxy_monitoring_basic_set/galaxy_monitoring_basic_1.png')} 
+                      alt="앱을 사용 중일 때만" 
                       style={{
                         ...squareImageStyle,
                         width: window.innerWidth > 768 ? '250px' : '70%'
@@ -524,18 +524,11 @@ const FieldStudyGuide = () => {
                 </div>
 
                 <div className="guide-subsection">
-                  <h3>3. 전화 번호 입력 후 저장하기 클릭</h3>
-                  <p style={{ 
-                      color: '#333', 
-                      fontSize: '16px', 
-                      fontWeight: 'bold',
-                      margin: 0,
-                      textAlign: window.innerWidth <= 480 ? 'center' : 'left'
-                    }}>KIST 통합관제시스템에서 회원가입할 때 입력하신 <font color="red">전화번호와 동일</font>해야 합니다!</p>
+                  <h3>3. 항상 클릭</h3>
                   <div style={{ textAlign: 'center', margin: '20px 0' }}>
                     <img 
-                      src={getImageUrl('galaxy_monitoring_basic_set/galaxy_monitoring_basic_set-3.png')} 
-                      alt="전화 번호 입력 후 저장하기" 
+                      src={getImageUrl('galaxy_monitoring_basic_set/galaxy_monitoring_basic_2.png')} 
+                      alt="항상 클릭" 
                       style={{
                         ...squareImageStyle,
                         width: window.innerWidth > 768 ? '250px' : '70%'
@@ -545,11 +538,11 @@ const FieldStudyGuide = () => {
                 </div>
 
                 <div className="guide-subsection">
-                  <h3>4. 연두색 아이콘이 되면 성공!</h3>
+                  <h3>4. 뒤로가기 버튼 클릭 → 메인 화면으로 이동</h3>
                   <div style={{ textAlign: 'center', margin: '20px 0' }}>
                     <img 
-                      src={getImageUrl('galaxy_monitoring_basic_set/modify3.png')} 
-                      alt="연두색 아이콘으로 변경 성공" 
+                      src={getImageUrl('galaxy_monitoring_basic_set/galaxy_monitoring_basic_3.png')} 
+                      alt="터코가기 버튼 클릭 → 메인 화면으로 이동" 
                       style={{
                         ...squareImageStyle,
                         width: window.innerWidth > 768 ? '350px' : '70%'
@@ -559,10 +552,56 @@ const FieldStudyGuide = () => {
                 </div>
 
                 <div className="guide-subsection">
-                  <h3>5. 오토측정시작 클릭</h3>
+                  <h3>5. 전화번호 클릭</h3>
                   <div style={{ textAlign: 'center', margin: '20px 0' }}>
                     <img 
-                      src={getImageUrl('galaxy_monitoring_basic_set/galaxy_monitoring_basic_set-5.png')} 
+                        src={getImageUrl('galaxy_monitoring_basic_set/galaxy_monitoring_basic_set-2.png')} 
+                        alt="전화 번호 입력 화면"                       
+                      style={{
+                        ...squareImageStyle,
+                        width: window.innerWidth > 768 ? '350px' : '70%'
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div className="guide-subsection">
+                  <h3>6. 전화번호 입력 후 저장하기 클릭</h3>
+                  <div style={{ textAlign: 'center', margin: '20px 0' }}>
+                    <img 
+                      src={getImageUrl('galaxy_monitoring_basic_set/galaxy_monitoring_basic_set-3.png')} 
+                      alt="오토측정시작 버튼 클릭" 
+                      style={{
+                        ...squareImageStyle,
+                        width: window.innerWidth > 768 ? '250px' : '70%'
+                      }}
+                    />
+                    <div style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    gap: '10px',
+                    flexDirection: window.innerWidth <= 480 ? 'column' : 'row',
+                    marginTop: '20px'
+                  }}>
+                    <p style={{ 
+                      color: '#333', 
+                      fontSize: '16px', 
+                      fontWeight: 'bold',
+                      margin: 0,
+                      textAlign: window.innerWidth <= 480 ? 'center' : 'left'
+                    }}>
+                      KIST 통합관제시스템에서 회원가입할 때 입력하신 전화번호와 동일해야 합니다!
+                    </p>
+                  </div>
+                  </div>
+                </div>
+                
+                <div className="guide-subsection">
+                  <h3>7. 연두색 아이콘이 되면 성공!</h3>
+                  <div style={{ textAlign: 'center', margin: '20px 0' }}>
+                    <img 
+                      src={getImageUrl('galaxy_monitoring_basic_set/modify3.png')} 
                       alt="오토측정시작 버튼 클릭" 
                       style={{
                         ...squareImageStyle,
@@ -573,7 +612,7 @@ const FieldStudyGuide = () => {
                 </div>
 
                 <div className="guide-subsection">
-                  <h3>6. 빨간색 아이콘이 되면 성공!</h3>
+                  <h3>8. 빨간색 아이콘이 되면 성공!</h3>
                   <div style={{ textAlign: 'center', margin: '20px 0' }}>
                     <img 
                       src={getImageUrl('galaxy_monitoring_basic_set/galaxy_monitoring_basic_set-6.png')} 
