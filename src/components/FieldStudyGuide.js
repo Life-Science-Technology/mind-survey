@@ -590,7 +590,7 @@ const FieldStudyGuide = () => {
                       fontWeight: 'bold',
                       margin: 0,
                       textAlign: window.innerWidth <= 480 ? 'center' : 'left'
-                    }}>
+                    }}> 
                       KIST 통합관제시스템에서 회원가입할 때 입력하신 전화번호와 동일해야 합니다!
                     </p>
                   </div>
